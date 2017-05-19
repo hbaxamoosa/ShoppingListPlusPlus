@@ -3,13 +3,10 @@ package com.udacity.firebase.shoppinglistplusplus.ui.activeListDetails;
 import android.app.Dialog;
 import android.os.Bundle;
 
-import com.firebase.client.Firebase;
-import com.firebase.client.FirebaseError;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.model.User;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
-import com.udacity.firebase.shoppinglistplusplus.utils.Utils;
 
 import java.util.HashMap;
 
@@ -70,30 +67,6 @@ public class EditListNameDialogFragment extends EditListDialogFragment {
          */
         if (!inputListName.equals("") && mListName != null &&
                 mListId != null && !inputListName.equals(mListName)) {
-
-            Firebase firebaseRef = new Firebase(Constants.FIREBASE_URL);
-
-            /**
-             * Create map and fill it in with deep path multi write operations list
-             */
-            HashMap<String, Object> updatedListData = new HashMap<String, Object>();
-
-            /* Add the value to update at the specified property for all lists */
-            Utils.updateMapForAllWithValue(mSharedWith, mListId, mOwner, updatedListData,
-                    Constants.FIREBASE_PROPERTY_LIST_NAME, inputListName);
-
-            /* Update affected lists timestamps */
-            Utils.updateMapWithTimestampLastChanged(mSharedWith, mListId, mOwner, updatedListData);
-
-            /* Do a deep-path update */
-            firebaseRef.updateChildren(updatedListData, new Firebase.CompletionListener() {
-                @Override
-                public void onComplete(FirebaseError firebaseError, Firebase firebase) {
-                    /* Now that we have the timestamp, update the reversed timestamp */
-                    Utils.updateTimestampReversed(firebaseError, LOG_TAG, mListId,
-                            mSharedWith, mOwner);
-                }
-            });
 
         }
     }

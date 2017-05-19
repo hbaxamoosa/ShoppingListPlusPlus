@@ -1,7 +1,7 @@
 package com.udacity.firebase.shoppinglistplusplus.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.firebase.client.ServerValue;
+import com.google.firebase.database.ServerValue;
+
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
 import java.util.HashMap;
@@ -63,18 +63,15 @@ public class ShoppingList {
         return timestampLastChangedReverse;
     }
 
-    @JsonIgnore
     public long getTimestampLastChangedLong() {
 
         return (long) timestampLastChanged.get(Constants.FIREBASE_PROPERTY_TIMESTAMP);
     }
 
-    @JsonIgnore
     public long getTimestampCreatedLong() {
         return (long) timestampLastChanged.get(Constants.FIREBASE_PROPERTY_TIMESTAMP);
     }
 
-    @JsonIgnore
     public long getTimestampLastChangedReverseLong() {
 
         return (long) timestampLastChangedReverse.get(Constants.FIREBASE_PROPERTY_TIMESTAMP);

@@ -3,13 +3,10 @@ package com.udacity.firebase.shoppinglistplusplus.ui.activeListDetails;
 import android.app.Dialog;
 import android.os.Bundle;
 
-import com.firebase.client.Firebase;
-import com.firebase.client.FirebaseError;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.model.User;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
-import com.udacity.firebase.shoppinglistplusplus.utils.Utils;
 
 import java.util.HashMap;
 
@@ -74,28 +71,6 @@ public class EditListItemNameDialogFragment extends EditListDialogFragment {
          * previous name.
          */
         if (!nameInput.equals("") && !nameInput.equals(mItemName)) {
-            Firebase firebaseRef = new Firebase(Constants.FIREBASE_URL);
-
-            /* Make a map for the item you are changing the name of */
-            HashMap<String, Object> updatedDataItemToEditMap = new HashMap<String, Object>();
-
-            /* Add the new name to the update map*/
-            updatedDataItemToEditMap.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/"
-                            + mListId + "/" + mItemId + "/" + Constants.FIREBASE_PROPERTY_ITEM_NAME,
-                    nameInput);
-
-            /* Update affected lists timestamps */
-            Utils.updateMapWithTimestampLastChanged(mSharedWith, mListId, mOwner, updatedDataItemToEditMap);
-
-            /* Do the update */
-            firebaseRef.updateChildren(updatedDataItemToEditMap, new Firebase.CompletionListener() {
-                @Override
-                public void onComplete(FirebaseError firebaseError, Firebase firebase) {
-                        /* Now that we have the timestamp, update the reversed timestamp */
-                    Utils.updateTimestampReversed(firebaseError, "EditListItem", mListId,
-                            mSharedWith, mOwner);
-                }
-            });
 
 
         }

@@ -12,8 +12,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import com.firebase.client.Firebase;
-import com.firebase.client.Query;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.ui.activeListDetails.ActiveListDetailsActivity;
@@ -79,8 +77,8 @@ public class ShoppingListsFragment extends Fragment {
                     /* Get the list ID using the adapter's get ref method to get the Firebase
                      * ref and then grab the key.
                      */
-                    String listId = mActiveListAdapter.getRef(position).getKey();
-                    intent.putExtra(Constants.KEY_LIST_ID, listId);
+                    // String listId = mActiveListAdapter.getRef(position).getKey();
+                    // intent.putExtra(Constants.KEY_LIST_ID, listId);
                     /* Starts an active showing the details for the selected list */
                     startActivity(intent);
                 }
@@ -99,15 +97,13 @@ public class ShoppingListsFragment extends Fragment {
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String sortOrder = sharedPref.getString(Constants.KEY_PREF_SORT_ORDER_LISTS, Constants.ORDER_BY_KEY);
 
-        Query orderedActiveUserListsRef;
-        Firebase activeListsRef = new Firebase(Constants.FIREBASE_URL_USER_LISTS)
-                .child(mEncodedEmail);
+
         /**
          * Sort active lists by "date created"
          * if it's been selected in the SettingsActivity
          */
         if (sortOrder.equals(Constants.ORDER_BY_KEY)) {
-            orderedActiveUserListsRef = activeListsRef.orderByKey();
+
         } else {
 
             /**
@@ -115,15 +111,13 @@ public class ShoppingListsFragment extends Fragment {
              * depending on what's been selected in SettingsActivity
              */
 
-            orderedActiveUserListsRef = activeListsRef.orderByChild(sortOrder);
+
         }
 
         /**
          * Create the adapter with selected sort order
          */
-        mActiveListAdapter = new ActiveListAdapter(getActivity(), ShoppingList.class,
-                R.layout.single_active_list, orderedActiveUserListsRef,
-                mEncodedEmail);
+
 
         /**
          * Set the adapter to the mListView
@@ -137,7 +131,6 @@ public class ShoppingListsFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        mActiveListAdapter.cleanup();
     }
 
     /**

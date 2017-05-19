@@ -33,7 +33,7 @@ public class MainActivity extends BaseActivity {
         /**
          * Create Firebase references
          */
-        /*mUserRef = new Firebase(Constants.FIREBASE_URL_USERS).child(mEncodedEmail);*/
+
 
         /**
          * Link layout elements from XML and setup the toolbar
@@ -44,29 +44,7 @@ public class MainActivity extends BaseActivity {
          * Add ValueEventListeners to Firebase references
          * to control get data and control behavior and visibility of elements
          */
-        /*mUserRefListener = mUserRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                User user = snapshot.getValue(User.class);
 
-                *//**
-                 * Set the activity title to current user name if user is not null
-                 *//*
-                if (user != null) {
-                    *//* Assumes that the first word in the user's name is the user's first name. *//*
-                    String firstName = user.getName().split("\\s+")[0];
-                    String title = firstName + "'s Lists";
-                    setTitle(title);
-                }
-            }
-
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
-                Log.e(LOG_TAG,
-                        getString(R.string.log_error_the_read_failed) +
-                                firebaseError.getMessage());
-            }
-        });*/
 
     }
 

@@ -4,41 +4,29 @@ import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.firebase.client.DataSnapshot;
-import com.firebase.client.Firebase;
-import com.firebase.client.FirebaseError;
-import com.firebase.client.ValueEventListener;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
-import com.udacity.firebase.shoppinglistplusplus.model.ShoppingListItem;
 import com.udacity.firebase.shoppinglistplusplus.model.User;
 import com.udacity.firebase.shoppinglistplusplus.ui.BaseActivity;
 import com.udacity.firebase.shoppinglistplusplus.ui.sharing.ShareListActivity;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
-import com.udacity.firebase.shoppinglistplusplus.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Represents the details screen for the selected shopping list
  */
 public class ActiveListDetailsActivity extends BaseActivity {
     private static final String LOG_TAG = ActiveListDetailsActivity.class.getSimpleName();
-    private Firebase mCurrentListRef, mCurrentUserRef, mSharedWithRef;
     private ActiveListItemAdapter mActiveListItemAdapter;
     private Button mButtonShopping;
     private TextView mTextViewPeopleShopping;
@@ -50,7 +38,6 @@ public class ActiveListDetailsActivity extends BaseActivity {
     /* Stores whether the current user is the owner */
     private boolean mCurrentUserIsOwner = false;
     private ShoppingList mShoppingList;
-    private ValueEventListener mCurrentUserRefListener, mCurrentListRefListener, mSharedWithListener;
     private HashMap<String, User> mSharedWithUsers;
 
     @Override
@@ -68,15 +55,6 @@ public class ActiveListDetailsActivity extends BaseActivity {
         }
 
         /**
-         * Create Firebase references
-         */
-        mCurrentListRef = new Firebase(Constants.FIREBASE_URL_USER_LISTS).child(mEncodedEmail).child(mListId);
-        mCurrentUserRef = new Firebase(Constants.FIREBASE_URL_USERS).child(mEncodedEmail);
-        mSharedWithRef = new Firebase (Constants.FIREBASE_URL_LISTS_SHARED_WITH).child(mListId);
-        Firebase listItemsRef = new Firebase(Constants.FIREBASE_URL_SHOPPING_LIST_ITEMS).child(mListId);
-
-
-        /**
          * Link layout elements from XML and setup the toolbar
          */
         initializeScreen();
@@ -85,11 +63,6 @@ public class ActiveListDetailsActivity extends BaseActivity {
         /**
          * Setup the adapter
          */
-        mActiveListItemAdapter = new ActiveListItemAdapter(this, ShoppingListItem.class,
-                R.layout.single_active_list_item, listItemsRef.orderByChild(Constants.FIREBASE_PROPERTY_BOUGHT_BY),
-                mListId, mEncodedEmail);
-        /* Create ActiveListItemAdapter and set to listView */
-        mListView.setAdapter(mActiveListItemAdapter);
 
 
         /**
@@ -98,21 +71,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
          */
 
         /* Save the most up-to-date version of current user in mCurrentUser */
-        mCurrentUserRefListener = mCurrentUserRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                User currentUser = dataSnapshot.getValue(User.class);
-                if (currentUser != null) mCurrentUser = currentUser;
-                else finish();
-            }
 
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
-                Log.e(LOG_TAG,
-                        getString(R.string.log_error_the_read_failed) +
-                                firebaseError.getMessage());
-            }
-        });
 
         final Activity thisActivity = this;
 
@@ -121,161 +80,15 @@ public class ActiveListDetailsActivity extends BaseActivity {
          * Save the most recent version of current shopping list into mShoppingList instance
          * variable an update the UI to match the current list.
          */
-        mCurrentListRefListener = mCurrentListRef.addValueEventListener(new ValueEventListener() {
-
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-
-                /**
-                 * Saving the most recent version of current shopping list into mShoppingList if present
-                 * finish() the activity if the list is null (list was removed or unshared by it's owner
-                 * while current user is in the list details activity)
-                 */
-                ShoppingList shoppingList = snapshot.getValue(ShoppingList.class);
-
-                if (shoppingList == null) {
-                    finish();
-                    /**
-                     * Make sure to call return, otherwise the rest of the method will execute,
-                     * even after calling finish.
-                     */
-                    return;
-                }
-                mShoppingList = shoppingList;
-                /**
-                 * Pass the shopping list to the adapter if it is not null.
-                 * We do this here because mShoppingList is null when first created.
-                 */
-                mActiveListItemAdapter.setShoppingList(mShoppingList);
-
-                /* Check if the current user is owner */
-                mCurrentUserIsOwner = Utils.checkIfOwner(shoppingList, mEncodedEmail);
-
-
-                /* Calling invalidateOptionsMenu causes onCreateOptionsMenu to be called */
-                invalidateOptionsMenu();
-
-                /* Set title appropriately. */
-                setTitle(shoppingList.getListName());
-
-                HashMap<String, User> usersShopping = mShoppingList.getUsersShopping();
-                if (usersShopping != null && usersShopping.size() != 0 &&
-                        usersShopping.containsKey(mEncodedEmail)) {
-                    mShopping = true;
-                    mButtonShopping.setText(getString(R.string.button_stop_shopping));
-                    mButtonShopping.setBackgroundColor(ContextCompat.getColor(ActiveListDetailsActivity.this, R.color.dark_grey));
-                } else {
-                    mButtonShopping.setText(getString(R.string.button_start_shopping));
-                    mButtonShopping.setBackgroundColor(ContextCompat.getColor(ActiveListDetailsActivity.this, R.color.primary_dark));
-                    mShopping = false;
-
-                }
-
-                setWhosShoppingText(mShoppingList.getUsersShopping());
-
-            }
-
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
-                Log.e(LOG_TAG,
-                        getString(R.string.log_error_the_read_failed) +
-                                firebaseError.getMessage());
-            }
-        });
-
-        mSharedWithListener = mSharedWithRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                mSharedWithUsers = new HashMap<String, User>();
-                for (DataSnapshot currentUser : dataSnapshot.getChildren()) {
-                    mSharedWithUsers.put(currentUser.getKey(), currentUser.getValue(User.class));
-                }
-                mActiveListItemAdapter.setSharedWithUsers(mSharedWithUsers);
-            }
-
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
-                Log.e(LOG_TAG,
-                        getString(R.string.log_error_the_read_failed) +
-                                firebaseError.getMessage());
-            }
-        });
 
         /**
          * Set up click listeners for interaction.
          */
 
         /* Show edit list item name dialog on listView item long click event */
-        mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
 
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                /* Check that the view is not the empty footer item */
-                if (view.getId() != R.id.list_view_footer_empty) {
-                    ShoppingListItem shoppingListItem = mActiveListItemAdapter.getItem(position);
-
-                    if (shoppingListItem != null) {
-                        /*
-                        If the person is the owner and not shopping and the item is not bought, then
-                        they can edit it.
-                         */
-                        if (shoppingListItem.getOwner().equals(mEncodedEmail) && !mShopping && !shoppingListItem.isBought()) {
-                            String itemName = shoppingListItem.getItemName();
-                            String itemId = mActiveListItemAdapter.getRef(position).getKey();
-                            showEditListItemNameDialog(itemName, itemId);
-                            return true;
-                        }
-                    }
-                }
-                return false;
-            }
-        });
 
         /* Perform buy/return action on listView item click event if current user is shopping. */
-        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                /* Check that the view is not the empty footer item */
-                if (view.getId() != R.id.list_view_footer_empty) {
-                    final ShoppingListItem selectedListItem = mActiveListItemAdapter.getItem(position);
-                    String itemId = mActiveListItemAdapter.getRef(position).getKey();
-
-                    if (selectedListItem != null) {
-                        /* If current user is shopping */
-                        if (mShopping) {
-
-                            /* Create map and fill it in with deep path multi write operations list */
-                            HashMap<String, Object> updatedItemBoughtData = new HashMap<String, Object>();
-
-                            /* Buy selected item if it is NOT already bought */
-                            if (!selectedListItem.isBought()) {
-                                updatedItemBoughtData.put(Constants.FIREBASE_PROPERTY_BOUGHT, true);
-                                updatedItemBoughtData.put(Constants.FIREBASE_PROPERTY_BOUGHT_BY, mEncodedEmail);
-                            } else {
-                                /* Return selected item only if it was bought by current user */
-                                if (selectedListItem.getBoughtBy().equals(mEncodedEmail)) {
-                                    updatedItemBoughtData.put(Constants.FIREBASE_PROPERTY_BOUGHT, false);
-                                    updatedItemBoughtData.put(Constants.FIREBASE_PROPERTY_BOUGHT_BY, null);
-                                }
-                            }
-
-                            /* Do update */
-                            Firebase firebaseItemLocation = new Firebase(Constants.FIREBASE_URL_SHOPPING_LIST_ITEMS)
-                                    .child(mListId).child(itemId);
-                            firebaseItemLocation.updateChildren(updatedItemBoughtData, new Firebase.CompletionListener() {
-                                @Override
-                                public void onComplete(FirebaseError firebaseError, Firebase firebase) {
-                                    if (firebaseError != null) {
-                                        Log.d(LOG_TAG, getString(R.string.log_error_updating_data) +
-                                                firebaseError.getMessage());
-                                    }
-                                }
-                            });
-                        }
-                    }
-                }
-            }
-        });
 
     }
 
@@ -350,10 +163,6 @@ public class ActiveListDetailsActivity extends BaseActivity {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mActiveListItemAdapter.cleanup();
-        mCurrentListRef.removeEventListener(mCurrentListRefListener);
-        mCurrentUserRef.removeEventListener(mCurrentUserRefListener);
-        mSharedWithRef.removeEventListener(mSharedWithListener);
     }
 
     /**
@@ -523,50 +332,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
          */
         if (mShopping) {
 
-            /* Add the value to update at the specified property for all lists */
-            Utils.updateMapForAllWithValue(mSharedWithUsers,
-                    mListId, mShoppingList.getOwner(), updatedUserData,
-                    propertyToUpdate, null);
-
-            /* Appends the timestamp changes for all lists */
-            Utils.updateMapWithTimestampLastChanged(mSharedWithUsers,
-                    mListId, mShoppingList.getOwner(), updatedUserData);
-
-
-            /* Do a deep-path update */
-            mFirebaseRef.updateChildren(updatedUserData, new Firebase.CompletionListener() {
-                @Override
-                public void onComplete(FirebaseError firebaseError, Firebase firebase) {
-                    /* Updates the reversed timestamp */
-                    Utils.updateTimestampReversed(firebaseError, LOG_TAG, mListId, mSharedWithUsers,
-                            mShoppingList.getOwner());
-                }
-            });
         } else {
-            /**
-             * If current user is not shopping, create map to represent User model add to usersShopping map
-             */
-            HashMap<String, Object> currentUser = (HashMap<String, Object>)
-                    new ObjectMapper().convertValue(mCurrentUser, Map.class);
-
-            /* Add the value to update at the specified property for all lists */
-            Utils.updateMapForAllWithValue(mSharedWithUsers,
-                    mListId, mShoppingList.getOwner(), updatedUserData, propertyToUpdate, currentUser);
-
-            /* Appends the timestamp changes for all lists */
-            Utils.updateMapWithTimestampLastChanged(mSharedWithUsers,
-                    mListId, mShoppingList.getOwner(), updatedUserData);
-
-            /* Do a deep-path update */
-            mFirebaseRef.updateChildren(updatedUserData, new Firebase.CompletionListener() {
-                @Override
-                public void onComplete(FirebaseError firebaseError, Firebase firebase) {
-                    /* Updates the reversed timestamp */
-                    Utils.updateTimestampReversed(firebaseError, LOG_TAG, mListId, mSharedWithUsers,
-                            mShoppingList.getOwner());
-                }
-            });
-
         }
     }
 
