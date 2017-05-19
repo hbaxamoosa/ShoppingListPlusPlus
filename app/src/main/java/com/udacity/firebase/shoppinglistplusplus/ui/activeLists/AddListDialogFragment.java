@@ -1,9 +1,15 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.activeLists;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -14,7 +20,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.udacity.firebase.shoppinglistplusplus.R;
+import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
+import com.udacity.firebase.shoppinglistplusplus.ui.login.LoginActivity;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
+
+import timber.log.Timber;
 
 /**
  * Adds a new shopping list
@@ -22,6 +32,10 @@ import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 public class AddListDialogFragment extends DialogFragment {
     String mEncodedEmail;
     EditText mEditTextListName;
+
+    // Firebase Realtime Database
+    private FirebaseDatabase mFirebaseDatabase;
+    private DatabaseReference mShoppingListDatabaseReference;
 
     /**
      * Public static constructor that creates fragment and
@@ -42,6 +56,10 @@ public class AddListDialogFragment extends DialogFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mEncodedEmail = getArguments().getString(Constants.KEY_ENCODED_EMAIL);
+
+        // Initialize Firebase components
+        mFirebaseDatabase = FirebaseDatabase.getInstance();
+        mShoppingListDatabaseReference = mFirebaseDatabase.getReference("shoppingLists");
     }
 
     /**
@@ -93,6 +111,7 @@ public class AddListDialogFragment extends DialogFragment {
      * Add new active list
      */
     public void addShoppingList() {
+        Timber.v("inside addShoppingList()");
         String userEnteredName = mEditTextListName.getText().toString();
 
         /**
@@ -100,6 +119,16 @@ public class AddListDialogFragment extends DialogFragment {
          */
         if (!userEnteredName.equals("")) {
 
+            Bundle bundle = new Bundle();
+            bundle.putString(FirebaseAnalytics.Param.CAMPAIGN, "add new list");
+            LoginActivity.mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+            ShoppingList shoppingList = new ShoppingList(userEnteredName, mEncodedEmail);
+            mShoppingListDatabaseReference.push().setValue(shoppingList).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Timber.v(e.getLocalizedMessage());
+                }
+            });
             /* Close the dialog fragment */
             AddListDialogFragment.this.getDialog().cancel();
         }

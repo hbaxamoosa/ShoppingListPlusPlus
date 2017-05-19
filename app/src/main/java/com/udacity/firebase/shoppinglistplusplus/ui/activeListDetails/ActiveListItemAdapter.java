@@ -1,81 +1,52 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.activeListDetails;
 
 import android.content.Context;
-import android.graphics.Paint;
-import android.support.annotation.IdRes;
-import android.support.annotation.LayoutRes;
-import android.support.annotation.NonNull;
+import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.ImageButton;
-import android.widget.TextView;
+import android.view.ViewGroup;
 
-import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
-import com.udacity.firebase.shoppinglistplusplus.model.ShoppingListItem;
-import com.udacity.firebase.shoppinglistplusplus.model.User;
-
-import java.util.HashMap;
-import java.util.List;
+import com.udacity.firebase.shoppinglistplusplus.R;
 
 
 /**
  * Populates list_view_shopping_list_items inside ActiveListDetailsActivity
  */
-public class ActiveListItemAdapter extends ArrayAdapter<ShoppingListItem> {
-    private ShoppingList mShoppingList;
-    private String mListId;
-    private String mEncodedEmail;
-    private HashMap<String, User> mSharedWithUsers;
+public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAdapter.ActiveListItemAdapterViewHolder> {
 
-    public ActiveListItemAdapter(@NonNull Context context, @LayoutRes int resource, @IdRes int textViewResourceId, @NonNull List<ShoppingListItem> objects) {
-        super(context, resource, textViewResourceId, objects);
+    @Override
+    public ActiveListItemAdapter.ActiveListItemAdapterViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        Context context = parent.getContext();
+        LayoutInflater inflater = LayoutInflater.from(context);
+
+        // Inflate the custom layout
+        View shoppingListView = inflater.inflate(R.layout.fragment_shopping_lists, parent, false);
+
+        // Return a new holder instance
+        ActiveListItemAdapterViewHolder viewHolder = new ActiveListItemAdapterViewHolder(shoppingListView);
+        return viewHolder;
     }
 
-    private void removeItem(String itemId) {
+    @Override
+    public void onBindViewHolder(ActiveListItemAdapter.ActiveListItemAdapterViewHolder holder, int position) {
+
 
     }
 
-    private void setItemAppearanceBaseOnBoughtStatus(String owner, final TextView textViewBoughtByUser,
-                                                     TextView textViewBoughtBy, ImageButton buttonRemoveItem,
-                                                     TextView textViewItemName, ShoppingListItem item) {
-        /**
-         * If selected item is bought
-         * Set "Bought by" text to "You" if current user is owner of the list
-         * Set "Bought by" text to userName if current user is NOT owner of the list
-         * Set the remove item button invisible if current user is NOT list or item owner
-         */
-        if (item.isBought() && item.getBoughtBy() != null) {
+    @Override
+    public int getItemCount() {
+        return 0;
+    }
 
-            textViewBoughtBy.setVisibility(View.VISIBLE);
-            textViewBoughtByUser.setVisibility(View.VISIBLE);
-            buttonRemoveItem.setVisibility(View.INVISIBLE);
+    public static class ActiveListItemAdapterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-            /* Add a strike-through */
-            textViewItemName.setPaintFlags(textViewItemName.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+        public ActiveListItemAdapterViewHolder(View itemView) {
+            super(itemView);
+        }
 
-        } else {
-            /**
-             * If selected item is NOT bought
-             * Set "Bought by" text to be empty and invisible
-             * Set the remove item button visible if current user is owner of the list or selected item
-             */
+        @Override
+        public void onClick(View v) {
 
-            /* Remove the strike-through */
-            textViewItemName.setPaintFlags(textViewItemName.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
-
-            textViewBoughtBy.setVisibility(View.INVISIBLE);
-            textViewBoughtByUser.setVisibility(View.INVISIBLE);
-            textViewBoughtByUser.setText("");
-            /**
-             * If you are the owner of the item or the owner of the list, then the remove icon
-             * is visible.
-             */
-            if (owner.equals(mEncodedEmail) || (mShoppingList != null && mShoppingList.getOwner().equals(mEncodedEmail))) {
-                buttonRemoveItem.setVisibility(View.VISIBLE);
-            } else {
-                buttonRemoveItem.setVisibility(View.INVISIBLE);
-            }
         }
     }
-
 }

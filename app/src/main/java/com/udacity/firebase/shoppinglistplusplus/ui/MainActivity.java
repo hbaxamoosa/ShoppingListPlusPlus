@@ -1,8 +1,17 @@
 package com.udacity.firebase.shoppinglistplusplus.ui;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 import android.app.DialogFragment;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -13,11 +22,18 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.firebase.ui.auth.AuthUI;
 import com.udacity.firebase.shoppinglistplusplus.R;
+import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.ui.activeLists.AddListDialogFragment;
 import com.udacity.firebase.shoppinglistplusplus.ui.activeLists.ShoppingListsFragment;
+import com.udacity.firebase.shoppinglistplusplus.ui.login.LoginActivity;
 import com.udacity.firebase.shoppinglistplusplus.ui.meals.AddMealDialogFragment;
 import com.udacity.firebase.shoppinglistplusplus.ui.meals.MealsFragment;
+
+import java.util.ArrayList;
+
+import timber.log.Timber;
 
 /**
  * Represents the home screen of the app which
@@ -26,14 +42,27 @@ import com.udacity.firebase.shoppinglistplusplus.ui.meals.MealsFragment;
 public class MainActivity extends BaseActivity {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
+    private ArrayList<ShoppingList> mShoppingList = new ArrayList<>();
+
+    // Firebase Realtime Database
+    private FirebaseDatabase mFirebaseDatabase;
+    private DatabaseReference mShoppingListDatabaseReference;
+    private ChildEventListener mChildEventListener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        /**
-         * Create Firebase references
-         */
 
+        // Initialize Firebase components
+        mFirebaseDatabase = FirebaseDatabase.getInstance();
+        mShoppingListDatabaseReference = mFirebaseDatabase.getReference("shoppingLists");
+
+        Intent intent = getIntent();
+        if (null != intent) { //Null Checking
+            mEncodedEmail = intent.getStringExtra("username");
+            Timber.v("mEncodedEmail: " + mEncodedEmail);
+        }
 
         /**
          * Link layout elements from XML and setup the toolbar
@@ -44,8 +73,7 @@ public class MainActivity extends BaseActivity {
          * Add ValueEventListeners to Firebase references
          * to control get data and control behavior and visibility of elements
          */
-
-
+        // attachDatabaseReadListener();
     }
 
 
@@ -68,15 +96,25 @@ public class MainActivity extends BaseActivity {
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        /**
-         * Open SettingsActivity with sort options when Sort icon was clicked
-         */
-        if (id == R.id.action_sort) {
-            startActivity(new Intent(MainActivity.this, SettingsActivity.class));
-            return true;
+        switch (item.getItemId()) {
+            case R.id.action_logout:
+                AuthUI.getInstance()
+                        .signOut(MainActivity.this)
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            public void onComplete(@NonNull Task<Void> task) {
+                                // user is now signed out
+                                startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                                finish();
+                            }
+                        });
+                detachDatabaseReadListener();
+                return true;
+            case R.id.action_sort:
+                startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
     }
 
 
@@ -103,6 +141,42 @@ public class MainActivity extends BaseActivity {
          * Setup the mTabLayout with view pager
          */
         tabLayout.setupWithViewPager(viewPager);
+    }
+
+    private void attachDatabaseReadListener() {
+        Timber.v("inside attachDatabaseReadListener()");
+        if (mChildEventListener == null) {
+            mChildEventListener = new ChildEventListener() {
+                @Override
+                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                    ShoppingList shoppingList = dataSnapshot.getValue(ShoppingList.class);
+                    Timber.v("Name: " + shoppingList.getListName());
+                    Timber.v("Owner: " + shoppingList.getOwner());
+                    mShoppingList.add(shoppingList);
+                    Timber.v("mShoppingList count is " + mShoppingList.size());
+                }
+
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                }
+
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
+                }
+
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+                }
+
+                public void onCancelled(DatabaseError databaseError) {
+                }
+            };
+            mShoppingListDatabaseReference.addChildEventListener(mChildEventListener);
+        }
+    }
+
+    private void detachDatabaseReadListener() {
+        if (mChildEventListener != null) {
+            mShoppingListDatabaseReference.removeEventListener(mChildEventListener);
+            mChildEventListener = null;
+        }
     }
 
     /**

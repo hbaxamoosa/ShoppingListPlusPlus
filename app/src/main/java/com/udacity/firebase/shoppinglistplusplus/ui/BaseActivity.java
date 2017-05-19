@@ -82,7 +82,6 @@ public abstract class BaseActivity extends AppCompatActivity implements
     @Override
     public void onDestroy() {
         super.onDestroy();
-
     }
 
     @Override

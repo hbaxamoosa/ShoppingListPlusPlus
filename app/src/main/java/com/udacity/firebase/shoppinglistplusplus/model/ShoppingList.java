@@ -1,11 +1,5 @@
 package com.udacity.firebase.shoppinglistplusplus.model;
 
-import com.google.firebase.database.ServerValue;
-
-import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
-
-import java.util.HashMap;
-
 /**
  * Defines the data structure for both Active and Archived ShoppingList objects.
  */
@@ -13,10 +7,6 @@ import java.util.HashMap;
 public class ShoppingList {
     private String listName;
     private String owner;
-    private HashMap<String, Object> timestampLastChanged;
-    private HashMap<String, Object> timestampCreated;
-    private HashMap<String, Object> timestampLastChangedReverse;
-    private HashMap<String, User> usersShopping;
 
     /**
      * Required public constructor
@@ -32,15 +22,9 @@ public class ShoppingList {
      * @param listName
      * @param owner
      */
-    public ShoppingList(String listName, String owner, HashMap<String, Object> timestampCreated) {
+    public ShoppingList(String listName, String owner) {
         this.listName = listName;
         this.owner = owner;
-        this.timestampCreated = timestampCreated;
-        HashMap<String, Object> timestampNowObject = new HashMap<String, Object>();
-        timestampNowObject.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
-        this.timestampLastChanged = timestampNowObject;
-        this.timestampLastChangedReverse = null;
-        this.usersShopping = new HashMap<>();
     }
 
     public String getListName() {
@@ -50,43 +34,5 @@ public class ShoppingList {
     public String getOwner() {
         return owner;
     }
-
-    public HashMap<String, Object> getTimestampLastChanged() {
-        return timestampLastChanged;
-    }
-
-    public HashMap<String, Object> getTimestampCreated() {
-        return timestampCreated;
-    }
-
-    public HashMap<String, Object> getTimestampLastChangedReverse() {
-        return timestampLastChangedReverse;
-    }
-
-    public long getTimestampLastChangedLong() {
-
-        return (long) timestampLastChanged.get(Constants.FIREBASE_PROPERTY_TIMESTAMP);
-    }
-
-    public long getTimestampCreatedLong() {
-        return (long) timestampLastChanged.get(Constants.FIREBASE_PROPERTY_TIMESTAMP);
-    }
-
-    public long getTimestampLastChangedReverseLong() {
-
-        return (long) timestampLastChangedReverse.get(Constants.FIREBASE_PROPERTY_TIMESTAMP);
-    }
-
-    public HashMap getUsersShopping() {
-        return usersShopping;
-    }
-
-    public void setTimestampLastChangedToNow() {
-        HashMap<String, Object> timestampNowObject = new HashMap<String, Object>();
-        timestampNowObject.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
-        this.timestampLastChanged = timestampNowObject;
-    }
-
-
 }
 

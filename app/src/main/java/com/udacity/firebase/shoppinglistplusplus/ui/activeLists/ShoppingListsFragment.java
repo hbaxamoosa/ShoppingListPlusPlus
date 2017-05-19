@@ -1,21 +1,28 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.activeLists;
 
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ListView;
 
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
-import com.udacity.firebase.shoppinglistplusplus.ui.activeListDetails.ActiveListDetailsActivity;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
+
+import java.util.ArrayList;
+
+import timber.log.Timber;
 
 
 /**
@@ -26,7 +33,13 @@ import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 public class ShoppingListsFragment extends Fragment {
     private String mEncodedEmail;
     private ActiveListAdapter mActiveListAdapter;
-    private ListView mListView;
+    private RecyclerView mRecyclerView;
+    private ArrayList<ShoppingList> mShoppingList = new ArrayList<>();
+
+    // Firebase Realtime Database
+    private FirebaseDatabase mFirebaseDatabase;
+    private DatabaseReference mShoppingListDatabaseReference;
+    private ChildEventListener mChildEventListener;
 
     public ShoppingListsFragment() {
         /* Required empty public constructor */
@@ -53,38 +66,60 @@ public class ShoppingListsFragment extends Fragment {
         if (getArguments() != null) {
             mEncodedEmail = getArguments().getString(Constants.KEY_ENCODED_EMAIL);
         }
+
+        // Initialize Firebase components
+        mFirebaseDatabase = FirebaseDatabase.getInstance();
+        mShoppingListDatabaseReference = mFirebaseDatabase.getReference("shoppingLists");
+
+        if (mChildEventListener == null) {
+            mChildEventListener = new ChildEventListener() {
+                @Override
+                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                    ShoppingList shoppingList = dataSnapshot.getValue(ShoppingList.class);
+                    Timber.v("Name: " + shoppingList.getListName());
+                    Timber.v("Owner: " + shoppingList.getOwner());
+                    mShoppingList.add(shoppingList);
+                    Timber.v("mShoppingList count is " + mShoppingList.size());
+                    mActiveListAdapter.notifyDataSetChanged();
+                }
+
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                }
+
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
+                }
+
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+                }
+
+                public void onCancelled(DatabaseError databaseError) {
+                }
+            };
+            mShoppingListDatabaseReference.addChildEventListener(mChildEventListener);
+        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        /**
-         * Initialize UI elements
-         */
+        Timber.v("onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)");
         View rootView = inflater.inflate(R.layout.fragment_shopping_lists, container, false);
-        initializeScreen(rootView);
 
-        /**
-         * Set interactive bits, such as click events and adapters
-         */
-        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ShoppingList selectedList = mActiveListAdapter.getItem(position);
-                if (selectedList != null) {
-                    Intent intent = new Intent(getActivity(), ActiveListDetailsActivity.class);
-                    /* Get the list ID using the adapter's get ref method to get the Firebase
-                     * ref and then grab the key.
-                     */
-                    // String listId = mActiveListAdapter.getRef(position).getKey();
-                    // intent.putExtra(Constants.KEY_LIST_ID, listId);
-                    /* Starts an active showing the details for the selected list */
-                    startActivity(intent);
-                }
-            }
-        });
+        mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerView);
 
+        LinearLayoutManager manager = new LinearLayoutManager(getContext());
+        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.setLayoutManager(manager);
+
+        try {
+            Timber.v("inside try");
+            Timber.v("mShoppingList.size() is " + mShoppingList.size());
+            mActiveListAdapter = new ActiveListAdapter(getActivity(), mShoppingList);
+            mRecyclerView.setAdapter(mActiveListAdapter);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         return rootView;
     }
@@ -97,32 +132,13 @@ public class ShoppingListsFragment extends Fragment {
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String sortOrder = sharedPref.getString(Constants.KEY_PREF_SORT_ORDER_LISTS, Constants.ORDER_BY_KEY);
 
-
-        /**
-         * Sort active lists by "date created"
-         * if it's been selected in the SettingsActivity
-         */
-        if (sortOrder.equals(Constants.ORDER_BY_KEY)) {
-
-        } else {
-
-            /**
-             * Sort active by lists by name or datelastChanged. Otherwise
-             * depending on what's been selected in SettingsActivity
-             */
-
-
-        }
-
-        /**
-         * Create the adapter with selected sort order
-         */
-
-
         /**
          * Set the adapter to the mListView
          */
-        mListView.setAdapter(mActiveListAdapter);
+        if (mActiveListAdapter != null) {
+            mActiveListAdapter.notifyDataSetChanged();
+        }
+        mRecyclerView.setAdapter(mActiveListAdapter);
     }
 
     /**
@@ -134,9 +150,13 @@ public class ShoppingListsFragment extends Fragment {
     }
 
     /**
-     * Link list view from XML
+     * A callback interface that all activities containing this fragment must
+     * implement. This mechanism allows activities to be notified of item selections.
      */
-    private void initializeScreen(View rootView) {
-        mListView = (ListView) rootView.findViewById(R.id.list_view_active_lists);
+    public interface Callback {
+        /**
+         * Job Post Callback for when an item has been selected.
+         */
+        void onItemSelected(int position);
     }
 }
