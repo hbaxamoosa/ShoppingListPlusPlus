@@ -1,5 +1,12 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.activeListDetails;
 
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.Intent;
@@ -8,6 +15,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -21,6 +29,9 @@ import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+
+import timber.log.Timber;
 
 /**
  * Represents the details screen for the selected shopping list
@@ -32,13 +43,21 @@ public class ActiveListDetailsActivity extends BaseActivity {
     private TextView mTextViewPeopleShopping;
     private ListView mListView;
     private String mListId;
+    private int mPosition;
     private User mCurrentUser;
     /* Stores whether the current user is shopping */
     private boolean mShopping = false;
     /* Stores whether the current user is the owner */
     private boolean mCurrentUserIsOwner = false;
     private ShoppingList mShoppingList;
+    private ArrayList<ShoppingList> mShoppingListArray = new ArrayList<>();
     private HashMap<String, User> mSharedWithUsers;
+
+    // Firebase Realtime Database
+    private FirebaseDatabase mFirebaseDatabase;
+    private DatabaseReference mShoppingListDatabaseReference;
+    private ChildEventListener mChildEventListener;
+    private ValueEventListener mValueEventListener;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -47,44 +66,79 @@ public class ActiveListDetailsActivity extends BaseActivity {
 
         /* Get the push ID from the extra passed by ShoppingListFragment */
         Intent intent = this.getIntent();
-        mListId = intent.getStringExtra(Constants.KEY_LIST_ID);
+        Timber.v("intent.getStringExtra(listName): " + intent.getStringExtra("listName"));
+        mListId = intent.getStringExtra("listName");
+        Timber.v("mListId: " + mListId);
         if (mListId == null) {
             /* No point in continuing without a valid ID. */
             finish();
             return;
         }
+        Timber.v("intent.getIntExtra(position): " + intent.getIntExtra("position", 999));
+        mPosition = intent.getIntExtra("position", 999);
+
+        // Initialize Firebase components
+        mFirebaseDatabase = FirebaseDatabase.getInstance();
+        mShoppingListDatabaseReference = mFirebaseDatabase.getReference("shoppingLists");
+        Timber.v("mShoppingListDatabaseReference.getKey(): " + mShoppingListDatabaseReference.getKey());
+
+        mShoppingListDatabaseReference.orderByKey().addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Timber.v("dataSnapshot: " + dataSnapshot.getValue().toString());
+                Iterator<DataSnapshot> it = dataSnapshot.getChildren().iterator();
+                for (int i = 0; i < mPosition + 1; i++) {
+                    if (it.hasNext()) {
+                        DataSnapshot listSnapshot = it.next();
+                        mShoppingList = listSnapshot.getValue(ShoppingList.class);
+                        Timber.v("mShoppingList.getListName(): " + mShoppingList.getListName());
+                        Timber.v("mShoppingList.getOwner(): " + mShoppingList.getOwner());
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Timber.v("error: " + databaseError.toString());
+            }
+        });
 
         /**
          * Link layout elements from XML and setup the toolbar
          */
         initializeScreen();
 
-
-        /**
-         * Setup the adapter
-         */
-
-
-        /**
-         * Add ValueEventListeners to Firebase references
-         * to control get data and control behavior and visibility of elements
-         */
-
-        /* Save the most up-to-date version of current user in mCurrentUser */
-
-
-        final Activity thisActivity = this;
-
-
         /**
          * Save the most recent version of current shopping list into mShoppingList instance
          * variable an update the UI to match the current list.
          */
+        /* Calling invalidateOptionsMenu causes onCreateOptionsMenu to be called */
+        invalidateOptionsMenu();
+        /* Set title appropriately. */
+        setTitle(mListId);
+        // for testing purposes
+        mCurrentUserIsOwner = true;
+
+        /* Save the most up-to-date version of current user in mCurrentUser */
+
+        final Activity thisActivity = this;
 
         /**
          * Set up click listeners for interaction.
          */
 
+        /* Show edit list item name dialog on listView item long click event */
+        mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                /* Check that the view is not the empty footer item */
+                if (view.getId() != R.id.list_view_footer_empty) {
+                    showEditListItemNameDialog("a", "a");
+                }
+                return true;
+            }
+        });
         /* Show edit list item name dialog on listView item long click event */
 
 

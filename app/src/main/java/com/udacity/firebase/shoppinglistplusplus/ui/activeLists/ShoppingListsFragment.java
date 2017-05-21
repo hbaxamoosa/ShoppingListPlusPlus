@@ -22,8 +22,6 @@ import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
 import java.util.ArrayList;
 
-import timber.log.Timber;
-
 
 /**
  * A simple {@link Fragment} subclass that shows a list of all shopping lists a user can see.
@@ -76,10 +74,7 @@ public class ShoppingListsFragment extends Fragment {
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                     ShoppingList shoppingList = dataSnapshot.getValue(ShoppingList.class);
-                    Timber.v("Name: " + shoppingList.getListName());
-                    Timber.v("Owner: " + shoppingList.getOwner());
                     mShoppingList.add(shoppingList);
-                    Timber.v("mShoppingList count is " + mShoppingList.size());
                     mActiveListAdapter.notifyDataSetChanged();
                 }
 
@@ -102,8 +97,6 @@ public class ShoppingListsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
-        Timber.v("onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)");
         View rootView = inflater.inflate(R.layout.fragment_shopping_lists, container, false);
 
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerView);
@@ -113,8 +106,6 @@ public class ShoppingListsFragment extends Fragment {
         mRecyclerView.setLayoutManager(manager);
 
         try {
-            Timber.v("inside try");
-            Timber.v("mShoppingList.size() is " + mShoppingList.size());
             mActiveListAdapter = new ActiveListAdapter(getActivity(), mShoppingList);
             mRecyclerView.setAdapter(mActiveListAdapter);
         } catch (Exception e) {
@@ -155,7 +146,7 @@ public class ShoppingListsFragment extends Fragment {
      */
     public interface Callback {
         /**
-         * Job Post Callback for when an item has been selected.
+         * Shopping List Callback for when an item has been selected.
          */
         void onItemSelected(int position);
     }

@@ -68,6 +68,7 @@ public class EditListNameDialogFragment extends EditListDialogFragment {
         if (!inputListName.equals("") && mListName != null &&
                 mListId != null && !inputListName.equals(mListName)) {
 
+            // TODO: make a call to Firebase to update the list name
         }
     }
 }
