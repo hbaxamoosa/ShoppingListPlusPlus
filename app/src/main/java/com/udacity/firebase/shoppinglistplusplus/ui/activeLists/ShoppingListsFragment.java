@@ -64,34 +64,6 @@ public class ShoppingListsFragment extends Fragment {
         if (getArguments() != null) {
             mEncodedEmail = getArguments().getString(Constants.KEY_ENCODED_EMAIL);
         }
-
-        // Initialize Firebase components
-        mFirebaseDatabase = FirebaseDatabase.getInstance();
-        mShoppingListDatabaseReference = mFirebaseDatabase.getReference("shoppingLists");
-
-        if (mChildEventListener == null) {
-            mChildEventListener = new ChildEventListener() {
-                @Override
-                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                    ShoppingList shoppingList = dataSnapshot.getValue(ShoppingList.class);
-                    mShoppingList.add(shoppingList);
-                    mActiveListAdapter.notifyDataSetChanged();
-                }
-
-                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                }
-
-                public void onChildRemoved(DataSnapshot dataSnapshot) {
-                }
-
-                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-                }
-
-                public void onCancelled(DatabaseError databaseError) {
-                }
-            };
-            mShoppingListDatabaseReference.addChildEventListener(mChildEventListener);
-        }
     }
 
     @Override
@@ -123,6 +95,37 @@ public class ShoppingListsFragment extends Fragment {
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String sortOrder = sharedPref.getString(Constants.KEY_PREF_SORT_ORDER_LISTS, Constants.ORDER_BY_KEY);
 
+        // Initialize Firebase components
+        mFirebaseDatabase = FirebaseDatabase.getInstance();
+        mShoppingListDatabaseReference = mFirebaseDatabase.getReference("shoppingLists");
+
+        if (mChildEventListener == null) {
+            mChildEventListener = new ChildEventListener() {
+                @Override
+                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                    ShoppingList shoppingList = dataSnapshot.getValue(ShoppingList.class);
+                    mShoppingList.add(shoppingList);
+                    mActiveListAdapter.notifyDataSetChanged();
+                }
+
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                    ShoppingList shoppingList = dataSnapshot.getValue(ShoppingList.class);
+                    mShoppingList.add(shoppingList);
+                    mActiveListAdapter.notifyDataSetChanged();
+                }
+
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
+                }
+
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+                }
+
+                public void onCancelled(DatabaseError databaseError) {
+                }
+            };
+            mShoppingListDatabaseReference.addChildEventListener(mChildEventListener);
+        }
+
         /**
          * Set the adapter to the mListView
          */
@@ -130,6 +133,20 @@ public class ShoppingListsFragment extends Fragment {
             mActiveListAdapter.notifyDataSetChanged();
         }
         mRecyclerView.setAdapter(mActiveListAdapter);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        if (mChildEventListener != null) {
+            mShoppingListDatabaseReference.removeEventListener(mChildEventListener);
+        }
     }
 
     /**

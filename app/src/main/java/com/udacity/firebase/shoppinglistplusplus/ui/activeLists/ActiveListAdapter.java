@@ -12,6 +12,7 @@ import android.widget.Toast;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.ui.activeListDetails.ActiveListDetailsActivity;
+import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
 import java.util.List;
 
@@ -86,8 +87,8 @@ public class ActiveListAdapter extends RecyclerView.Adapter<ActiveListAdapter.Vi
 
             /* Starts an active showing the details for the selected list */
             Intent intent = new Intent(v.getContext(), ActiveListDetailsActivity.class);
-            intent.putExtra("position", adapterPosition);
-            intent.putExtra("listName", shoppingList.get(adapterPosition).getListName());
+            intent.putExtra(Constants.KEY_LIST_ITEM_ID, adapterPosition);
+            intent.putExtra(Constants.KEY_LIST_NAME, shoppingList.get(adapterPosition).getListName());
             v.getContext().startActivity(intent);
         }
     }

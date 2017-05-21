@@ -1,5 +1,13 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.activeListDetails;
 
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
+
 import android.app.Dialog;
 import android.os.Bundle;
 
@@ -10,12 +18,19 @@ import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
 import java.util.HashMap;
 
+import timber.log.Timber;
+
 /**
  * Lets user edit the list name for all copies of the current list
  */
 public class EditListNameDialogFragment extends EditListDialogFragment {
     private static final String LOG_TAG = ActiveListDetailsActivity.class.getSimpleName();
     String mListName;
+
+    // Firebase Realtime Database
+    private FirebaseDatabase mFirebaseDatabase;
+    private DatabaseReference mShoppingListDatabaseReference;
+    private ChildEventListener mChildEventListener;
 
     /**
      * Public static constructor that creates fragment and passes a bundle with data into it when adapter is created
@@ -38,6 +53,10 @@ public class EditListNameDialogFragment extends EditListDialogFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mListName = getArguments().getString(Constants.KEY_LIST_NAME);
+
+        // Initialize Firebase components
+        mFirebaseDatabase = FirebaseDatabase.getInstance();
+        mShoppingListDatabaseReference = mFirebaseDatabase.getReference("shoppingLists");
     }
 
 
@@ -65,11 +84,25 @@ public class EditListNameDialogFragment extends EditListDialogFragment {
          * Check that the user inputted list name is not empty, has changed the original name
          * and that the dialog was properly initialized with the current name and id of the list.
          */
-        if (!inputListName.equals("") && mListName != null &&
-                mListId != null && !inputListName.equals(mListName)) {
 
-            // TODO: make a call to Firebase to update the list name
-        }
+        Query query = mShoppingListDatabaseReference.orderByChild("listName").equalTo(mListName);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                DataSnapshot nodeDataSnapshot = dataSnapshot.getChildren().iterator().next();
+                Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
+                Timber.v("nodeDataSnapshot.getKey(): " + nodeDataSnapshot.getKey());
+                HashMap<String, Object> result = new HashMap<>();
+                result.put("listName", inputListName);
+                mShoppingListDatabaseReference.child(nodeDataSnapshot.getKey()).updateChildren(result);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Timber.v("Error: " + databaseError);
+
+            }
+        });
     }
 }
 

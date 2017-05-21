@@ -1,6 +1,5 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.activeListDetails;
 
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -56,8 +55,6 @@ public class ActiveListDetailsActivity extends BaseActivity {
     // Firebase Realtime Database
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mShoppingListDatabaseReference;
-    private ChildEventListener mChildEventListener;
-    private ValueEventListener mValueEventListener;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -66,33 +63,30 @@ public class ActiveListDetailsActivity extends BaseActivity {
 
         /* Get the push ID from the extra passed by ShoppingListFragment */
         Intent intent = this.getIntent();
-        Timber.v("intent.getStringExtra(listName): " + intent.getStringExtra("listName"));
-        mListId = intent.getStringExtra("listName");
-        Timber.v("mListId: " + mListId);
+        mListId = intent.getStringExtra(Constants.KEY_LIST_NAME);
         if (mListId == null) {
             /* No point in continuing without a valid ID. */
             finish();
             return;
         }
-        Timber.v("intent.getIntExtra(position): " + intent.getIntExtra("position", 999));
-        mPosition = intent.getIntExtra("position", 999);
+        mPosition = intent.getIntExtra(Constants.KEY_LIST_ITEM_ID, 999);
 
         // Initialize Firebase components
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         mShoppingListDatabaseReference = mFirebaseDatabase.getReference("shoppingLists");
-        Timber.v("mShoppingListDatabaseReference.getKey(): " + mShoppingListDatabaseReference.getKey());
+        // Timber.v("mShoppingListDatabaseReference.getKey(): " + mShoppingListDatabaseReference.getKey());
 
         mShoppingListDatabaseReference.orderByKey().addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Timber.v("dataSnapshot: " + dataSnapshot.getValue().toString());
+                // Timber.v("dataSnapshot: " + dataSnapshot.getValue().toString());
                 Iterator<DataSnapshot> it = dataSnapshot.getChildren().iterator();
                 for (int i = 0; i < mPosition + 1; i++) {
                     if (it.hasNext()) {
                         DataSnapshot listSnapshot = it.next();
                         mShoppingList = listSnapshot.getValue(ShoppingList.class);
-                        Timber.v("mShoppingList.getListName(): " + mShoppingList.getListName());
-                        Timber.v("mShoppingList.getOwner(): " + mShoppingList.getOwner());
+                        // Timber.v("mShoppingList.getListName(): " + mShoppingList.getListName());
+                        // Timber.v("mShoppingList.getOwner(): " + mShoppingList.getOwner());
                     }
                 }
             }
@@ -210,6 +204,25 @@ public class ActiveListDetailsActivity extends BaseActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
 
     /**
      * Cleanup when the activity is destroyed.

@@ -1,5 +1,8 @@
 package com.udacity.firebase.shoppinglistplusplus.model;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Defines the data structure for both Active and Archived ShoppingList objects.
  */
@@ -33,6 +36,14 @@ public class ShoppingList {
 
     public String getOwner() {
         return owner;
+    }
+
+    public Map<String, Object> toMap() {
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("listName", listName);
+        result.put("owner", owner);
+
+        return result;
     }
 }
 
