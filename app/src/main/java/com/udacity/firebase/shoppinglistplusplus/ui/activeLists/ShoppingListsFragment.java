@@ -165,6 +165,17 @@ public class ShoppingListsFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        mShoppingList.clear();
+
+        if (mChildEventListener != null) {
+            mShoppingListDatabaseReference.removeEventListener(mChildEventListener);
+        }
+    }
+
     /**
      * A callback interface that all activities containing this fragment must
      * implement. This mechanism allows activities to be notified of item selections.
