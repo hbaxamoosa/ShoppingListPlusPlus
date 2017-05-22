@@ -99,7 +99,7 @@ public class EditListNameDialogFragment extends EditListDialogFragment {
                 timestampNowHash.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
 
                 result.put("timestampLastChanged", timestampNowHash);
-                
+
                 mShoppingListDatabaseReference.child(nodeDataSnapshot.getKey()).updateChildren(result);
             }
 
