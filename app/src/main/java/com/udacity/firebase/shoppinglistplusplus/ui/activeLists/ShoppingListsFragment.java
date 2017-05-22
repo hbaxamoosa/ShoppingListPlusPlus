@@ -22,6 +22,8 @@ import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
 import java.util.ArrayList;
 
+import timber.log.Timber;
+
 
 /**
  * A simple {@link Fragment} subclass that shows a list of all shopping lists a user can see.
@@ -84,8 +86,14 @@ public class ShoppingListsFragment extends Fragment {
             e.printStackTrace();
         }
 
+        if (mActiveListAdapter != null) {
+            mActiveListAdapter.notifyDataSetChanged();
+        }
+        mRecyclerView.setAdapter(mActiveListAdapter);
+
         return rootView;
     }
+
     /**
      * Updates the order of mListView onResume to handle sortOrderChanges properly
      */
@@ -94,12 +102,13 @@ public class ShoppingListsFragment extends Fragment {
         super.onResume();
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String sortOrder = sharedPref.getString(Constants.KEY_PREF_SORT_ORDER_LISTS, Constants.ORDER_BY_KEY);
+        // Timber.v("onResume");
 
         // Initialize Firebase components
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         mShoppingListDatabaseReference = mFirebaseDatabase.getReference("shoppingLists");
 
-        if (mChildEventListener == null) {
+        // if (mChildEventListener == null) {
             mChildEventListener = new ChildEventListener() {
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -109,6 +118,8 @@ public class ShoppingListsFragment extends Fragment {
                 }
 
                 public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                    Timber.v("onChildChanged");
+                    Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
                     ShoppingList shoppingList = dataSnapshot.getValue(ShoppingList.class);
                     mShoppingList.add(shoppingList);
                     mActiveListAdapter.notifyDataSetChanged();
@@ -124,15 +135,7 @@ public class ShoppingListsFragment extends Fragment {
                 }
             };
             mShoppingListDatabaseReference.addChildEventListener(mChildEventListener);
-        }
-
-        /**
-         * Set the adapter to the mListView
-         */
-        if (mActiveListAdapter != null) {
-            mActiveListAdapter.notifyDataSetChanged();
-        }
-        mRecyclerView.setAdapter(mActiveListAdapter);
+        // }
     }
 
     @Override
@@ -155,6 +158,11 @@ public class ShoppingListsFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
+        mShoppingList.clear();
+
+        if (mChildEventListener != null) {
+            mShoppingListDatabaseReference.removeEventListener(mChildEventListener);
+        }
     }
 
     /**

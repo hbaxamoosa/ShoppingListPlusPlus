@@ -1,5 +1,6 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.activeListDetails;
 
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -74,7 +75,6 @@ public class ActiveListDetailsActivity extends BaseActivity {
         // Initialize Firebase components
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         mShoppingListDatabaseReference = mFirebaseDatabase.getReference("shoppingLists");
-        // Timber.v("mShoppingListDatabaseReference.getKey(): " + mShoppingListDatabaseReference.getKey());
 
         mShoppingListDatabaseReference.orderByKey().addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -85,8 +85,6 @@ public class ActiveListDetailsActivity extends BaseActivity {
                     if (it.hasNext()) {
                         DataSnapshot listSnapshot = it.next();
                         mShoppingList = listSnapshot.getValue(ShoppingList.class);
-                        // Timber.v("mShoppingList.getListName(): " + mShoppingList.getListName());
-                        // Timber.v("mShoppingList.getOwner(): " + mShoppingList.getOwner());
                     }
                 }
             }
@@ -102,14 +100,12 @@ public class ActiveListDetailsActivity extends BaseActivity {
          */
         initializeScreen();
 
-        /**
-         * Save the most recent version of current shopping list into mShoppingList instance
-         * variable an update the UI to match the current list.
-         */
         /* Calling invalidateOptionsMenu causes onCreateOptionsMenu to be called */
         invalidateOptionsMenu();
+
         /* Set title appropriately. */
         setTitle(mListId);
+
         // for testing purposes
         mCurrentUserIsOwner = true;
 
@@ -207,21 +203,62 @@ public class ActiveListDetailsActivity extends BaseActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        Timber.v("onStart()");
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        Timber.v("onResume()");
+
+        mShoppingListDatabaseReference.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                Timber.v("onChildAdded");
+                ShoppingList shoppingList = dataSnapshot.getValue(ShoppingList.class);
+                mShoppingListArray.add(shoppingList);
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                Timber.v("onChildChanged");
+                mShoppingListArray.clear();
+                ShoppingList shoppingList = dataSnapshot.getValue(ShoppingList.class);
+
+                /* Calling invalidateOptionsMenu causes onCreateOptionsMenu to be called */
+                invalidateOptionsMenu();
+
+                /* Set title appropriately. */
+                setTitle(shoppingList.getListName());
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                Timber.v("onChildRemoved");
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+                Timber.v("onChildMoved");
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Timber.v("onCancelled");
+            }
+        });
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        Timber.v("onPause()");
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        Timber.v("onStop()");
     }
 
     /**
@@ -372,9 +409,6 @@ public class ActiveListDetailsActivity extends BaseActivity {
 
     /**
      * Show the edit list item name dialog after longClick on the particular item
-     *
-     * @param itemName
-     * @param itemId
      */
     public void showEditListItemNameDialog(String itemName, String itemId) {
         /* Create an instance of the dialog fragment and show it */

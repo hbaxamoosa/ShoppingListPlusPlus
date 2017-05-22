@@ -4,6 +4,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ServerValue;
 
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -23,6 +24,8 @@ import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.ui.login.LoginActivity;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
+
+import java.util.HashMap;
 
 import timber.log.Timber;
 
@@ -119,10 +122,21 @@ public class AddListDialogFragment extends DialogFragment {
          */
         if (!userEnteredName.equals("")) {
 
+            /**
+             * Set raw version of date to the ServerValue.TIMESTAMP value and save into
+             * timestampCreatedMap
+             */
+            HashMap<String, Object> timestampCreated = new HashMap<>();
+            timestampCreated.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
+
             Bundle bundle = new Bundle();
             bundle.putString(FirebaseAnalytics.Param.CAMPAIGN, "add new list");
             LoginActivity.mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
-            ShoppingList shoppingList = new ShoppingList(userEnteredName, mEncodedEmail);
+
+            /* Build the shopping list */
+            ShoppingList shoppingList = new ShoppingList(userEnteredName, mEncodedEmail,
+                    timestampCreated);
+
             mShoppingListDatabaseReference.push().setValue(shoppingList).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {

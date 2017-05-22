@@ -3,8 +3,6 @@ package com.udacity.firebase.shoppinglistplusplus.ui;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -33,8 +31,6 @@ import com.udacity.firebase.shoppinglistplusplus.ui.meals.MealsFragment;
 
 import java.util.ArrayList;
 
-import timber.log.Timber;
-
 /**
  * Represents the home screen of the app which
  * has a {@link ViewPager} with {@link ShoppingListsFragment} and {@link MealsFragment}
@@ -61,7 +57,7 @@ public class MainActivity extends BaseActivity {
         Intent intent = getIntent();
         if (null != intent) { //Null Checking
             mEncodedEmail = intent.getStringExtra("username");
-            Timber.v("mEncodedEmail: " + mEncodedEmail);
+            // Timber.v("mEncodedEmail: " + mEncodedEmail);
         }
 
         /**
@@ -107,7 +103,7 @@ public class MainActivity extends BaseActivity {
                                 finish();
                             }
                         });
-                detachDatabaseReadListener();
+                // detachDatabaseReadListener();
                 return true;
             case R.id.action_sort:
                 startActivity(new Intent(MainActivity.this, SettingsActivity.class));
@@ -143,7 +139,7 @@ public class MainActivity extends BaseActivity {
         tabLayout.setupWithViewPager(viewPager);
     }
 
-    private void attachDatabaseReadListener() {
+    /*private void attachDatabaseReadListener() {
         Timber.v("inside attachDatabaseReadListener()");
         if (mChildEventListener == null) {
             mChildEventListener = new ChildEventListener() {
@@ -177,7 +173,7 @@ public class MainActivity extends BaseActivity {
             mShoppingListDatabaseReference.removeEventListener(mChildEventListener);
             mChildEventListener = null;
         }
-    }
+    }*/
 
     /**
      * Create an instance of the AddList dialog fragment and show it

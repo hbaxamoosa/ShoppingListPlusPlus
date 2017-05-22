@@ -1,11 +1,11 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.activeListDetails;
 
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 
 import android.app.Dialog;
@@ -30,7 +30,6 @@ public class EditListNameDialogFragment extends EditListDialogFragment {
     // Firebase Realtime Database
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mShoppingListDatabaseReference;
-    private ChildEventListener mChildEventListener;
 
     /**
      * Public static constructor that creates fragment and passes a bundle with data into it when adapter is created
@@ -92,15 +91,21 @@ public class EditListNameDialogFragment extends EditListDialogFragment {
                 DataSnapshot nodeDataSnapshot = dataSnapshot.getChildren().iterator().next();
                 Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
                 Timber.v("nodeDataSnapshot.getKey(): " + nodeDataSnapshot.getKey());
+
                 HashMap<String, Object> result = new HashMap<>();
                 result.put("listName", inputListName);
+
+                HashMap<String, Object> timestampNowHash = new HashMap<>();
+                timestampNowHash.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
+
+                result.put("timestampLastChanged", timestampNowHash);
+                
                 mShoppingListDatabaseReference.child(nodeDataSnapshot.getKey()).updateChildren(result);
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 Timber.v("Error: " + databaseError);
-
             }
         });
     }
