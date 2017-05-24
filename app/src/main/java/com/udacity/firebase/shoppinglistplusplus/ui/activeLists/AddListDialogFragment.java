@@ -1,7 +1,6 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.activeLists;
 
 import com.google.android.gms.tasks.OnFailureListener;
-import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
@@ -22,7 +21,6 @@ import android.widget.TextView;
 
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
-import com.udacity.firebase.shoppinglistplusplus.ui.login.LoginActivity;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
 import java.util.HashMap;
@@ -129,9 +127,9 @@ public class AddListDialogFragment extends DialogFragment {
             HashMap<String, Object> timestampCreated = new HashMap<>();
             timestampCreated.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
 
-            Bundle bundle = new Bundle();
+            /*Bundle bundle = new Bundle();
             bundle.putString(FirebaseAnalytics.Param.CAMPAIGN, "add new list");
-            LoginActivity.mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+            LoginActivity.mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);*/
 
             /* Build the shopping list */
             ShoppingList shoppingList = new ShoppingList(userEnteredName, mEncodedEmail,

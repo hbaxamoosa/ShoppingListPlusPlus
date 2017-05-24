@@ -20,8 +20,8 @@ import java.util.List;
  */
 public class ActiveListAdapter extends RecyclerView.Adapter<ActiveListAdapter.ViewHolder> {
 
+    public static List<ShoppingList> shoppingList;
     private Context context;
-    private List<ShoppingList> shoppingList;
 
     public ActiveListAdapter(Context c, List<ShoppingList> s) {
         context = c;
@@ -44,17 +44,9 @@ public class ActiveListAdapter extends RecyclerView.Adapter<ActiveListAdapter.Vi
 
     @Override
     public void onBindViewHolder(ActiveListAdapter.ViewHolder holder, int position) {
-        // Timber.v("inside onBindViewHolder(ActiveListAdapter.ViewHolder holder, int position)");
-
-        // Get element from your dataset at this position and replace the contents of the view
-        // with that element
 
         holder.ownerName.setText(shoppingList.get(position).getOwner());
         holder.listName.setText(shoppingList.get(position).getListName());
-
-        /*Timber.v("position: " + position);
-        Timber.v("shoppingList.get(position).getOwner(): " + shoppingList.get(position).getOwner());
-        Timber.v("shoppingList.get(position).getListName(): " + shoppingList.get(position).getListName());*/
     }
 
     @Override
@@ -62,7 +54,7 @@ public class ActiveListAdapter extends RecyclerView.Adapter<ActiveListAdapter.Vi
         return shoppingList.size();
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         TextView listName, ownerName;
 

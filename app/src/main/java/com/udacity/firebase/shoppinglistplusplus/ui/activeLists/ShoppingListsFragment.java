@@ -1,10 +1,10 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.activeLists;
 
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -21,6 +21,7 @@ import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import timber.log.Timber;
 
@@ -39,7 +40,8 @@ public class ShoppingListsFragment extends Fragment {
     // Firebase Realtime Database
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mShoppingListDatabaseReference;
-    private ChildEventListener mChildEventListener;
+    // private ChildEventListener mChildEventListener;
+    private ValueEventListener valueEventListener;
 
     public ShoppingListsFragment() {
         /* Required empty public constructor */
@@ -66,6 +68,10 @@ public class ShoppingListsFragment extends Fragment {
         if (getArguments() != null) {
             mEncodedEmail = getArguments().getString(Constants.KEY_ENCODED_EMAIL);
         }
+
+        // Initialize Firebase components
+        mFirebaseDatabase = FirebaseDatabase.getInstance();
+        mShoppingListDatabaseReference = mFirebaseDatabase.getReference("shoppingLists");
     }
 
     @Override
@@ -102,16 +108,41 @@ public class ShoppingListsFragment extends Fragment {
         super.onResume();
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String sortOrder = sharedPref.getString(Constants.KEY_PREF_SORT_ORDER_LISTS, Constants.ORDER_BY_KEY);
-        // Timber.v("onResume");
+        Timber.v("onResume()");
 
-        // Initialize Firebase components
-        mFirebaseDatabase = FirebaseDatabase.getInstance();
-        mShoppingListDatabaseReference = mFirebaseDatabase.getReference("shoppingLists");
+        valueEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Timber.v("ValueEventListener onDataChange(DataSnapshot dataSnapshot) " + dataSnapshot.getValue());
+                Timber.v("onChildAdded");
+                Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
+                mShoppingList.clear();
+                Iterator<DataSnapshot> it = dataSnapshot.getChildren().iterator();
+                for (int i = 0; i < dataSnapshot.getChildrenCount(); i++) {
+                    if (it.hasNext()) {
+                        DataSnapshot listSnapshot = it.next();
+                        Timber.v("listSnapshot.getValue(): " + listSnapshot.getValue());
+                        ShoppingList shoppingList = listSnapshot.getValue(ShoppingList.class);
+                        Timber.v("listSnapshot.getKey(): " + listSnapshot.getKey());
+                        mShoppingList.add(shoppingList);
+                        mActiveListAdapter.notifyDataSetChanged();
+                    }
+                }
+            }
 
-        // if (mChildEventListener == null) {
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Timber.v("Error: " + databaseError.toString());
+            }
+        };
+        mShoppingListDatabaseReference.addValueEventListener(valueEventListener);
+
+        /*if (mChildEventListener == null) {
             mChildEventListener = new ChildEventListener() {
                 @Override
                 public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                    Timber.v("onChildAdded");
+                    Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
                     ShoppingList shoppingList = dataSnapshot.getValue(ShoppingList.class);
                     mShoppingList.add(shoppingList);
                     mActiveListAdapter.notifyDataSetChanged();
@@ -120,9 +151,9 @@ public class ShoppingListsFragment extends Fragment {
                 public void onChildChanged(DataSnapshot dataSnapshot, String s) {
                     Timber.v("onChildChanged");
                     Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
-                    ShoppingList shoppingList = dataSnapshot.getValue(ShoppingList.class);
+                    *//*ShoppingList shoppingList = dataSnapshot.getValue(ShoppingList.class);
                     mShoppingList.add(shoppingList);
-                    mActiveListAdapter.notifyDataSetChanged();
+                    mActiveListAdapter.notifyDataSetChanged();*//*
                 }
 
                 public void onChildRemoved(DataSnapshot dataSnapshot) {
@@ -135,20 +166,22 @@ public class ShoppingListsFragment extends Fragment {
                 }
             };
             mShoppingListDatabaseReference.addChildEventListener(mChildEventListener);
-        // }
+        }*/
     }
 
     @Override
     public void onStart() {
         super.onStart();
+        Timber.v("onStart()");
     }
 
     @Override
     public void onStop() {
         super.onStop();
+        Timber.v("onStop()");
 
-        if (mChildEventListener != null) {
-            mShoppingListDatabaseReference.removeEventListener(mChildEventListener);
+        if (valueEventListener != null) {
+            mShoppingListDatabaseReference.removeEventListener(valueEventListener);
         }
     }
 
@@ -158,21 +191,24 @@ public class ShoppingListsFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
+        Timber.v("onPause()");
+
         mShoppingList.clear();
 
-        if (mChildEventListener != null) {
-            mShoppingListDatabaseReference.removeEventListener(mChildEventListener);
+        if (valueEventListener != null) {
+            mShoppingListDatabaseReference.removeEventListener(valueEventListener);
         }
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Timber.v("onDestroy()");
 
         mShoppingList.clear();
 
-        if (mChildEventListener != null) {
-            mShoppingListDatabaseReference.removeEventListener(mChildEventListener);
+        if (valueEventListener != null) {
+            mShoppingListDatabaseReference.removeEventListener(valueEventListener);
         }
     }
 

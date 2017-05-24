@@ -113,7 +113,8 @@ public class AddListItemDialogFragment extends EditListDialogFragment {
 
             Timber.v("02 listKey: " + listKey);
             /* Add the item to the update map*/
-            updatedItemToAddMap.put("/" + "shoppingListItems" + "/" + listKey, itemToAdd);
+            updatedItemToAddMap.put("/" + "shoppingListItems" + "/" + listKey + "/" + mItemName, itemToAdd);
+
 
             /* Make the timestamp for last changed */
             HashMap<String, Object> changedTimestampMap = new HashMap<>();

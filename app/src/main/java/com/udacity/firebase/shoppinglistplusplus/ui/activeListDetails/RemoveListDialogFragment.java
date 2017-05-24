@@ -117,6 +117,8 @@ public class RemoveListDialogFragment extends DialogFragment {
             }
         });
 
+        // TODO remove the associated list items from shoppingListItems
+
         // Go back to MainActivity.java
         Intent intent = new Intent(getActivity(), MainActivity.class);
         startActivity(intent);
