@@ -13,6 +13,7 @@ import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.ui.activeListDetails.ActiveListDetailsActivity;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,11 +22,13 @@ import java.util.List;
 public class ActiveListAdapter extends RecyclerView.Adapter<ActiveListAdapter.ViewHolder> {
 
     public static List<ShoppingList> shoppingList;
+    public static List<String> listKeys;
     private Context context;
 
-    public ActiveListAdapter(Context c, List<ShoppingList> s) {
+    public ActiveListAdapter(Context c, List<ShoppingList> s, ArrayList<String> k) {
         context = c;
         shoppingList = s;
+        listKeys = k;
     }
 
     // Easy access to the context object in the recyclerview
@@ -76,6 +79,7 @@ public class ActiveListAdapter extends RecyclerView.Adapter<ActiveListAdapter.Vi
             Intent intent = new Intent(v.getContext(), ActiveListDetailsActivity.class);
             intent.putExtra(Constants.KEY_LIST_ITEM_ID, adapterPosition);
             intent.putExtra(Constants.KEY_LIST_NAME, shoppingList.get(adapterPosition).getListName());
+            intent.putExtra("listKey", listKeys.get(adapterPosition));
             v.getContext().startActivity(intent);
         }
     }

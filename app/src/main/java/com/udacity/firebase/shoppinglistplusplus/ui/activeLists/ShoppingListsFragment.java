@@ -36,6 +36,7 @@ public class ShoppingListsFragment extends Fragment {
     private ActiveListAdapter mActiveListAdapter;
     private RecyclerView mRecyclerView;
     private ArrayList<ShoppingList> mShoppingList = new ArrayList<>();
+    private ArrayList<String> mListKeys = new ArrayList<>();
 
     // Firebase Realtime Database
     private FirebaseDatabase mFirebaseDatabase;
@@ -86,7 +87,7 @@ public class ShoppingListsFragment extends Fragment {
         mRecyclerView.setLayoutManager(manager);
 
         try {
-            mActiveListAdapter = new ActiveListAdapter(getActivity(), mShoppingList);
+            mActiveListAdapter = new ActiveListAdapter(getActivity(), mShoppingList, mListKeys);
             mRecyclerView.setAdapter(mActiveListAdapter);
         } catch (Exception e) {
             e.printStackTrace();
@@ -117,6 +118,7 @@ public class ShoppingListsFragment extends Fragment {
                 Timber.v("onChildAdded");
                 Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
                 mShoppingList.clear();
+                mListKeys.clear();
                 Iterator<DataSnapshot> it = dataSnapshot.getChildren().iterator();
                 for (int i = 0; i < dataSnapshot.getChildrenCount(); i++) {
                     if (it.hasNext()) {
@@ -124,6 +126,7 @@ public class ShoppingListsFragment extends Fragment {
                         Timber.v("listSnapshot.getValue(): " + listSnapshot.getValue());
                         ShoppingList shoppingList = listSnapshot.getValue(ShoppingList.class);
                         Timber.v("listSnapshot.getKey(): " + listSnapshot.getKey());
+                        mListKeys.add(listSnapshot.getKey());
                         mShoppingList.add(shoppingList);
                         mActiveListAdapter.notifyDataSetChanged();
                     }

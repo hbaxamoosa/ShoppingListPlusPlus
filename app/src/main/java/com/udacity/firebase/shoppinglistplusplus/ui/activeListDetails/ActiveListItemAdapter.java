@@ -37,12 +37,9 @@ public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAd
     // Firebase Realtime Database
     private FirebaseDatabase mFirebaseDatabase;
 
-    public ActiveListItemAdapter(Context c, List<ShoppingListItem> s, String key) {
+    public ActiveListItemAdapter(Context c, List<ShoppingListItem> s) {
         context = c;
         shoppingListItems = s;
-        listKey = key;
-
-        Timber.v("ActiveListItemAdapter(Context c, List<ShoppingListItem> s, String key): key is " + listKey);
 
         // Initialize Firebase components
         mFirebaseDatabase = FirebaseDatabase.getInstance();
@@ -97,6 +94,7 @@ public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAd
         @Override
         public void onClick(View v) {
             Toast.makeText(v.getContext(), "delete clicked", Toast.LENGTH_LONG).show();
+            Timber.v("ActiveListDetailsActivity.mListId: " + ActiveListDetailsActivity.mListKey);
             Timber.v("mShoppingListItemsDatabaseReference.getRef(): " + mShoppingListItemsDatabaseReference.getRef());
 
             Query one = mShoppingListItemsDatabaseReference.getRef().orderByKey();
