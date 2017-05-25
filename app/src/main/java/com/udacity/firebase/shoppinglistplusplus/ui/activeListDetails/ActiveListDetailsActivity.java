@@ -1,6 +1,5 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.activeListDetails;
 
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -39,12 +38,11 @@ import timber.log.Timber;
  */
 public class ActiveListDetailsActivity extends BaseActivity {
     private static final String LOG_TAG = ActiveListDetailsActivity.class.getSimpleName();
-    public static String mListKey;
+    public static String mKey;
     private Button mButtonShopping;
     private TextView mTextViewPeopleShopping;
     private RecyclerView mRecyclerView;
     private String mListId;
-    private String mKey;
     private int mPosition;
     private User mCurrentUser;
     /* Stores whether the current user is shopping */
@@ -61,10 +59,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mShoppingListsReference;
     private DatabaseReference mShoppingListItemsReference;
-    private ChildEventListener mShoppingListsEventListener;
-    private ChildEventListener mShoppingListItemsEventListener;
     private ValueEventListener mShoppingListItemsValueEventListener;
-    private DatabaseReference hasnain;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -85,8 +80,8 @@ public class ActiveListDetailsActivity extends BaseActivity {
         // Initialize Firebase components
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         mShoppingListsReference = mFirebaseDatabase.getReference("shoppingLists");
-        mShoppingListItemsReference = mFirebaseDatabase.getReference("shoppingListItems");
-        hasnain = mFirebaseDatabase.getReference("shoppingListItems" + "/" + mKey);
+        mShoppingListItemsReference = mFirebaseDatabase.getReference("shoppingListItems" + "/" + mKey);
+        // hasnain = mFirebaseDatabase.getReference("shoppingListItems" + "/" + mKey);
 
         // use this call to Firebase rtdb to grab the correct Shopping List
         mShoppingListsReference.orderByKey().addListenerForSingleValueEvent(new ValueEventListener() {
@@ -204,86 +199,13 @@ public class ActiveListDetailsActivity extends BaseActivity {
         super.onResume();
         Timber.v("onResume()");
 
-        // TODO change this listener to match the one on Shopping List fragment
-        /**
-         * Get information about Shopping List
-         */
-        /*mShoppingListItemsValueEventListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                *//*Timber.v("mShoppingListItemsValueEventListener onDataChange(DataSnapshot dataSnapshot) " + dataSnapshot.getValue());
-                Timber.v("onChildAdded");
-                Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
-                mShoppingListArray.clear();
-                Iterator<DataSnapshot> it = dataSnapshot.getChildren().iterator();
-                for (int i = 0; i < dataSnapshot.getChildrenCount(); i++) {
-                    if (it.hasNext()) {
-                        DataSnapshot listSnapshot = it.next();
-                        Timber.v("listSnapshot.getValue(): " + listSnapshot.getValue());
-                        ShoppingList shoppingList = listSnapshot.getValue(ShoppingList.class);
-                        Timber.v("listSnapshot.getKey(): " + listSnapshot.getKey());
-                        mShoppingListArray.add(shoppingList);
-                    }
-                }
-                mActiveListItemAdapter.notifyDataSetChanged();*//*
-
-                Timber.v("onChildAdded in mShoppingListItemsReference");
-                mShoppingListItemsArray.clear();
-                // Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
-                // Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
-                // Timber.v("dataSnapshot.getChildren().iterator().next().getValue(): " + dataSnapshot.getChildren().iterator().next().getValue());
-                // Timber.v("dataSnapshot.getChildren().iterator().next().getKey(): " + dataSnapshot.getChildren().iterator().next().getKey());
-                // Timber.v("dataSnapshot.child(dataSnapshot.getChildren().iterator().next().getKey()).getValue(): " + dataSnapshot.child(dataSnapshot.getChildren().iterator().next().getKey()).getValue());
-                // Timber.v("mListKey: " + mListKey);
-                if (mListKey.equals(dataSnapshot.getChildren().iterator().next().getKey())) {
-                    // Timber.v("dataSnapshot.getChildrenCount(): " + dataSnapshot.getChildrenCount());
-                    Timber.v("my value is: " + dataSnapshot.getValue());
-                    Timber.v("my value is: " + dataSnapshot.getChildren().iterator().next().getValue());
-                    for (DataSnapshot ShoppingListItemsSnapshot : dataSnapshot.getChildren().iterator().next().getChildren()) {
-                        Timber.v("ShoppingListItemsSnapshot.getKey(): " + ShoppingListItemsSnapshot.getKey());
-                        Timber.v("ShoppingListItemsSnapshot.getValue(): " + ShoppingListItemsSnapshot.getValue());
-                        ShoppingListItem shoppingListItems = ShoppingListItemsSnapshot.getValue(ShoppingListItem.class);
-                        mShoppingListItemsArray.add(shoppingListItems);
-                    }
-                    mActiveListItemAdapter.notifyDataSetChanged();
-                } else {
-                    Timber.v("this list does not contain any items!");
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Timber.v("Error: " + databaseError.toString());
-            }
-        };
-        mShoppingListItemsReference.addValueEventListener(mShoppingListItemsValueEventListener);*/
-
         mShoppingListItemsValueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                /*Timber.v("mShoppingListItemsValueEventListener onDataChange(DataSnapshot dataSnapshot): " + dataSnapshot.getValue());
-                Timber.v("dataSnapshot.getRef(): " + dataSnapshot.getRef());
-                Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
-                mShoppingListArray.clear();
-                Iterator<DataSnapshot> it = dataSnapshot.getChildren().iterator();
-                for (int i = 0; i < dataSnapshot.getChildrenCount(); i++) {
-                    if (it.hasNext()) {
-                        DataSnapshot listSnapshot = it.next();
-                        Timber.v("listSnapshot.getValue(): " + listSnapshot.getValue());
-                        ShoppingList shoppingList = listSnapshot.getValue(ShoppingList.class);
-                        Timber.v("listSnapshot.getKey(): " + listSnapshot.getKey());
-                        mShoppingListArray.add(shoppingList);
-                    }
-                }*/
-                // mActiveListItemAdapter.notifyDataSetChanged();
-
                 Timber.v("onChildAdded in mShoppingListItemsReference");
                 mShoppingListItemsArray.clear();
                 Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
                 Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
-                // Timber.v("dataSnapshot.getChildren().iterator().next().getValue(): " + dataSnapshot.getChildren().iterator().next().getValue());
-                // Timber.v("dataSnapshot.getChildren().iterator().next().getKey(): " + dataSnapshot.getChildren().iterator().next().getKey());
-                // Timber.v("dataSnapshot.child(dataSnapshot.getChildren().iterator().next().getKey()).getValue(): " + dataSnapshot.child(dataSnapshot.getChildren().iterator().next().getKey()).getValue());
                 Timber.v("mKey: " + mKey);
                 if (mKey.equals(dataSnapshot.getKey())) {
                     Timber.v("dataSnapshot.getChildrenCount(): " + dataSnapshot.getChildrenCount());
@@ -306,119 +228,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
                 Timber.v("Error: " + databaseError.toString());
             }
         };
-        hasnain.addValueEventListener(mShoppingListItemsValueEventListener);
-
-        /*if (mShoppingListsEventListener == null) {
-            mShoppingListsEventListener = new ChildEventListener() {
-                @Override
-                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                    Timber.v("onChildAdded in mShoppingListDatabaseReference");
-                    ShoppingList shoppingList = dataSnapshot.getValue(ShoppingList.class);
-                    mShoppingListArray.add(shoppingList);
-                }
-
-                @Override
-                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                    Timber.v("onChildChanged in mShoppingListDatabaseReference");
-                    mShoppingListArray.clear();
-                    ShoppingList shoppingList = dataSnapshot.getValue(ShoppingList.class);
-                    mShoppingListArray.add(shoppingList);
-                    *//* Calling invalidateOptionsMenu causes onCreateOptionsMenu to be called *//*
-                    invalidateOptionsMenu();
-
-                    *//* Set title appropriately. *//*
-                    mListId = shoppingList.getListName();
-                    setTitle(mListId);
-                }
-
-                @Override
-                public void onChildRemoved(DataSnapshot dataSnapshot) {
-                    Timber.v("onChildRemoved");
-                }
-
-                @Override
-                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-                    Timber.v("onChildMoved");
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    Timber.v("onCancelled");
-                }
-            };
-            mShoppingListDatabaseReference.addChildEventListener(mShoppingListsEventListener);
-        }*/
-
-        /**
-         * Get information about Shopping List Items
-         */
-
-        /*if (mShoppingListItemsEventListener == null) {
-            mShoppingListItemsEventListener = new ChildEventListener() {
-                @Override
-                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                    Timber.v("onChildAdded in mShoppingListItemsReference");
-                    Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
-                    // Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
-                    // Timber.v("dataSnapshot.getChildren().iterator().next().getValue(): " + dataSnapshot.getChildren().iterator().next().getValue());
-                    // Timber.v("dataSnapshot.getChildren().iterator().next().getKey(): " + dataSnapshot.getChildren().iterator().next().getKey());
-                    // Timber.v("dataSnapshot.child(dataSnapshot.getChildren().iterator().next().getKey()).getValue(): " + dataSnapshot.child(dataSnapshot.getChildren().iterator().next().getKey()).getValue());
-                    if (mListKey.equals(dataSnapshot.getKey())) {
-                        Timber.v("dataSnapshot.getChildrenCount(): " + dataSnapshot.getChildrenCount());
-                        Timber.v("my value is: " + dataSnapshot.getValue());
-                        for (DataSnapshot ShoppingListItemsSnapshot : dataSnapshot.getChildren()) {
-                            Timber.v("ShoppingListItemsSnapshot.getKey(): " + ShoppingListItemsSnapshot.getKey());
-                            Timber.v("ShoppingListItemsSnapshot.getValue(): " + ShoppingListItemsSnapshot.getValue());
-                            ShoppingListItem shoppingListItems = ShoppingListItemsSnapshot.getValue(ShoppingListItem.class);
-                            mShoppingListItemsArray.add(shoppingListItems);
-                        }
-                        mActiveListItemAdapter.notifyDataSetChanged();
-                    } else {
-                        Timber.v("this list does not contain any items!");
-                    }
-                }
-
-                @Override
-                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                    Timber.v("onChildChanged in mShoppingListItemsReference");
-                }
-
-                @Override
-                public void onChildRemoved(DataSnapshot dataSnapshot) {
-                    Timber.v("onChildRemoved in mShoppingListItemsReference");
-                    mShoppingListItemsArray.clear();
-                    Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
-                    // Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
-                    // Timber.v("dataSnapshot.getChildren().iterator().next().getValue(): " + dataSnapshot.getChildren().iterator().next().getValue());
-                    // Timber.v("dataSnapshot.getChildren().iterator().next().getKey(): " + dataSnapshot.getChildren().iterator().next().getKey());
-                    // Timber.v("dataSnapshot.child(dataSnapshot.getChildren().iterator().next().getKey()).getValue(): " + dataSnapshot.child(dataSnapshot.getChildren().iterator().next().getKey()).getValue());
-                    if (mListKey.equals(dataSnapshot.getKey())) {
-                        Timber.v("dataSnapshot.getChildrenCount(): " + dataSnapshot.getChildrenCount());
-                        Timber.v("my value is: " + dataSnapshot.getValue());
-                        for (DataSnapshot ShoppingListItemsSnapshot : dataSnapshot.getChildren()) {
-                            Timber.v("ShoppingListItemsSnapshot.getKey(): " + ShoppingListItemsSnapshot.getKey());
-                            Timber.v("ShoppingListItemsSnapshot.getValue(): " + ShoppingListItemsSnapshot.getValue());
-                            ShoppingListItem shoppingListItems = ShoppingListItemsSnapshot.getValue(ShoppingListItem.class);
-                            mShoppingListItemsArray.add(shoppingListItems);
-                        }
-                        mActiveListItemAdapter.notifyDataSetChanged();
-                    } else {
-                        Timber.v("this list does not contain any items!");
-                    }
-                }
-
-                @Override
-                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-                    Timber.v("onChildMoved");
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    Timber.v("onCancelled");
-                }
-            };
-            mShoppingListItemsReference.addChildEventListener(mShoppingListItemsEventListener);
-        }*/
+        mShoppingListItemsReference.addValueEventListener(mShoppingListItemsValueEventListener);
     }
 
     @Override
@@ -426,16 +236,8 @@ public class ActiveListDetailsActivity extends BaseActivity {
         super.onPause();
         Timber.v("onPause()");
 
-        /*if (mShoppingListsEventListener != null) {
-            mShoppingListsReference.removeEventListener(mShoppingListsEventListener);
-        }*/
-
-        /*if (mShoppingListItemsEventListener != null) {
-            mShoppingListItemsReference.removeEventListener(mShoppingListItemsEventListener);
-        }*/
-
         if (mShoppingListItemsValueEventListener != null) {
-            hasnain.removeEventListener(mShoppingListItemsValueEventListener);
+            mShoppingListItemsReference.removeEventListener(mShoppingListItemsValueEventListener);
         }
     }
 
@@ -444,16 +246,8 @@ public class ActiveListDetailsActivity extends BaseActivity {
         super.onStop();
         Timber.v("onStop()");
 
-        /*if (mShoppingListsEventListener != null) {
-            mShoppingListsReference.removeEventListener(mShoppingListsEventListener);
-        }*/
-
-        /*if (mShoppingListItemsEventListener != null) {
-            mShoppingListItemsReference.removeEventListener(mShoppingListItemsEventListener);
-        }*/
-
         if (mShoppingListItemsValueEventListener != null) {
-            hasnain.removeEventListener(mShoppingListItemsValueEventListener);
+            mShoppingListItemsReference.removeEventListener(mShoppingListItemsValueEventListener);
         }
     }
 
@@ -467,16 +261,8 @@ public class ActiveListDetailsActivity extends BaseActivity {
         mShoppingListArray.clear();
         mShoppingListItemsArray.clear();
 
-        /*if (mShoppingListsEventListener != null) {
-            mShoppingListsReference.removeEventListener(mShoppingListsEventListener);
-        }*/
-
-        /*if (mShoppingListItemsEventListener != null) {
-            mShoppingListItemsReference.removeEventListener(mShoppingListItemsEventListener);
-        }*/
-
         if (mShoppingListItemsValueEventListener != null) {
-            hasnain.removeEventListener(mShoppingListItemsValueEventListener);
+            mShoppingListItemsReference.removeEventListener(mShoppingListItemsValueEventListener);
         }
     }
 
@@ -491,7 +277,6 @@ public class ActiveListDetailsActivity extends BaseActivity {
 
         try {
             mActiveListItemAdapter = new ActiveListItemAdapter(ActiveListDetailsActivity.this, mShoppingListItemsArray);
-            // mRecyclerView.setAdapter(mActiveListItemAdapter);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -606,7 +391,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
      */
     public void removeList() {
         /* Create an instance of the dialog fragment and show it */
-        DialogFragment dialog = RemoveListDialogFragment.newInstance(mShoppingList, mListId,
+        DialogFragment dialog = RemoveListDialogFragment.newInstance(mShoppingList, mListId, mKey,
                 mSharedWithUsers);
         dialog.show(getFragmentManager(), "RemoveListDialogFragment");
     }

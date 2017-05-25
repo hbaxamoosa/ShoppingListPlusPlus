@@ -30,25 +30,12 @@ import timber.log.Timber;
  */
 public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAdapter.ViewHolder> {
 
-    public static String listKey;
-    public static DatabaseReference mShoppingListItemsDatabaseReference;
     private static List<ShoppingListItem> shoppingListItems;
     private Context context;
-    // Firebase Realtime Database
-    private FirebaseDatabase mFirebaseDatabase;
 
     public ActiveListItemAdapter(Context c, List<ShoppingListItem> s) {
         context = c;
         shoppingListItems = s;
-
-        // Initialize Firebase components
-        mFirebaseDatabase = FirebaseDatabase.getInstance();
-        mShoppingListItemsDatabaseReference = mFirebaseDatabase.getReference("shoppingListItems");
-    }
-
-    // Easy access to the context object in the recyclerview
-    private Context getContext() {
-        return context;
     }
 
     @Override
@@ -94,67 +81,45 @@ public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAd
         @Override
         public void onClick(View v) {
             Toast.makeText(v.getContext(), "delete clicked", Toast.LENGTH_LONG).show();
-            Timber.v("ActiveListDetailsActivity.mListId: " + ActiveListDetailsActivity.mListKey);
+
+            // Initialize Firebase components
+            FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
+            final DatabaseReference mShoppingListItemsDatabaseReference = mFirebaseDatabase.getReference("shoppingListItems");
+            Timber.v("ActiveListDetailsActivity.mKey " + ActiveListDetailsActivity.mKey);
             Timber.v("mShoppingListItemsDatabaseReference.getRef(): " + mShoppingListItemsDatabaseReference.getRef());
 
-            Query one = mShoppingListItemsDatabaseReference.getRef().orderByKey();
-            one.addListenerForSingleValueEvent(new ValueEventListener() {
+            // Query one = mShoppingListItemsDatabaseReference.getRef().orderByKey();
+            Query query = mShoppingListItemsDatabaseReference.child(ActiveListDetailsActivity.mKey);
+            Timber.v("one.getRef(): " + query.getRef());
+            query.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
-                    DataSnapshot nodeDataSnapshot = dataSnapshot.getChildren().iterator().next();
-                    Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
-                    Timber.v("nodeDataSnapshot.getKey(): " + nodeDataSnapshot.getKey());
+                    for (DataSnapshot listItems : dataSnapshot.getChildren()) {
+                        Timber.v("listItems.getKey(): " + listItems.getKey());
+                        Timber.v("listItems.getValue(): " + listItems.getValue());
+                        Timber.v("shoppingListItems.get(getAdapterPosition()).getItemName()): " + shoppingListItems.get(getAdapterPosition()).getItemName());
+                        if (listItems.getKey().equals(shoppingListItems.get(getAdapterPosition()).getItemName())) {
+                            Timber.v("true");
+                            HashMap<String, Object> result = new HashMap<>();
+                            result.put("/" + ActiveListDetailsActivity.mKey + "/" + listItems.getKey(), null);
 
-                    HashMap<String, Object> result = new HashMap<>();
-                    result.put("/" + dataSnapshot.getKey(), null);
-
-                    mShoppingListItemsDatabaseReference.updateChildren(result, new DatabaseReference.CompletionListener() {
-                        @Override
-                        public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                            if (databaseError != null) {
-                                Timber.v("Error: " + databaseError.getMessage());
-                            }
+                            mShoppingListItemsDatabaseReference.updateChildren(result, new DatabaseReference.CompletionListener() {
+                                @Override
+                                public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                                    if (databaseError != null) {
+                                        Timber.v("Error: " + databaseError.getMessage());
+                                    }
+                                }
+                            });
                         }
-                    });
+                    }
                 }
-
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
                     Timber.v("Error: " + databaseError);
                 }
             });
-
-
-
-            /*Query query = mShoppingListItemsDatabaseReference.child("-KksB-WMEyDHi5wp7ys1").child(shoppingListItems.get(getAdapterPosition()).getItemName());
-            Timber.v("query.getRef()" + query.getRef());
-            query.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
-                    DataSnapshot nodeDataSnapshot = dataSnapshot.getChildren().iterator().next();
-                    Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
-                    Timber.v("nodeDataSnapshot.getKey(): " + nodeDataSnapshot.getKey());
-
-                    HashMap<String, Object> result = new HashMap<>();
-                    result.put("/" + dataSnapshot.getKey(), null);
-
-                    mShoppingListItemsDatabaseReference.updateChildren(result, new DatabaseReference.CompletionListener() {
-                        @Override
-                        public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                            if (databaseError != null) {
-                                Timber.v("Error: " + databaseError.getMessage());
-                            }
-                        }
-                    });
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    Timber.v("Error: " + databaseError);
-                }
-            });*/
         }
     }
 }

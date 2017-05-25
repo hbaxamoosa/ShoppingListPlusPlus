@@ -30,21 +30,23 @@ import timber.log.Timber;
 public class RemoveListDialogFragment extends DialogFragment {
     final static String LOG_TAG = RemoveListDialogFragment.class.getSimpleName();
     String mListId;
+    String mKey;
     String mListOwner;
     HashMap mSharedWith;
 
     // Firebase Realtime Database
     private FirebaseDatabase mFirebaseDatabase;
-    private DatabaseReference mShoppingListDatabaseReference;
+    private DatabaseReference mFirebaseDatabaseReference;
 
     /**
      * Public static constructor that creates fragment and passes a bundle with data into it when adapter is created
      */
-    public static RemoveListDialogFragment newInstance(ShoppingList shoppingList, String listId,
+    public static RemoveListDialogFragment newInstance(ShoppingList shoppingList, String listId, String key,
                                                        HashMap<String, User> sharedWithUsers) {
         RemoveListDialogFragment removeListDialogFragment = new RemoveListDialogFragment();
         Bundle bundle = new Bundle();
         bundle.putString(Constants.KEY_LIST_ID, listId);
+        bundle.putString("key", key);
         bundle.putString(Constants.KEY_LIST_OWNER, shoppingList.getOwner());
         bundle.putSerializable(Constants.KEY_SHARED_WITH_USERS, sharedWithUsers);
         removeListDialogFragment.setArguments(bundle);
@@ -59,11 +61,12 @@ public class RemoveListDialogFragment extends DialogFragment {
         super.onCreate(savedInstanceState);
         mListId = getArguments().getString(Constants.KEY_LIST_ID);
         mListOwner = getArguments().getString(Constants.KEY_LIST_OWNER);
+        mKey = getArguments().getString("key");
         mSharedWith = (HashMap) getArguments().getSerializable(Constants.KEY_SHARED_WITH_USERS);
 
         // Initialize Firebase components
         mFirebaseDatabase = FirebaseDatabase.getInstance();
-        mShoppingListDatabaseReference = mFirebaseDatabase.getReference("shoppingLists");
+        mFirebaseDatabaseReference = mFirebaseDatabase.getReference();
     }
 
     @Override
@@ -90,18 +93,26 @@ public class RemoveListDialogFragment extends DialogFragment {
     }
 
     private void removeList() {
-        Query query = mShoppingListDatabaseReference.orderByChild("listName").equalTo(mListId);
+        Query query = mFirebaseDatabaseReference.orderByKey();
+        Timber.v("query.getRef(): " + query.getRef());
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                DataSnapshot nodeDataSnapshot = dataSnapshot.getChildren().iterator().next();
+                DataSnapshot mShoppingListsDataSnapshot = dataSnapshot.child("shoppingLists").child(mKey);
+                Timber.v("mShoppingListsDataSnapshot.getRef(): " + mShoppingListsDataSnapshot.getRef());
                 Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
-                Timber.v("nodeDataSnapshot.getKey(): " + nodeDataSnapshot.getKey());
+                Timber.v("nodeDataSnapshot.getKey(): " + mShoppingListsDataSnapshot.getKey());
+
+                DataSnapshot mShoppingListItemsDataSnapshot = dataSnapshot.child("shoppingListItems").child(mKey);
+                Timber.v("mShoppingListItemsDataSnapshot: " + mShoppingListItemsDataSnapshot.getRef());
+                Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
+                Timber.v("nodeDataSnapshot.getKey(): " + mShoppingListItemsDataSnapshot.getKey());
 
                 HashMap<String, Object> result = new HashMap<>();
-                result.put("/" + nodeDataSnapshot.getKey(), null);
+                result.put("/" + "shoppingLists" + "/" + mShoppingListsDataSnapshot.getKey(), null); // delete the Shopping List
+                result.put("/" + "shoppingListItems" + "/" + mShoppingListItemsDataSnapshot.getKey(), null); // delete the Shopping List Items
 
-                mShoppingListDatabaseReference.updateChildren(result, new DatabaseReference.CompletionListener() {
+                mFirebaseDatabaseReference.updateChildren(result, new DatabaseReference.CompletionListener() {
                     @Override
                     public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                         if (databaseError != null) {
@@ -116,8 +127,6 @@ public class RemoveListDialogFragment extends DialogFragment {
                 Timber.v("Error: " + databaseError);
             }
         });
-
-        // TODO remove the associated list items from shoppingListItems
 
         // Go back to MainActivity.java
         Intent intent = new Intent(getActivity(), MainActivity.class);

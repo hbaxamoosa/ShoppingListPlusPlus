@@ -139,37 +139,6 @@ public class ShoppingListsFragment extends Fragment {
             }
         };
         mShoppingListDatabaseReference.addValueEventListener(valueEventListener);
-
-        /*if (mChildEventListener == null) {
-            mChildEventListener = new ChildEventListener() {
-                @Override
-                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                    Timber.v("onChildAdded");
-                    Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
-                    ShoppingList shoppingList = dataSnapshot.getValue(ShoppingList.class);
-                    mShoppingList.add(shoppingList);
-                    mActiveListAdapter.notifyDataSetChanged();
-                }
-
-                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                    Timber.v("onChildChanged");
-                    Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
-                    *//*ShoppingList shoppingList = dataSnapshot.getValue(ShoppingList.class);
-                    mShoppingList.add(shoppingList);
-                    mActiveListAdapter.notifyDataSetChanged();*//*
-                }
-
-                public void onChildRemoved(DataSnapshot dataSnapshot) {
-                }
-
-                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-                }
-
-                public void onCancelled(DatabaseError databaseError) {
-                }
-            };
-            mShoppingListDatabaseReference.addChildEventListener(mChildEventListener);
-        }*/
     }
 
     @Override
