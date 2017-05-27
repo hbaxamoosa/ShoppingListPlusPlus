@@ -1,8 +1,14 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.login;
 
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ServerValue;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -12,6 +18,7 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.view.KeyEvent;
 import android.view.Menu;
+import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -21,10 +28,14 @@ import android.widget.Toast;
 import com.firebase.ui.auth.AuthUI;
 import com.udacity.firebase.shoppinglistplusplus.BuildConfig;
 import com.udacity.firebase.shoppinglistplusplus.R;
+import com.udacity.firebase.shoppinglistplusplus.model.User;
 import com.udacity.firebase.shoppinglistplusplus.ui.BaseActivity;
 import com.udacity.firebase.shoppinglistplusplus.ui.MainActivity;
+import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
+import com.udacity.firebase.shoppinglistplusplus.utils.Utils;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import timber.log.Timber;
@@ -45,10 +56,15 @@ public class LoginActivity extends BaseActivity {
     private EditText mEditTextEmailInput, mEditTextPasswordInput;
     private SharedPreferences mSharedPref;
     private SharedPreferences.Editor mSharedPrefEditor;
+
     // Firebase Authentication
     private FirebaseAuth mFirebaseAuth;
     private FirebaseAuth.AuthStateListener mAuthStateListener;
     private String mUsername;
+
+    // Firebase Realtime Database
+    private FirebaseDatabase mFirebaseDatabase;
+    private DatabaseReference mShoppingListDatabaseReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +78,10 @@ public class LoginActivity extends BaseActivity {
          */
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(LoginActivity.this);
+
+        // Initialize Firebase components
+        mFirebaseDatabase = FirebaseDatabase.getInstance();
+        mShoppingListDatabaseReference = mFirebaseDatabase.getReference("users");
 
 
         /**
@@ -87,9 +107,18 @@ public class LoginActivity extends BaseActivity {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
+                Timber.v("user: " + user);
+
                 if (user != null) {
                     // User is signed in
-                    onSignedInInitialize(user.getDisplayName());
+
+                    Timber.v("user.getDisplayName(): " + user.getDisplayName());
+                    Timber.v("user.getEmail(): " + user.getEmail());
+
+                    mUsername = user.getDisplayName();
+                    mEncodedEmail = Utils.encodeEmail(user.getEmail());
+
+                    onSignedInInitialize(mUsername);
                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                     intent.putExtra("username", mUsername);
                     startActivity(intent);
@@ -146,6 +175,27 @@ public class LoginActivity extends BaseActivity {
 
     private void onSignedInInitialize(String username) {
         mUsername = username;
+
+        /**
+         * Set raw version of date to the ServerValue.TIMESTAMP value and save into
+         * timestampCreatedMap
+         */
+        HashMap<String, Object> timestampCreated = new HashMap<>();
+        timestampCreated.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
+
+        Bundle bundle = new Bundle();
+        bundle.putString(FirebaseAnalytics.Param.CAMPAIGN, "add new list");
+        LoginActivity.mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+
+        /* Build the user */
+        User user = new User(mUsername, mEncodedEmail, timestampCreated);
+
+        mShoppingListDatabaseReference.child(mEncodedEmail).setValue(user).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Timber.v(e.getLocalizedMessage());
+            }
+        });
     }
 
     private void onSignedOutCleanup() {
@@ -175,5 +225,29 @@ public class LoginActivity extends BaseActivity {
         mAuthProgressDialog.setTitle(getString(R.string.progress_dialog_loading));
         mAuthProgressDialog.setMessage(getString(R.string.progress_dialog_authenticating_with_firebase));
         mAuthProgressDialog.setCancelable(false);
+        /* Setup Google Sign In */
+        setupGoogleSignIn();
+    }
+
+    /* Sets up the Google Sign In Button : https://developers.google.com/android/reference/com/google/android/gms/common/SignInButton */
+    private void setupGoogleSignIn() {
+        SignInButton signInButton = (SignInButton) findViewById(R.id.login_with_google);
+        signInButton.setSize(SignInButton.SIZE_WIDE);
+        signInButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onSignInGooglePressed(v);
+            }
+        });
+    }
+
+    /**
+     * Sign in with Google plus when user clicks "Sign in with Google" textView (button)
+     */
+    public void onSignInGooglePressed(View view) {
+        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+        startActivityForResult(signInIntent, RC_GOOGLE_LOGIN);
+        mAuthProgressDialog.show();
+
     }
 }

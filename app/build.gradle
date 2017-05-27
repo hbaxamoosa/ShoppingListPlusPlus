@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.firebase.firebase-perf'
 
 android {
     compileSdkVersion 25
@@ -54,6 +55,8 @@ dependencies {
     compile 'com.firebaseui:firebase-ui-auth:1.2.0'
     // Firebase Analytics
     compile 'com.google.firebase:firebase-core:10.2.6'
+    // Firebase Performance Monitoring
+    compile 'com.google.firebase:firebase-perf:10.2.6'
 
     // Jackson
     compile 'com.fasterxml.jackson.core:jackson-core:2.7.2'

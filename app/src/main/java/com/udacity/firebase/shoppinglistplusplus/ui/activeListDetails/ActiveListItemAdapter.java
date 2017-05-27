@@ -64,7 +64,7 @@ public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAd
         return shoppingListItems.size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
 
         TextView listName, boughtBy;
         ImageButton deleteButton;
@@ -120,6 +120,13 @@ public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAd
                     Timber.v("Error: " + databaseError);
                 }
             });
+        }
+
+        @Override
+        public boolean onLongClick(View v) {
+            Timber.v("long click on list item");
+            // TODO: 5/25/17 implement the ability for the user to edit the item name onLongClick of the item
+            return false;
         }
     }
 }
