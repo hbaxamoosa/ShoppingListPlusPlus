@@ -8,7 +8,9 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import android.app.DialogFragment;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -28,6 +30,7 @@ import com.udacity.firebase.shoppinglistplusplus.ui.activeLists.ShoppingListsFra
 import com.udacity.firebase.shoppinglistplusplus.ui.login.LoginActivity;
 import com.udacity.firebase.shoppinglistplusplus.ui.meals.AddMealDialogFragment;
 import com.udacity.firebase.shoppinglistplusplus.ui.meals.MealsFragment;
+import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
 import java.util.ArrayList;
 
@@ -39,6 +42,11 @@ public class MainActivity extends BaseActivity {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
     private ArrayList<ShoppingList> mShoppingList = new ArrayList<>();
+
+    private String mEncodedEmail;
+
+    // SharedPrefs
+    private SharedPreferences mSharedPref;
 
     // Firebase Realtime Database
     private FirebaseDatabase mFirebaseDatabase;
@@ -54,6 +62,10 @@ public class MainActivity extends BaseActivity {
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         mShoppingListDatabaseReference = mFirebaseDatabase.getReference("shoppingLists");
 
+        // get SharedPrefs
+        mSharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        mEncodedEmail = mSharedPref.getString(Constants.KEY_ENCODED_EMAIL, null);
+
         Intent intent = getIntent();
         if (null != intent) { //Null Checking
             mEncodedEmail = intent.getStringExtra("username");
@@ -64,12 +76,6 @@ public class MainActivity extends BaseActivity {
          * Link layout elements from XML and setup the toolbar
          */
         initializeScreen();
-
-        /**
-         * Add ValueEventListeners to Firebase references
-         * to control get data and control behavior and visibility of elements
-         */
-        // attachDatabaseReadListener();
     }
 
 
@@ -99,7 +105,11 @@ public class MainActivity extends BaseActivity {
                         .addOnCompleteListener(new OnCompleteListener<Void>() {
                             public void onComplete(@NonNull Task<Void> task) {
                                 // user is now signed out
-                                startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                                /* Move user to LoginActivity, and remove the backstack */
+                                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                startActivity(intent);
+                                finish();
                                 finish();
                             }
                         });
@@ -138,42 +148,6 @@ public class MainActivity extends BaseActivity {
          */
         tabLayout.setupWithViewPager(viewPager);
     }
-
-    /*private void attachDatabaseReadListener() {
-        Timber.v("inside attachDatabaseReadListener()");
-        if (mChildEventListener == null) {
-            mChildEventListener = new ChildEventListener() {
-                @Override
-                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                    ShoppingList shoppingList = dataSnapshot.getValue(ShoppingList.class);
-                    Timber.v("Name: " + shoppingList.getListName());
-                    Timber.v("Owner: " + shoppingList.getOwner());
-                    mShoppingList.add(shoppingList);
-                    Timber.v("mShoppingList count is " + mShoppingList.size());
-                }
-
-                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                }
-
-                public void onChildRemoved(DataSnapshot dataSnapshot) {
-                }
-
-                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-                }
-
-                public void onCancelled(DatabaseError databaseError) {
-                }
-            };
-            mShoppingListDatabaseReference.addChildEventListener(mChildEventListener);
-        }
-    }
-
-    private void detachDatabaseReadListener() {
-        if (mChildEventListener != null) {
-            mShoppingListDatabaseReference.removeEventListener(mChildEventListener);
-            mChildEventListener = null;
-        }
-    }*/
 
     /**
      * Create an instance of the AddList dialog fragment and show it

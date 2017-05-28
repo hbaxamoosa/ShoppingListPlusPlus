@@ -1,7 +1,10 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.login;
 
 import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
@@ -43,7 +46,8 @@ import timber.log.Timber;
 /**
  * Represents Sign in screen and functionality of the app
  */
-public class LoginActivity extends BaseActivity {
+public class LoginActivity extends BaseActivity implements
+        GoogleApiClient.OnConnectionFailedListener {
 
     /* Request code used to invoke sign in user interactions for Google+ */
     public static final int RC_GOOGLE_LOGIN = 1;
@@ -51,17 +55,18 @@ public class LoginActivity extends BaseActivity {
     private static final String LOG_TAG = LoginActivity.class.getSimpleName();
     // Firebase Analytics
     public static FirebaseAnalytics mFirebaseAnalytics;
+    protected String mProvider, mEncodedEmail;
+    /* Client used to interact with Google APIs. */
+    protected GoogleApiClient mGoogleApiClient;
     /* A dialog that is presented until the Firebase authentication finished. */
     private ProgressDialog mAuthProgressDialog;
     private EditText mEditTextEmailInput, mEditTextPasswordInput;
     private SharedPreferences mSharedPref;
     private SharedPreferences.Editor mSharedPrefEditor;
-
     // Firebase Authentication
     private FirebaseAuth mFirebaseAuth;
     private FirebaseAuth.AuthStateListener mAuthStateListener;
     private String mUsername;
-
     // Firebase Realtime Database
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mShoppingListDatabaseReference;
@@ -83,6 +88,29 @@ public class LoginActivity extends BaseActivity {
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         mShoppingListDatabaseReference = mFirebaseDatabase.getReference("users");
 
+        /* Setup the Google API object to allow Google logins */
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .build();
+
+        /**
+         * Build a GoogleApiClient with access to the Google Sign-In API and the
+         * options specified by gso.
+         */
+
+        /* Setup the Google API object to allow Google+ logins */
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+
+        /**
+         * Getting mProvider and mEncodedEmail from SharedPreferences
+         */
+        final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
+        /* Get mEncodedEmail and mProvider from SharedPreferences, use null as default value */
+        mEncodedEmail = sp.getString(Constants.KEY_ENCODED_EMAIL, null);
+        mProvider = sp.getString(Constants.KEY_PROVIDER, null);
 
         /**
          * Link layout elements from XML and setup progress dialog
@@ -117,6 +145,10 @@ public class LoginActivity extends BaseActivity {
 
                     mUsername = user.getDisplayName();
                     mEncodedEmail = Utils.encodeEmail(user.getEmail());
+
+                    SharedPreferences.Editor mSharedPrefEditor = mSharedPref.edit();
+                    mSharedPrefEditor.putString(Constants.KEY_ENCODED_EMAIL, null);
+                    mSharedPrefEditor.putString(Constants.KEY_PROVIDER, null);
 
                     onSignedInInitialize(mUsername);
                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
@@ -249,5 +281,11 @@ public class LoginActivity extends BaseActivity {
         startActivityForResult(signInIntent, RC_GOOGLE_LOGIN);
         mAuthProgressDialog.show();
 
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        // An unresolvable error has occurred and Google APIs (including Sign-In) will not be available.
+        Timber.v("onConnectionFailed:" + connectionResult);
     }
 }

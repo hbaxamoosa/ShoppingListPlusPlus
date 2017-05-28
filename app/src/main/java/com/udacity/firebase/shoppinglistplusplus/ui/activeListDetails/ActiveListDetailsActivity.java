@@ -9,7 +9,9 @@ import com.google.firebase.database.ValueEventListener;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -45,6 +47,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
     private String mListId;
     private int mPosition;
     private User mCurrentUser;
+    private String mEncodedEmail;
     /* Stores whether the current user is shopping */
     private boolean mShopping = false;
     /* Stores whether the current user is the owner */
@@ -54,6 +57,9 @@ public class ActiveListDetailsActivity extends BaseActivity {
     private ArrayList<ShoppingListItem> mShoppingListItemsArray = new ArrayList<>();
     private HashMap<String, User> mSharedWithUsers;
     private ActiveListItemAdapter mActiveListItemAdapter;
+
+    // SharedPrefs
+    private SharedPreferences mSharedPref;
 
     // Firebase Realtime Database
     private FirebaseDatabase mFirebaseDatabase;
@@ -76,6 +82,10 @@ public class ActiveListDetailsActivity extends BaseActivity {
         }
         mPosition = intent.getIntExtra(Constants.KEY_LIST_ITEM_ID, 999);
         mKey = intent.getStringExtra("listKey");
+
+        // get SharedPrefs
+        mSharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        mEncodedEmail = mSharedPref.getString(Constants.KEY_ENCODED_EMAIL, null);
 
         // Initialize Firebase components
         mFirebaseDatabase = FirebaseDatabase.getInstance();
