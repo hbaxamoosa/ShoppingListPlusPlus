@@ -114,14 +114,13 @@ public class EditListItemNameDialogFragment extends EditListDialogFragment {
                     /* Make a map for the item you are adding */
                     HashMap<String, Object> updatedItemToAddMap = new HashMap<String, Object>();
 
-                    /* Make a POJO for the item and immediately turn it into a HashMap */
                     ShoppingListItem itemToAddObject = new ShoppingListItem(nameInput, mOwner);
                     HashMap<String, Object> itemToAdd =
                             (HashMap<String, Object>) new ObjectMapper().convertValue(itemToAddObject, Map.class);
 
                     /* Add the item to the update map*/
-                    updatedItemToAddMap.put("/" + "shoppingListItems" + "/" + mItemId, itemToAdd);
-
+                    updatedItemToAddMap.put("/" + "shoppingListItems" + "/" + mItemId + "/" + nameInput, itemToAdd);
+                    updatedItemToAddMap.put("/" + "shoppingListItems" + "/" + mItemId + "/" + mItemName, null);
 
                     /* Make the timestamp for last changed */
                     HashMap<String, Object> changedTimestampMap = new HashMap<>();

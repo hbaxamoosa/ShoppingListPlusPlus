@@ -217,18 +217,18 @@ public class ActiveListDetailsActivity extends BaseActivity {
         mShoppingListItemsValueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                // Timber.v("onChildAdded in mShoppingListItemsReference");
+                Timber.v("onChildAdded in mShoppingListItemsReference");
                 mShoppingListItemsArray.clear();
-                // Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
-                // Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
-                // Timber.v("mKey: " + mKey);
+                Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
+                Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
+                Timber.v("mKey: " + mKey);
                 if (mKey.equals(dataSnapshot.getKey())) {
-                    // Timber.v("dataSnapshot.getChildrenCount(): " + dataSnapshot.getChildrenCount());
-                    // Timber.v("my value is: " + dataSnapshot.getValue());
+                    Timber.v("dataSnapshot.getChildrenCount(): " + dataSnapshot.getChildrenCount());
+                    Timber.v("my value is: " + dataSnapshot.getValue());
                     // Timber.v("my value is: " + dataSnapshot.getChildren().iterator().next().getValue());
                     for (DataSnapshot ShoppingListItemsSnapshot : dataSnapshot.getChildren()) {
-                        // Timber.v("ShoppingListItemsSnapshot.getKey(): " + ShoppingListItemsSnapshot.getKey());
-                        // Timber.v("ShoppingListItemsSnapshot.getValue(): " + ShoppingListItemsSnapshot.getValue());
+                        Timber.v("ShoppingListItemsSnapshot.getKey(): " + ShoppingListItemsSnapshot.getKey());
+                        Timber.v("ShoppingListItemsSnapshot.getValue(): " + ShoppingListItemsSnapshot.getValue());
                         ShoppingListItem shoppingListItems = ShoppingListItemsSnapshot.getValue(ShoppingListItem.class);
                         mShoppingListItemsArray.add(shoppingListItems);
                     }
