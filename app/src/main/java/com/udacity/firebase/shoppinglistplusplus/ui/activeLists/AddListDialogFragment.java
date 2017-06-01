@@ -114,7 +114,9 @@ public class AddListDialogFragment extends DialogFragment {
      * Add new active list
      */
     public void addShoppingList() {
-        Timber.v("inside addShoppingList()");
+
+        // Timber.v("inside addShoppingList()");
+
         String userEnteredName = mEditTextListName.getText().toString();
 
         /**

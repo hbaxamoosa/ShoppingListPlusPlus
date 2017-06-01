@@ -2,9 +2,6 @@ package com.udacity.firebase.shoppinglistplusplus.ui;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 
 import android.app.DialogFragment;
 import android.content.Intent;
@@ -48,19 +45,10 @@ public class MainActivity extends BaseActivity {
     // SharedPrefs
     private SharedPreferences mSharedPref;
 
-    // Firebase Realtime Database
-    private FirebaseDatabase mFirebaseDatabase;
-    private DatabaseReference mShoppingListDatabaseReference;
-    private ChildEventListener mChildEventListener;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        // Initialize Firebase components
-        mFirebaseDatabase = FirebaseDatabase.getInstance();
-        mShoppingListDatabaseReference = mFirebaseDatabase.getReference("shoppingLists");
 
         // get SharedPrefs
         mSharedPref = PreferenceManager.getDefaultSharedPreferences(this);
@@ -68,8 +56,7 @@ public class MainActivity extends BaseActivity {
 
         Intent intent = getIntent();
         if (null != intent) { //Null Checking
-            mEncodedEmail = intent.getStringExtra("username");
-            // Timber.v("mEncodedEmail: " + mEncodedEmail);
+            mEncodedEmail = intent.getStringExtra(Constants.KEY_ENCODED_EMAIL);
         }
 
         /**

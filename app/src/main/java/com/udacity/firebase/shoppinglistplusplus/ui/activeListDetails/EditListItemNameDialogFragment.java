@@ -1,14 +1,27 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.activeListDetails;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ServerValue;
+import com.google.firebase.database.ValueEventListener;
+
 import android.app.Dialog;
 import android.os.Bundle;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
+import com.udacity.firebase.shoppinglistplusplus.model.ShoppingListItem;
 import com.udacity.firebase.shoppinglistplusplus.model.User;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
 import java.util.HashMap;
+import java.util.Map;
+
+import timber.log.Timber;
 
 /**
  * Lets user edit list item name for all copies of the current list
@@ -16,8 +29,13 @@ import java.util.HashMap;
 public class EditListItemNameDialogFragment extends EditListDialogFragment {
     String mItemName, mItemId;
 
+    // Firebase Realtime Database
+    private FirebaseDatabase mFirebaseDatabase;
+    private DatabaseReference mShoppingListDatabaseReference;
+
     /**
-     * Public static constructor that creates fragment and passes a bundle with data into it when adapter is created
+     * Public static constructor that creates fragment and passes a bundle with data into it when
+     * adapter is created
      */
     public static EditListItemNameDialogFragment newInstance(ShoppingList shoppingList, String itemName,
                                                              String itemId, String listId, String encodedEmail,
@@ -41,6 +59,10 @@ public class EditListItemNameDialogFragment extends EditListDialogFragment {
         super.onCreate(savedInstanceState);
         mItemName = getArguments().getString(Constants.KEY_LIST_ITEM_NAME);
         mItemId = getArguments().getString(Constants.KEY_LIST_ITEM_ID);
+
+        // Initialize Firebase components
+        mFirebaseDatabase = FirebaseDatabase.getInstance();
+        mShoppingListDatabaseReference = mFirebaseDatabase.getReference();
     }
 
 
@@ -64,7 +86,10 @@ public class EditListItemNameDialogFragment extends EditListDialogFragment {
      * Change selected list item name to the editText input if it is not empty
      */
     protected void doListEdit() {
-        String nameInput = mEditTextForList.getText().toString();
+        final String nameInput = mEditTextForList.getText().toString();
+
+        Timber.v("mItemName: " + mItemName);
+        Timber.v("mItemId: " + mItemId);
 
         /**
          * Set input text to be the current list item name if it is not empty and is not the
@@ -72,6 +97,48 @@ public class EditListItemNameDialogFragment extends EditListDialogFragment {
          */
         if (!nameInput.equals("") && !nameInput.equals(mItemName)) {
 
+/**
+ * Check that the user inputted list name is not empty, has changed the original name
+ * and that the dialog was properly initialized with the current name and id of the list.
+ */
+
+
+            Query query = mShoppingListDatabaseReference.child("shoppingLists").orderByKey();
+            Timber.v("query.getRef(): " + query.getRef());
+            query.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
+                    Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
+
+                    /* Make a map for the item you are adding */
+                    HashMap<String, Object> updatedItemToAddMap = new HashMap<String, Object>();
+
+                    /* Make a POJO for the item and immediately turn it into a HashMap */
+                    ShoppingListItem itemToAddObject = new ShoppingListItem(nameInput, mOwner);
+                    HashMap<String, Object> itemToAdd =
+                            (HashMap<String, Object>) new ObjectMapper().convertValue(itemToAddObject, Map.class);
+
+                    /* Add the item to the update map*/
+                    updatedItemToAddMap.put("/" + "shoppingListItems" + "/" + mItemId, itemToAdd);
+
+
+                    /* Make the timestamp for last changed */
+                    HashMap<String, Object> changedTimestampMap = new HashMap<>();
+                    changedTimestampMap.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
+
+                    /* Add the updated timestamp */
+                    updatedItemToAddMap.put("/" + "shoppingLists" + "/" + mItemId + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED, changedTimestampMap);
+
+                    /* Do the update */
+                    mShoppingListDatabaseReference.updateChildren(updatedItemToAddMap);
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    Timber.v("Error: " + databaseError);
+                }
+            });
 
         }
     }

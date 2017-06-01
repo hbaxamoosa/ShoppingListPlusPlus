@@ -5,6 +5,7 @@ import android.content.Context;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 
 import java.text.SimpleDateFormat;
+
 /**
  * Utility class
  */
@@ -28,6 +29,7 @@ public class Utils {
      * Return false otherwise
      */
     public static boolean checkIfOwner(ShoppingList shoppingList, String currentUserEmail) {
+        // Timber.v("shoppingList.getOwner(): " + shoppingList.getOwner() + " & " + "currentUserEmail: " + currentUserEmail);
         return (shoppingList.getOwner() != null &&
                 shoppingList.getOwner().equals(currentUserEmail));
     }

@@ -140,19 +140,20 @@ public class LoginActivity extends BaseActivity implements
                 if (user != null) {
                     // User is signed in
 
-                    Timber.v("user.getDisplayName(): " + user.getDisplayName());
-                    Timber.v("user.getEmail(): " + user.getEmail());
+                    // Timber.v("user.getDisplayName(): " + user.getDisplayName());
+                    // Timber.v("user.getEmail(): " + user.getEmail());
 
                     mUsername = user.getDisplayName();
                     mEncodedEmail = Utils.encodeEmail(user.getEmail());
 
                     SharedPreferences.Editor mSharedPrefEditor = mSharedPref.edit();
-                    mSharedPrefEditor.putString(Constants.KEY_ENCODED_EMAIL, null);
+                    /* Save provider name and encodedEmail for later use and start MainActivity */
+                    mSharedPrefEditor.putString(Constants.KEY_ENCODED_EMAIL, mEncodedEmail).apply();
                     mSharedPrefEditor.putString(Constants.KEY_PROVIDER, null);
 
                     onSignedInInitialize(mUsername);
                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                    intent.putExtra("username", mUsername);
+                    intent.putExtra(Constants.KEY_ENCODED_EMAIL, mEncodedEmail);
                     startActivity(intent);
                 } else {
                     // User is signed out
@@ -183,7 +184,7 @@ public class LoginActivity extends BaseActivity implements
                 Toast.makeText(this, "Signed in!", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 intent.putExtra("username", mUsername);
-                Timber.v("username: " + mUsername);
+                // Timber.v("username: " + mUsername);
                 startActivity(intent);
             } else if (resultCode == RESULT_CANCELED) {
                 // Sign in was canceled by the user, finish the activity

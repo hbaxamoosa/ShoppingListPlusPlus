@@ -8,6 +8,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import android.app.Activity;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -15,11 +16,14 @@ import android.preference.PreferenceManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
@@ -28,6 +32,7 @@ import com.udacity.firebase.shoppinglistplusplus.model.User;
 import com.udacity.firebase.shoppinglistplusplus.ui.BaseActivity;
 import com.udacity.firebase.shoppinglistplusplus.ui.sharing.ShareListActivity;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
+import com.udacity.firebase.shoppinglistplusplus.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -97,16 +102,22 @@ public class ActiveListDetailsActivity extends BaseActivity {
         mShoppingListsReference.orderByKey().addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Timber.v("dataSnapshot: " + dataSnapshot.getValue().toString());
+                // Timber.v("dataSnapshot: " + dataSnapshot.getValue().toString());
                 Iterator<DataSnapshot> it = dataSnapshot.getChildren().iterator();
                 for (int i = 0; i < mPosition + 1; i++) {
                     if (it.hasNext()) {
                         DataSnapshot listSnapshot = it.next();
                         mShoppingList = listSnapshot.getValue(ShoppingList.class);
-                        Timber.v("mShoppingList.getListName() : " + mShoppingList.getListName());
-                        Timber.v("mShoppingList.getOwner() : " + mShoppingList.getOwner());
+                        // Timber.v("mShoppingList.getListName() : " + mShoppingList.getListName());
+                        // Timber.v("mShoppingList.getOwner() : " + mShoppingList.getOwner());
                     }
                 }
+                /* Check if the current user is owner */
+                mCurrentUserIsOwner = Utils.checkIfOwner(mShoppingList, mEncodedEmail);
+                // Timber.v("addListenerForSingleValueEvent mCurrentUserIsOwner: " + mCurrentUserIsOwner);
+
+                /* Calling invalidateOptionsMenu causes onCreateOptionsMenu to be called */
+                invalidateOptionsMenu();
             }
 
             @Override
@@ -120,14 +131,8 @@ public class ActiveListDetailsActivity extends BaseActivity {
          */
         initializeScreen();
 
-        /* Calling invalidateOptionsMenu causes onCreateOptionsMenu to be called */
-        invalidateOptionsMenu();
-
         /* Set title appropriately. */
         setTitle(mListId);
-
-        // for testing purposes
-        mCurrentUserIsOwner = true;
 
         /* Save the most up-to-date version of current user in mCurrentUser */
 
@@ -207,23 +212,23 @@ public class ActiveListDetailsActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Timber.v("onResume()");
+        // Timber.v("onResume()");
 
         mShoppingListItemsValueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Timber.v("onChildAdded in mShoppingListItemsReference");
+                // Timber.v("onChildAdded in mShoppingListItemsReference");
                 mShoppingListItemsArray.clear();
-                Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
-                Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
-                Timber.v("mKey: " + mKey);
+                // Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
+                // Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
+                // Timber.v("mKey: " + mKey);
                 if (mKey.equals(dataSnapshot.getKey())) {
-                    Timber.v("dataSnapshot.getChildrenCount(): " + dataSnapshot.getChildrenCount());
-                    Timber.v("my value is: " + dataSnapshot.getValue());
+                    // Timber.v("dataSnapshot.getChildrenCount(): " + dataSnapshot.getChildrenCount());
+                    // Timber.v("my value is: " + dataSnapshot.getValue());
                     // Timber.v("my value is: " + dataSnapshot.getChildren().iterator().next().getValue());
                     for (DataSnapshot ShoppingListItemsSnapshot : dataSnapshot.getChildren()) {
-                        Timber.v("ShoppingListItemsSnapshot.getKey(): " + ShoppingListItemsSnapshot.getKey());
-                        Timber.v("ShoppingListItemsSnapshot.getValue(): " + ShoppingListItemsSnapshot.getValue());
+                        // Timber.v("ShoppingListItemsSnapshot.getKey(): " + ShoppingListItemsSnapshot.getKey());
+                        // Timber.v("ShoppingListItemsSnapshot.getValue(): " + ShoppingListItemsSnapshot.getValue());
                         ShoppingListItem shoppingListItems = ShoppingListItemsSnapshot.getValue(ShoppingListItem.class);
                         mShoppingListItemsArray.add(shoppingListItems);
                     }
@@ -244,7 +249,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        Timber.v("onPause()");
+        // Timber.v("onPause()");
 
         if (mShoppingListItemsValueEventListener != null) {
             mShoppingListItemsReference.removeEventListener(mShoppingListItemsValueEventListener);
@@ -254,7 +259,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        Timber.v("onStop()");
+        // Timber.v("onStop()");
 
         if (mShoppingListItemsValueEventListener != null) {
             mShoppingListItemsReference.removeEventListener(mShoppingListItemsValueEventListener);
@@ -267,6 +272,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        // Timber.v("onDestroy()");
 
         mShoppingListArray.clear();
         mShoppingListItemsArray.clear();
@@ -295,6 +301,30 @@ public class ActiveListDetailsActivity extends BaseActivity {
             mActiveListItemAdapter.notifyDataSetChanged();
         }
         mRecyclerView.setAdapter(mActiveListItemAdapter);
+
+        mRecyclerView.addOnItemTouchListener(new RecyclerTouchListener(this, mRecyclerView, new ClickListener() {
+
+            @Override
+            public void onClick(View view, final int position) {
+                //Values are passing to activity & to fragment as well
+                Toast.makeText(ActiveListDetailsActivity.this, "Single click on position: " + position,
+                        Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onLongClick(View view, int position) {
+                Toast.makeText(ActiveListDetailsActivity.this, "Long press on position: " + position,
+                        Toast.LENGTH_LONG).show();
+                // Timber.v("mActiveListItemAdapter.getItemCount(): " + mActiveListItemAdapter.getItemCount());
+                // Timber.v("mActiveListItemAdapter.getItemId(position): " + mActiveListItemAdapter.getItemId(position));
+                RecyclerView hasnain = (RecyclerView) view.findViewById(R.id.recyclerView);
+                // Timber.v("mShoppingListItemsArray.get(position).getItemName(): " + mShoppingListItemsArray.get(position).getItemName());
+
+                // Timber.v("mActiveListItemAdapter.getItemId(position): " + mActiveListItemAdapter.getItemId(position));
+                showEditListItemNameDialog(mShoppingListItemsArray.get(position).getItemName(), mKey);
+            }
+
+        }));
 
         mTextViewPeopleShopping = (TextView) findViewById(R.id.text_view_people_shopping);
         mButtonShopping = (Button) findViewById(R.id.button_shopping);
@@ -432,7 +462,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
     public void showEditListItemNameDialog(String itemName, String itemId) {
         /* Create an instance of the dialog fragment and show it */
         DialogFragment dialog = EditListItemNameDialogFragment.newInstance(mShoppingList, itemName,
-                itemId, mListId, mEncodedEmail, mSharedWithUsers);
+                mKey, mListId, mEncodedEmail, mSharedWithUsers);
 
         dialog.show(this.getFragmentManager(), "EditListItemNameDialogFragment");
     }
@@ -456,4 +486,53 @@ public class ActiveListDetailsActivity extends BaseActivity {
         }
     }
 
+    public interface ClickListener {
+        void onClick(View view, int position);
+
+        void onLongClick(View view, int position);
+    }
+
+    class RecyclerTouchListener implements RecyclerView.OnItemTouchListener {
+
+        private ClickListener clicklistener;
+        private GestureDetector gestureDetector;
+
+        public RecyclerTouchListener(Context context, final RecyclerView recycleView, final ClickListener clicklistener) {
+
+            this.clicklistener = clicklistener;
+            gestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
+                @Override
+                public boolean onSingleTapUp(MotionEvent e) {
+                    return true;
+                }
+
+                @Override
+                public void onLongPress(MotionEvent e) {
+                    View child = recycleView.findChildViewUnder(e.getX(), e.getY());
+                    if (child != null && clicklistener != null) {
+                        clicklistener.onLongClick(child, recycleView.getChildAdapterPosition(child));
+                    }
+                }
+            });
+        }
+
+        @Override
+        public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+            View child = rv.findChildViewUnder(e.getX(), e.getY());
+            if (child != null && clicklistener != null && gestureDetector.onTouchEvent(e)) {
+                clicklistener.onClick(child, rv.getChildAdapterPosition(child));
+            }
+            return false;
+        }
+
+        @Override
+        public void onTouchEvent(RecyclerView rv, MotionEvent e) {
+
+        }
+
+        @Override
+        public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+
+        }
+    }
 }

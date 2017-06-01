@@ -8,6 +8,8 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -49,10 +51,10 @@ public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAd
 
     @Override
     public void onBindViewHolder(ActiveListItemAdapter.ViewHolder holder, int position) {
-        Timber.v("onBindViewHolder(ActiveListItemAdapter.ViewHolder holder, int position)");
-        Timber.v("position: " + position);
-        Timber.v("shoppingListItems.get(position).getItemName(): " + shoppingListItems.get(position).getItemName());
-        Timber.v("shoppingListItems.get(position).getBoughtBy(): " + shoppingListItems.get(position).getBoughtBy());
+        // Timber.v("onBindViewHolder(ActiveListItemAdapter.ViewHolder holder, int position)");
+        // Timber.v("position: " + position);
+        // Timber.v("shoppingListItems.get(position).getItemName(): " + shoppingListItems.get(position).getItemName());
+        // Timber.v("shoppingListItems.get(position).getBoughtBy(): " + shoppingListItems.get(position).getBoughtBy());
 
         holder.listName.setText(shoppingListItems.get(position).getItemName());
         holder.boughtBy.setText(shoppingListItems.get(position).getBoughtBy());
@@ -60,14 +62,15 @@ public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAd
 
     @Override
     public int getItemCount() {
-        Timber.v("shoppingListItems.size(): " + shoppingListItems.size());
+        // Timber.v("shoppingListItems.size(): " + shoppingListItems.size());
         return shoppingListItems.size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
+    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         TextView listName, boughtBy;
         ImageButton deleteButton;
+        private Context context;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -79,16 +82,40 @@ public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAd
         }
 
         @Override
-        public void onClick(View v) {
+        public void onClick(final View v) {
             Toast.makeText(v.getContext(), "delete clicked", Toast.LENGTH_LONG).show();
 
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(v.getContext(), R.style.CustomTheme_Dialog)
+                    .setTitle(v.getContext().getString(R.string.remove_item_option))
+                    .setMessage(v.getContext().getString(R.string.dialog_message_are_you_sure_remove_item))
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+
+                            removeItem(v);
+                                /* Dismiss the dialog */
+                            dialog.dismiss();
+                        }
+                    })
+                    .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                                /* Dismiss the dialog */
+                            dialog.dismiss();
+                        }
+                    })
+                    .setIcon(android.R.drawable.ic_dialog_alert);
+
+            AlertDialog alertDialog = alertDialogBuilder.create();
+            alertDialog.show();
+        }
+
+        private void removeItem(View v) {
             // Initialize Firebase components
             FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
             final DatabaseReference mShoppingListItemsDatabaseReference = mFirebaseDatabase.getReference("shoppingListItems");
             Timber.v("ActiveListDetailsActivity.mKey " + ActiveListDetailsActivity.mKey);
             Timber.v("mShoppingListItemsDatabaseReference.getRef(): " + mShoppingListItemsDatabaseReference.getRef());
 
-            // Query one = mShoppingListItemsDatabaseReference.getRef().orderByKey();
+
             Query query = mShoppingListItemsDatabaseReference.child(ActiveListDetailsActivity.mKey);
             Timber.v("one.getRef(): " + query.getRef());
             query.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -115,18 +142,12 @@ public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAd
                         }
                     }
                 }
+
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
                     Timber.v("Error: " + databaseError);
                 }
             });
-        }
-
-        @Override
-        public boolean onLongClick(View v) {
-            Timber.v("long click on list item");
-            // TODO: 5/25/17 implement the ability for the user to edit the item name onLongClick of the item
-            return false;
         }
     }
 }

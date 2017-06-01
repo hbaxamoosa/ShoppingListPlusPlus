@@ -62,18 +62,18 @@ public class AddListItemDialogFragment extends EditListDialogFragment {
         // Initialize Firebase components
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         mShoppingListDatabaseReference = mFirebaseDatabase.getReference();
-        Timber.v("mFirebaseDatabase.getReference(): " + mFirebaseDatabase.getReference());
+        // Timber.v("mFirebaseDatabase.getReference(): " + mFirebaseDatabase.getReference());
 
         Query queryList = mShoppingListDatabaseReference.child("shoppingLists").orderByChild("listName").equalTo(mListId);
         queryList.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 DataSnapshot nodeDataSnapshot = dataSnapshot.getChildren().iterator().next();
-                Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
-                Timber.v("nodeDataSnapshot.getKey(): " + nodeDataSnapshot.getKey());
+                // Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
+                // Timber.v("nodeDataSnapshot.getKey(): " + nodeDataSnapshot.getKey());
 
                 listKey = nodeDataSnapshot.getKey(); // find the node's key in shoppingLists
-                Timber.v("01 listKey: " + listKey);
+                // Timber.v("01 listKey: " + listKey);
             }
 
             @Override
@@ -111,7 +111,7 @@ public class AddListItemDialogFragment extends EditListDialogFragment {
             HashMap<String, Object> itemToAdd =
                     (HashMap<String, Object>) new ObjectMapper().convertValue(itemToAddObject, Map.class);
 
-            Timber.v("02 listKey: " + listKey);
+            // Timber.v("02 listKey: " + listKey);
             /* Add the item to the update map*/
             updatedItemToAddMap.put("/" + "shoppingListItems" + "/" + listKey + "/" + mItemName, itemToAdd);
 
