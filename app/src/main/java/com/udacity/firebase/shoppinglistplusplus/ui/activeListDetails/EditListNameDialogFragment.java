@@ -89,8 +89,8 @@ public class EditListNameDialogFragment extends EditListDialogFragment {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 DataSnapshot nodeDataSnapshot = dataSnapshot.getChildren().iterator().next();
-                Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
-                Timber.v("nodeDataSnapshot.getKey(): " + nodeDataSnapshot.getKey());
+                // Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
+                // Timber.v("nodeDataSnapshot.getKey(): " + nodeDataSnapshot.getKey());
 
                 HashMap<String, Object> result = new HashMap<>();
                 result.put("listName", inputListName);

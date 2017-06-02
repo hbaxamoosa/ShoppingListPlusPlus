@@ -4,6 +4,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import android.app.Activity;
@@ -68,8 +69,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
 
     // Firebase Realtime Database
     private FirebaseDatabase mFirebaseDatabase;
-    private DatabaseReference mShoppingListsReference;
-    private DatabaseReference mShoppingListItemsReference;
+    private DatabaseReference mShoppingListsReference, mShoppingListItemsReference;
     private ValueEventListener mShoppingListItemsValueEventListener;
 
     @Override
@@ -96,7 +96,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         mShoppingListsReference = mFirebaseDatabase.getReference("shoppingLists");
         mShoppingListItemsReference = mFirebaseDatabase.getReference("shoppingListItems" + "/" + mKey);
-        // hasnain = mFirebaseDatabase.getReference("shoppingListItems" + "/" + mKey);
+
 
         // use this call to Firebase rtdb to grab the correct Shopping List
         mShoppingListsReference.orderByKey().addListenerForSingleValueEvent(new ValueEventListener() {
@@ -217,18 +217,18 @@ public class ActiveListDetailsActivity extends BaseActivity {
         mShoppingListItemsValueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Timber.v("onChildAdded in mShoppingListItemsReference");
+                // Timber.v("onChildAdded in mShoppingListItemsReference");
                 mShoppingListItemsArray.clear();
-                Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
-                Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
-                Timber.v("mKey: " + mKey);
+                // Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
+                // Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
+                // Timber.v("mKey: " + mKey);
                 if (mKey.equals(dataSnapshot.getKey())) {
-                    Timber.v("dataSnapshot.getChildrenCount(): " + dataSnapshot.getChildrenCount());
-                    Timber.v("my value is: " + dataSnapshot.getValue());
+                    // Timber.v("dataSnapshot.getChildrenCount(): " + dataSnapshot.getChildrenCount());
+                    // Timber.v("my value is: " + dataSnapshot.getValue());
                     // Timber.v("my value is: " + dataSnapshot.getChildren().iterator().next().getValue());
                     for (DataSnapshot ShoppingListItemsSnapshot : dataSnapshot.getChildren()) {
-                        Timber.v("ShoppingListItemsSnapshot.getKey(): " + ShoppingListItemsSnapshot.getKey());
-                        Timber.v("ShoppingListItemsSnapshot.getValue(): " + ShoppingListItemsSnapshot.getValue());
+                        // Timber.v("ShoppingListItemsSnapshot.getKey(): " + ShoppingListItemsSnapshot.getKey());
+                        // Timber.v("ShoppingListItemsSnapshot.getValue(): " + ShoppingListItemsSnapshot.getValue());
                         ShoppingListItem shoppingListItems = ShoppingListItemsSnapshot.getValue(ShoppingListItem.class);
                         mShoppingListItemsArray.add(shoppingListItems);
                     }
@@ -292,7 +292,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
         mRecyclerView.setLayoutManager(manager);
 
         try {
-            mActiveListItemAdapter = new ActiveListItemAdapter(ActiveListDetailsActivity.this, mShoppingListItemsArray);
+            mActiveListItemAdapter = new ActiveListItemAdapter(ActiveListDetailsActivity.this, mShoppingListItemsArray, mEncodedEmail, mKey);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -304,11 +304,58 @@ public class ActiveListDetailsActivity extends BaseActivity {
 
         mRecyclerView.addOnItemTouchListener(new RecyclerTouchListener(this, mRecyclerView, new ClickListener() {
 
+            /* Perform buy/return action on listView item click event if current user is shopping. */
             @Override
             public void onClick(View view, final int position) {
                 //Values are passing to activity & to fragment as well
                 Toast.makeText(ActiveListDetailsActivity.this, "Single click on position: " + position,
                         Toast.LENGTH_SHORT).show();
+
+                /* Check that the view is not the empty footer item */
+                if (view.getId() != R.id.list_view_footer_empty) {
+                    final ShoppingListItem selectedListItem = mShoppingListItemsArray.get(position);
+
+                    if (selectedListItem != null) {
+
+                            /* Create map and fill it in with deep path multi write operations list */
+                        final HashMap<String, Object> updatedItemBoughtData = new HashMap<String, Object>();
+
+                            /* Buy selected item if it is NOT already bought */
+                        if (!selectedListItem.isBought()) {
+                            updatedItemBoughtData.put("/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT, true);
+                            updatedItemBoughtData.put("/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT_BY, mEncodedEmail);
+                        } else {
+                            updatedItemBoughtData.put("/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT, false);
+                            updatedItemBoughtData.put("/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT_BY, null);
+                        }
+
+                        Query query = mShoppingListItemsReference.child(selectedListItem.getItemName());
+                        Timber.v("query.getRef(): " + query.getRef());
+                        query.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
+                                Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
+
+                                Timber.v("updatedItemBoughtData.toString(): " + updatedItemBoughtData.toString());
+                                /* Do the update */
+                                mShoppingListItemsReference.updateChildren(updatedItemBoughtData, new DatabaseReference.CompletionListener() {
+                                    @Override
+                                    public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                                        if (databaseError != null) {
+                                            Timber.v("datebaseError: " + databaseError.toString());
+                                        }
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                                Timber.v("Error: " + databaseError);
+                            }
+                        });
+                    }
+                }
             }
 
             @Override

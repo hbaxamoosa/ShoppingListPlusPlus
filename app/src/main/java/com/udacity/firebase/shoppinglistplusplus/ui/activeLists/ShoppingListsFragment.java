@@ -25,6 +25,10 @@ import java.util.Iterator;
 
 import timber.log.Timber;
 
+/**
+ * Great reference on RecyclerView: https://medium.com/@harivigneshjayapalan/android-implementing-custom-recycler-view-part-i-9ce5e9af7fea
+ * https://medium.com/@harivigneshjayapalan/android-recyclerview-implementing-single-item-click-and-long-press-part-ii-b43ef8cb6ad8
+ */
 
 /**
  * A simple {@link Fragment} subclass that shows a list of all shopping lists a user can see.
