@@ -104,19 +104,19 @@ public class ActiveListDetailsActivity extends BaseActivity {
         mShoppingListsReference.orderByKey().addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Timber.v("dataSnapshot: " + dataSnapshot.getValue().toString());
+                // Timber.v("dataSnapshot: " + dataSnapshot.getValue().toString());
                 Iterator<DataSnapshot> it = dataSnapshot.getChildren().iterator();
                 for (int i = 0; i < mPosition + 1; i++) {
                     if (it.hasNext()) {
                         DataSnapshot listSnapshot = it.next();
                         mShoppingList = listSnapshot.getValue(ShoppingList.class);
-                        Timber.v("mShoppingList.getListName() : " + mShoppingList.getListName());
-                        Timber.v("mShoppingList.getOwner() : " + mShoppingList.getOwner());
+                        // Timber.v("mShoppingList.getListName() : " + mShoppingList.getListName());
+                        // Timber.v("mShoppingList.getOwner() : " + mShoppingList.getOwner());
                     }
                 }
                 /* Check if the current user is owner */
                 mCurrentUserIsOwner = Utils.checkIfOwner(mShoppingList, mEncodedEmail);
-                Timber.v("addListenerForSingleValueEvent mCurrentUserIsOwner: " + mCurrentUserIsOwner);
+                // Timber.v("addListenerForSingleValueEvent mCurrentUserIsOwner: " + mCurrentUserIsOwner);
 
                 /* Calling invalidateOptionsMenu causes onCreateOptionsMenu to be called */
                 invalidateOptionsMenu();
@@ -126,19 +126,24 @@ public class ActiveListDetailsActivity extends BaseActivity {
                  */
                 HashMap<String, User> usersShopping = mShoppingList.getUsersShopping();
                 if (mShoppingList.getUsersShopping() != null) {
-                    Timber.v("mShoppingList.getUsersShopping(): " + mShoppingList.getUsersShopping().toString());
+                    // Timber.v("mShoppingList.getUsersShopping(): " + mShoppingList.getUsersShopping().toString());
                 }
                 if (usersShopping != null && usersShopping.size() != 0 && usersShopping.containsKey(mEncodedEmail)) {
-                    Timber.v("mShopping is TRUE");
+                    // Timber.v("mShopping is TRUE");
                     mShopping = true;
                     mButtonShopping.setText(getString(R.string.button_stop_shopping));
                     mButtonShopping.setBackgroundColor(ContextCompat.getColor(ActiveListDetailsActivity.this, R.color.dark_grey));
                 } else {
-                    Timber.v("mShopping is FALSE");
+                    // Timber.v("mShopping is FALSE");
                     mShopping = false;
                     mButtonShopping.setText(getString(R.string.button_start_shopping));
                     mButtonShopping.setBackgroundColor(ContextCompat.getColor(ActiveListDetailsActivity.this, R.color.primary_dark));
                 }
+
+                /**
+                 * Display list of users that are currently shopping
+                 */
+                setWhosShoppingText(mShoppingList.getUsersShopping());
             }
 
             @Override
@@ -151,7 +156,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
         mCurrentUserRefListener = mCurrentUserRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
+                // Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
                 User currentUser = dataSnapshot.getValue(User.class);
                 if (currentUser != null) mCurrentUser = currentUser;
                 else finish();
@@ -254,17 +259,17 @@ public class ActiveListDetailsActivity extends BaseActivity {
         mShoppingListItemsValueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Timber.v("onChildAdded in mShoppingListItemsReference");
+                // Timber.v("onChildAdded in mShoppingListItemsReference");
                 mShoppingListItemsArray.clear();
-                Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
-                Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
-                Timber.v("mKey: " + mKey);
+                // Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
+                // Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
+                // Timber.v("mKey: " + mKey);
                 if (mKey.equals(dataSnapshot.getKey())) {
-                    Timber.v("dataSnapshot.getChildrenCount(): " + dataSnapshot.getChildrenCount());
-                    Timber.v("my value is: " + dataSnapshot.getValue());
+                    // Timber.v("dataSnapshot.getChildrenCount(): " + dataSnapshot.getChildrenCount());
+                    // Timber.v("my value is: " + dataSnapshot.getValue());
                     for (DataSnapshot ShoppingListItemsSnapshot : dataSnapshot.getChildren()) {
-                        Timber.v("ShoppingListItemsSnapshot.getKey(): " + ShoppingListItemsSnapshot.getKey());
-                        Timber.v("ShoppingListItemsSnapshot.getValue(): " + ShoppingListItemsSnapshot.getValue());
+                        // Timber.v("ShoppingListItemsSnapshot.getKey(): " + ShoppingListItemsSnapshot.getKey());
+                        // Timber.v("ShoppingListItemsSnapshot.getValue(): " + ShoppingListItemsSnapshot.getValue());
                         ShoppingListItem shoppingListItems = ShoppingListItemsSnapshot.getValue(ShoppingListItem.class);
                         mShoppingListItemsArray.add(shoppingListItems);
                     }
@@ -376,15 +381,15 @@ public class ActiveListDetailsActivity extends BaseActivity {
                             }
 
                             Query query = mShoppingListItemsReference.child(selectedListItem.getItemName());
-                            Timber.v("query.getRef(): " + query.getRef());
+                            // Timber.v("query.getRef(): " + query.getRef());
                             query.addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
-                                    Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
-                                    Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
-
-                                    Timber.v("updatedItemBoughtData.toString(): " + updatedItemBoughtData.toString());
-                                /* Do the update */
+                                    // Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
+                                    // Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
+                                    // Timber.v("updatedItemBoughtData.toString(): " + updatedItemBoughtData.toString());
+                                    
+                                    /* Do the update */
                                     mShoppingListItemsReference.updateChildren(updatedItemBoughtData, new DatabaseReference.CompletionListener() {
                                         @Override
                                         public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
@@ -565,25 +570,25 @@ public class ActiveListDetailsActivity extends BaseActivity {
      * This method is called when user taps "Start/Stop shopping" button
      */
     public void toggleShopping(View view) {
-        Timber.v("toggleShopping(View view)");
+        // Timber.v("toggleShopping(View view)");
         /**
          * If current user is already shopping, remove current user from usersShopping map
          */
 
         Query query = mShoppingListsReference.child(mKey).child("usersShopping").child(mEncodedEmail);
-        Timber.v("query.getRef(): " + query.getRef());
+        // Timber.v("query.getRef(): " + query.getRef());
             /* Check to see whether user is shopping; use a SingleValueEvent listener for memory efficiency */
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
+                // Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
                     /* Either add or remove the current user from the usersShopping map */
                 if (mShopping) {
-                    Timber.v("mShopping is TRUE");
+                    // Timber.v("mShopping is TRUE");
                         /* user WAS shopping, but now has STOPPED shopping */
                     mShoppingListsReference.child(mKey).child("usersShopping").child(mEncodedEmail).removeValue();
                 } else {
-                    Timber.v("mShopping is FALSE");
+                    // Timber.v("mShopping is FALSE");
                         /* user WAS NOT shopping, but now has STARTED shopping */
                     mShoppingListsReference.child(mKey).child("usersShopping").child(mEncodedEmail).setValue(mCurrentUser);
                 }
