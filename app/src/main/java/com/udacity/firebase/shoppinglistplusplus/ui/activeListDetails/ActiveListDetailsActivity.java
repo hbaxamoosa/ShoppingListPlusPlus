@@ -14,6 +14,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -69,8 +70,8 @@ public class ActiveListDetailsActivity extends BaseActivity {
 
     // Firebase Realtime Database
     private FirebaseDatabase mFirebaseDatabase;
-    private DatabaseReference mShoppingListsReference, mShoppingListItemsReference;
-    private ValueEventListener mShoppingListItemsValueEventListener;
+    private DatabaseReference mShoppingListsReference, mShoppingListItemsReference, mCurrentUserRef;
+    private ValueEventListener mShoppingListItemsValueEventListener, mCurrentUserRefListener;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -96,28 +97,64 @@ public class ActiveListDetailsActivity extends BaseActivity {
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         mShoppingListsReference = mFirebaseDatabase.getReference("shoppingLists");
         mShoppingListItemsReference = mFirebaseDatabase.getReference("shoppingListItems" + "/" + mKey);
+        mCurrentUserRef = mFirebaseDatabase.getReference("users").child(mEncodedEmail);
 
 
         // use this call to Firebase rtdb to grab the correct Shopping List
-        mShoppingListsReference.orderByKey().addListenerForSingleValueEvent(new ValueEventListener() {
+        mShoppingListsReference.orderByKey().addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                // Timber.v("dataSnapshot: " + dataSnapshot.getValue().toString());
+                Timber.v("dataSnapshot: " + dataSnapshot.getValue().toString());
                 Iterator<DataSnapshot> it = dataSnapshot.getChildren().iterator();
                 for (int i = 0; i < mPosition + 1; i++) {
                     if (it.hasNext()) {
                         DataSnapshot listSnapshot = it.next();
                         mShoppingList = listSnapshot.getValue(ShoppingList.class);
-                        // Timber.v("mShoppingList.getListName() : " + mShoppingList.getListName());
-                        // Timber.v("mShoppingList.getOwner() : " + mShoppingList.getOwner());
+                        Timber.v("mShoppingList.getListName() : " + mShoppingList.getListName());
+                        Timber.v("mShoppingList.getOwner() : " + mShoppingList.getOwner());
                     }
                 }
                 /* Check if the current user is owner */
                 mCurrentUserIsOwner = Utils.checkIfOwner(mShoppingList, mEncodedEmail);
-                // Timber.v("addListenerForSingleValueEvent mCurrentUserIsOwner: " + mCurrentUserIsOwner);
+                Timber.v("addListenerForSingleValueEvent mCurrentUserIsOwner: " + mCurrentUserIsOwner);
 
                 /* Calling invalidateOptionsMenu causes onCreateOptionsMenu to be called */
                 invalidateOptionsMenu();
+
+                /**
+                 * Handle the Start/Stop Shopping button
+                 */
+                HashMap<String, User> usersShopping = mShoppingList.getUsersShopping();
+                if (mShoppingList.getUsersShopping() != null) {
+                    Timber.v("mShoppingList.getUsersShopping(): " + mShoppingList.getUsersShopping().toString());
+                }
+                if (usersShopping != null && usersShopping.size() != 0 && usersShopping.containsKey(mEncodedEmail)) {
+                    Timber.v("mShopping is TRUE");
+                    mShopping = true;
+                    mButtonShopping.setText(getString(R.string.button_stop_shopping));
+                    mButtonShopping.setBackgroundColor(ContextCompat.getColor(ActiveListDetailsActivity.this, R.color.dark_grey));
+                } else {
+                    Timber.v("mShopping is FALSE");
+                    mShopping = false;
+                    mButtonShopping.setText(getString(R.string.button_start_shopping));
+                    mButtonShopping.setBackgroundColor(ContextCompat.getColor(ActiveListDetailsActivity.this, R.color.primary_dark));
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Timber.v("error: " + databaseError.toString());
+            }
+        });
+
+        /* Save the most up-to-date version of current user in mCurrentUser */
+        mCurrentUserRefListener = mCurrentUserRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
+                User currentUser = dataSnapshot.getValue(User.class);
+                if (currentUser != null) mCurrentUser = currentUser;
+                else finish();
             }
 
             @Override
@@ -217,18 +254,17 @@ public class ActiveListDetailsActivity extends BaseActivity {
         mShoppingListItemsValueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                // Timber.v("onChildAdded in mShoppingListItemsReference");
+                Timber.v("onChildAdded in mShoppingListItemsReference");
                 mShoppingListItemsArray.clear();
-                // Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
-                // Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
-                // Timber.v("mKey: " + mKey);
+                Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
+                Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
+                Timber.v("mKey: " + mKey);
                 if (mKey.equals(dataSnapshot.getKey())) {
-                    // Timber.v("dataSnapshot.getChildrenCount(): " + dataSnapshot.getChildrenCount());
-                    // Timber.v("my value is: " + dataSnapshot.getValue());
-                    // Timber.v("my value is: " + dataSnapshot.getChildren().iterator().next().getValue());
+                    Timber.v("dataSnapshot.getChildrenCount(): " + dataSnapshot.getChildrenCount());
+                    Timber.v("my value is: " + dataSnapshot.getValue());
                     for (DataSnapshot ShoppingListItemsSnapshot : dataSnapshot.getChildren()) {
-                        // Timber.v("ShoppingListItemsSnapshot.getKey(): " + ShoppingListItemsSnapshot.getKey());
-                        // Timber.v("ShoppingListItemsSnapshot.getValue(): " + ShoppingListItemsSnapshot.getValue());
+                        Timber.v("ShoppingListItemsSnapshot.getKey(): " + ShoppingListItemsSnapshot.getKey());
+                        Timber.v("ShoppingListItemsSnapshot.getValue(): " + ShoppingListItemsSnapshot.getValue());
                         ShoppingListItem shoppingListItems = ShoppingListItemsSnapshot.getValue(ShoppingListItem.class);
                         mShoppingListItemsArray.add(shoppingListItems);
                     }
@@ -264,6 +300,10 @@ public class ActiveListDetailsActivity extends BaseActivity {
         if (mShoppingListItemsValueEventListener != null) {
             mShoppingListItemsReference.removeEventListener(mShoppingListItemsValueEventListener);
         }
+
+        if (mCurrentUserRefListener != null) {
+            mCurrentUserRef.removeEventListener(mCurrentUserRefListener);
+        }
     }
 
     /**
@@ -279,6 +319,10 @@ public class ActiveListDetailsActivity extends BaseActivity {
 
         if (mShoppingListItemsValueEventListener != null) {
             mShoppingListItemsReference.removeEventListener(mShoppingListItemsValueEventListener);
+        }
+
+        if (mCurrentUserRefListener != null) {
+            mCurrentUserRef.removeEventListener(mCurrentUserRefListener);
         }
     }
 
@@ -317,43 +361,46 @@ public class ActiveListDetailsActivity extends BaseActivity {
 
                     if (selectedListItem != null) {
 
+                        /* If current user is shopping */
+                        if (mShopping) {
                             /* Create map and fill it in with deep path multi write operations list */
-                        final HashMap<String, Object> updatedItemBoughtData = new HashMap<String, Object>();
+                            final HashMap<String, Object> updatedItemBoughtData = new HashMap<String, Object>();
 
                             /* Buy selected item if it is NOT already bought */
-                        if (!selectedListItem.isBought()) {
-                            updatedItemBoughtData.put("/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT, true);
-                            updatedItemBoughtData.put("/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT_BY, mEncodedEmail);
-                        } else {
-                            updatedItemBoughtData.put("/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT, false);
-                            updatedItemBoughtData.put("/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT_BY, null);
-                        }
+                            if (!selectedListItem.isBought()) {
+                                updatedItemBoughtData.put("/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT, true);
+                                updatedItemBoughtData.put("/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT_BY, mEncodedEmail);
+                            } else {
+                                updatedItemBoughtData.put("/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT, false);
+                                updatedItemBoughtData.put("/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT_BY, null);
+                            }
 
-                        Query query = mShoppingListItemsReference.child(selectedListItem.getItemName());
-                        Timber.v("query.getRef(): " + query.getRef());
-                        query.addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
-                                Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
+                            Query query = mShoppingListItemsReference.child(selectedListItem.getItemName());
+                            Timber.v("query.getRef(): " + query.getRef());
+                            query.addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
+                                    Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
 
-                                Timber.v("updatedItemBoughtData.toString(): " + updatedItemBoughtData.toString());
+                                    Timber.v("updatedItemBoughtData.toString(): " + updatedItemBoughtData.toString());
                                 /* Do the update */
-                                mShoppingListItemsReference.updateChildren(updatedItemBoughtData, new DatabaseReference.CompletionListener() {
-                                    @Override
-                                    public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-                                        if (databaseError != null) {
-                                            Timber.v("datebaseError: " + databaseError.toString());
+                                    mShoppingListItemsReference.updateChildren(updatedItemBoughtData, new DatabaseReference.CompletionListener() {
+                                        @Override
+                                        public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                                            if (databaseError != null) {
+                                                Timber.v("datebaseError: " + databaseError.toString());
+                                            }
                                         }
-                                    }
-                                });
-                            }
+                                    });
+                                }
 
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
-                                Timber.v("Error: " + databaseError);
-                            }
-                        });
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+                                    Timber.v("Error: " + databaseError);
+                                }
+                            });
+                        }
                     }
                 }
             }
@@ -518,20 +565,36 @@ public class ActiveListDetailsActivity extends BaseActivity {
      * This method is called when user taps "Start/Stop shopping" button
      */
     public void toggleShopping(View view) {
-        /**
-         * Create map and fill it in with deep path multi write operations list
-         */
-        HashMap<String, Object> updatedUserData = new HashMap<String, Object>();
-        String propertyToUpdate = Constants.FIREBASE_PROPERTY_USERS_SHOPPING + "/" + mEncodedEmail;
-
+        Timber.v("toggleShopping(View view)");
         /**
          * If current user is already shopping, remove current user from usersShopping map
          */
-        if (mShopping) {
 
-        } else {
+        Query query = mShoppingListsReference.child(mKey).child("usersShopping").child(mEncodedEmail);
+        Timber.v("query.getRef(): " + query.getRef());
+            /* Check to see whether user is shopping; use a SingleValueEvent listener for memory efficiency */
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
+                    /* Either add or remove the current user from the usersShopping map */
+                if (mShopping) {
+                    Timber.v("mShopping is TRUE");
+                        /* user WAS shopping, but now has STOPPED shopping */
+                    mShoppingListsReference.child(mKey).child("usersShopping").child(mEncodedEmail).removeValue();
+                } else {
+                    Timber.v("mShopping is FALSE");
+                        /* user WAS NOT shopping, but now has STARTED shopping */
+                    mShoppingListsReference.child(mKey).child("usersShopping").child(mEncodedEmail).setValue(mCurrentUser);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Timber.v("Error: " + databaseError);
+            }
+        });
         }
-    }
 
     public interface ClickListener {
         void onClick(View view, int position);

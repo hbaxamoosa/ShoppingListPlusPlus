@@ -118,7 +118,10 @@ public class EditListItemNameDialogFragment extends EditListDialogFragment {
                     HashMap<String, Object> itemToAdd =
                             (HashMap<String, Object>) new ObjectMapper().convertValue(itemToAddObject, Map.class);
 
-                    /* Add the item to the update map*/
+                    /* Add the item to the update map */
+                    /**
+                     * the path in 'put' must be the fully declared path
+                     */
                     updatedItemToAddMap.put("/" + "shoppingListItems" + "/" + mItemId + "/" + nameInput, itemToAdd);
                     updatedItemToAddMap.put("/" + "shoppingListItems" + "/" + mItemId + "/" + mItemName, null);
 
