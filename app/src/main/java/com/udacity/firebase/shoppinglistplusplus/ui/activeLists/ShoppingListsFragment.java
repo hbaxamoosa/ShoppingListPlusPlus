@@ -91,7 +91,7 @@ public class ShoppingListsFragment extends Fragment {
         mRecyclerView.setLayoutManager(manager);
 
         try {
-            mActiveListAdapter = new ActiveListAdapter(getActivity(), mShoppingList, mListKeys);
+            mActiveListAdapter = new ActiveListAdapter(getActivity(), mShoppingList, mListKeys, mEncodedEmail);
             mRecyclerView.setAdapter(mActiveListAdapter);
         } catch (Exception e) {
             e.printStackTrace();
@@ -112,7 +112,7 @@ public class ShoppingListsFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        Timber.v("onResume()");
+        // Timber.v("onResume()");
 
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String sortOrder = sharedPref.getString(Constants.KEY_PREF_SORT_ORDER_LISTS, Constants.ORDER_BY_KEY);
@@ -121,18 +121,18 @@ public class ShoppingListsFragment extends Fragment {
         valueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Timber.v("ValueEventListener onDataChange(DataSnapshot dataSnapshot) " + dataSnapshot.getValue());
-                Timber.v("onChildAdded");
-                Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
+                // Timber.v("ValueEventListener onDataChange(DataSnapshot dataSnapshot) " + dataSnapshot.getValue());
+                // Timber.v("onChildAdded");
+                // Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
                 mShoppingList.clear();
                 mListKeys.clear();
                 Iterator<DataSnapshot> it = dataSnapshot.getChildren().iterator();
                 for (int i = 0; i < dataSnapshot.getChildrenCount(); i++) {
                     if (it.hasNext()) {
                         DataSnapshot listSnapshot = it.next();
-                        Timber.v("listSnapshot.getValue(): " + listSnapshot.getValue());
+                        // Timber.v("listSnapshot.getValue(): " + listSnapshot.getValue());
                         ShoppingList shoppingList = listSnapshot.getValue(ShoppingList.class);
-                        Timber.v("listSnapshot.getKey(): " + listSnapshot.getKey());
+                        // Timber.v("listSnapshot.getKey(): " + listSnapshot.getKey());
                         mListKeys.add(listSnapshot.getKey());
                         mShoppingList.add(shoppingList);
                         mActiveListAdapter.notifyDataSetChanged();

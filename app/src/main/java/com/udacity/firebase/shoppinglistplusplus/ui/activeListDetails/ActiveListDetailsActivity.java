@@ -388,7 +388,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
                                     // Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
                                     // Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
                                     // Timber.v("updatedItemBoughtData.toString(): " + updatedItemBoughtData.toString());
-                                    
+
                                     /* Do the update */
                                     mShoppingListItemsReference.updateChildren(updatedItemBoughtData, new DatabaseReference.CompletionListener() {
                                         @Override
