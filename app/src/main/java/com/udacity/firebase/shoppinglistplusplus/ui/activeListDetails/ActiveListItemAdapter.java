@@ -75,7 +75,17 @@ public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAd
 
             holder.textViewBoughtBy.setVisibility(View.VISIBLE);
             holder.textViewBoughtByUser.setVisibility(View.VISIBLE);
-            holder.buttonRemoveItem.setVisibility(View.INVISIBLE);
+
+            /**
+             * If you are the owner of the item or the owner of the list, then the remove icon
+             * is visible.
+             */
+            if (shoppingListItems.get(position).getOwner().equals(mEncodedEmail) || (shoppingListItems != null && shoppingListItems.get(position).getOwner().equals(mEncodedEmail))) {
+                holder.buttonRemoveItem.setVisibility(View.VISIBLE);
+            } else {
+                holder.buttonRemoveItem.setVisibility(View.INVISIBLE);
+            }
+
 
             /* Add a strike-through */
             holder.textViewItemName.setPaintFlags(holder.textViewItemName.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);

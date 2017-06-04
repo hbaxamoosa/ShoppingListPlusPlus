@@ -376,8 +376,11 @@ public class ActiveListDetailsActivity extends BaseActivity {
                                 updatedItemBoughtData.put("/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT, true);
                                 updatedItemBoughtData.put("/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT_BY, mEncodedEmail);
                             } else {
-                                updatedItemBoughtData.put("/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT, false);
-                                updatedItemBoughtData.put("/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT_BY, null);
+                                /* Return selected item only if it was bought by current user */
+                                if (selectedListItem.getBoughtBy().equals(mEncodedEmail)) {
+                                    updatedItemBoughtData.put("/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT, false);
+                                    updatedItemBoughtData.put("/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT_BY, null);
+                                }
                             }
 
                             Query query = mShoppingListItemsReference.child(selectedListItem.getItemName());
@@ -418,9 +421,15 @@ public class ActiveListDetailsActivity extends BaseActivity {
                 // Timber.v("mActiveListItemAdapter.getItemId(position): " + mActiveListItemAdapter.getItemId(position));
                 RecyclerView hasnain = (RecyclerView) view.findViewById(R.id.recyclerView);
                 // Timber.v("mShoppingListItemsArray.get(position).getItemName(): " + mShoppingListItemsArray.get(position).getItemName());
-
                 // Timber.v("mActiveListItemAdapter.getItemId(position): " + mActiveListItemAdapter.getItemId(position));
-                showEditListItemNameDialog(mShoppingListItemsArray.get(position).getItemName(), mKey);
+
+                /**
+                 * If the person is the owner and not shopping and the item is not bought, then they can edit it.
+                 */
+                if (mShoppingListItemsArray.get(position).getOwner().equals(mEncodedEmail) && !mShopping && !mShoppingListItemsArray.get(position).isBought()) {
+                    showEditListItemNameDialog(mShoppingListItemsArray.get(position).getItemName(), mKey);
+                }
+
             }
 
         }));
