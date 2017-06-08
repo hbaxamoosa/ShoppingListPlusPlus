@@ -25,7 +25,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
@@ -256,7 +255,8 @@ public class ActiveListDetailsActivity extends BaseActivity {
         super.onResume();
         // Timber.v("onResume()");
 
-        mShoppingListItemsValueEventListener = new ValueEventListener() {
+        Query orderedListItems = mShoppingListItemsReference.orderByChild(Constants.FIREBASE_PROPERTY_BOUGHT);
+        orderedListItems.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // Timber.v("onChildAdded in mShoppingListItemsReference");
@@ -283,8 +283,8 @@ public class ActiveListDetailsActivity extends BaseActivity {
             public void onCancelled(DatabaseError databaseError) {
                 Timber.v("Error: " + databaseError.toString());
             }
-        };
-        mShoppingListItemsReference.addValueEventListener(mShoppingListItemsValueEventListener);
+        });
+        // mShoppingListItemsReference.addValueEventListener(mShoppingListItemsValueEventListener);
     }
 
     @Override
@@ -292,9 +292,9 @@ public class ActiveListDetailsActivity extends BaseActivity {
         super.onPause();
         // Timber.v("onPause()");
 
-        if (mShoppingListItemsValueEventListener != null) {
+        /*if (mShoppingListItemsValueEventListener != null) {
             mShoppingListItemsReference.removeEventListener(mShoppingListItemsValueEventListener);
-        }
+        }*/
     }
 
     @Override
@@ -302,9 +302,9 @@ public class ActiveListDetailsActivity extends BaseActivity {
         super.onStop();
         // Timber.v("onStop()");
 
-        if (mShoppingListItemsValueEventListener != null) {
+        /*if (mShoppingListItemsValueEventListener != null) {
             mShoppingListItemsReference.removeEventListener(mShoppingListItemsValueEventListener);
-        }
+        }*/
 
         if (mCurrentUserRefListener != null) {
             mCurrentUserRef.removeEventListener(mCurrentUserRefListener);
@@ -322,9 +322,9 @@ public class ActiveListDetailsActivity extends BaseActivity {
         mShoppingListArray.clear();
         mShoppingListItemsArray.clear();
 
-        if (mShoppingListItemsValueEventListener != null) {
+        /*if (mShoppingListItemsValueEventListener != null) {
             mShoppingListItemsReference.removeEventListener(mShoppingListItemsValueEventListener);
-        }
+        }*/
 
         if (mCurrentUserRefListener != null) {
             mCurrentUserRef.removeEventListener(mCurrentUserRefListener);
@@ -357,8 +357,8 @@ public class ActiveListDetailsActivity extends BaseActivity {
             @Override
             public void onClick(View view, final int position) {
                 //Values are passing to activity & to fragment as well
-                Toast.makeText(ActiveListDetailsActivity.this, "Single click on position: " + position,
-                        Toast.LENGTH_SHORT).show();
+                /*Toast.makeText(ActiveListDetailsActivity.this, "Single click on position: " + position,
+                        Toast.LENGTH_SHORT).show();*/
 
                 /* Check that the view is not the empty footer item */
                 if (view.getId() != R.id.list_view_footer_empty) {
@@ -415,8 +415,9 @@ public class ActiveListDetailsActivity extends BaseActivity {
 
             @Override
             public void onLongClick(View view, int position) {
-                Toast.makeText(ActiveListDetailsActivity.this, "Long press on position: " + position,
-                        Toast.LENGTH_LONG).show();
+                /*Toast.makeText(ActiveListDetailsActivity.this, "Long press on position: " + position,
+                        Toast.LENGTH_LONG).show();*/
+
                 // Timber.v("mActiveListItemAdapter.getItemCount(): " + mActiveListItemAdapter.getItemCount());
                 // Timber.v("mActiveListItemAdapter.getItemId(position): " + mActiveListItemAdapter.getItemId(position));
                 RecyclerView hasnain = (RecyclerView) view.findViewById(R.id.recyclerView);
