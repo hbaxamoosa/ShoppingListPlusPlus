@@ -1,12 +1,8 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.activeListDetails;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ServerValue;
-import com.google.firebase.database.ValueEventListener;
 
 import android.app.Dialog;
 import android.os.Bundle;
@@ -21,8 +17,6 @@ import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 import java.util.HashMap;
 import java.util.Map;
 
-import timber.log.Timber;
-
 /**
  * Lets user add new list item.
  */
@@ -30,24 +24,20 @@ public class AddListItemDialogFragment extends EditListDialogFragment {
 
     static String mListId;
     static String mOwner;
-    private String listKey;
-
-    // Firebase Realtime Database
-    private FirebaseDatabase mFirebaseDatabase;
-    private DatabaseReference mShoppingListDatabaseReference;
+    static String mListKey;
 
     /**
      * Public static constructor that creates fragment and passes a bundle with data into it when adapter is created
      */
     public static AddListItemDialogFragment newInstance(ShoppingList shoppingList, String listId,
-                                                        String encodedEmail,
+                                                        String listKey, String encodedEmail,
                                                         HashMap<String, User> sharedWithUsers) {
         AddListItemDialogFragment addListItemDialogFragment = new AddListItemDialogFragment();
         Bundle bundle = EditListDialogFragment.newInstanceHelper(shoppingList,
                 R.layout.dialog_add_item, listId, encodedEmail, sharedWithUsers);
         addListItemDialogFragment.setArguments(bundle);
-
         mListId = listId;
+        mListKey = listKey;
         mOwner = encodedEmail;
         return addListItemDialogFragment;
     }
@@ -58,30 +48,6 @@ public class AddListItemDialogFragment extends EditListDialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Initialize Firebase components
-        mFirebaseDatabase = FirebaseDatabase.getInstance();
-        mShoppingListDatabaseReference = mFirebaseDatabase.getReference();
-        // Timber.v("mFirebaseDatabase.getReference(): " + mFirebaseDatabase.getReference());
-
-        Query queryList = mShoppingListDatabaseReference.child("shoppingLists").orderByChild("listName").equalTo(mListId);
-        queryList.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                DataSnapshot nodeDataSnapshot = dataSnapshot.getChildren().iterator().next();
-                // Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
-                // Timber.v("nodeDataSnapshot.getKey(): " + nodeDataSnapshot.getKey());
-
-                listKey = nodeDataSnapshot.getKey(); // find the node's key in shoppingLists
-                // Timber.v("01 listKey: " + listKey);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Timber.v("Error: " + databaseError);
-            }
-        });
-
     }
 
     @Override
@@ -98,6 +64,11 @@ public class AddListItemDialogFragment extends EditListDialogFragment {
     @Override
     protected void doListEdit() {
         String mItemName = mEditTextForList.getText().toString();
+
+        // Initialize Firebase components
+        FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
+        DatabaseReference mShoppingListItemsDatabaseReference = mFirebaseDatabase.getReference();
+
         /**
          * Adds list item if the input name is not empty
          */
@@ -111,20 +82,19 @@ public class AddListItemDialogFragment extends EditListDialogFragment {
             HashMap<String, Object> itemToAdd =
                     (HashMap<String, Object>) new ObjectMapper().convertValue(itemToAddObject, Map.class);
 
-            // Timber.v("02 listKey: " + listKey);
-            /* Add the item to the update map*/
-            updatedItemToAddMap.put("/" + "shoppingListItems" + "/" + listKey + "/" + mItemName, itemToAdd);
+            /* Add the shopping list item to the update map */
+            updatedItemToAddMap.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mListKey + "/" + mItemName, itemToAdd);
 
 
             /* Make the timestamp for last changed */
             HashMap<String, Object> changedTimestampMap = new HashMap<>();
             changedTimestampMap.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
 
-            /* Add the updated timestamp */
-            updatedItemToAddMap.put("/" + "shoppingLists" + "/" + listKey + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED, changedTimestampMap);
+            /* Add the updated timestamp to the user list */
+            updatedItemToAddMap.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + mEncodedEmail + "/" + mListKey + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED, changedTimestampMap);
 
             /* Do the update */
-            mShoppingListDatabaseReference.updateChildren(updatedItemToAddMap);
+            mShoppingListItemsDatabaseReference.updateChildren(updatedItemToAddMap);
 
             /**
              * Close the dialog fragment when done

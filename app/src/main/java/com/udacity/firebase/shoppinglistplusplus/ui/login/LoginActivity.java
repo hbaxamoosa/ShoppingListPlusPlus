@@ -86,7 +86,7 @@ public class LoginActivity extends BaseActivity implements
 
         // Initialize Firebase components
         mFirebaseDatabase = FirebaseDatabase.getInstance();
-        mShoppingListDatabaseReference = mFirebaseDatabase.getReference("users");
+        mShoppingListDatabaseReference = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_USERS);
 
         /* Setup the Google API object to allow Google logins */
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -183,8 +183,8 @@ public class LoginActivity extends BaseActivity implements
                 // Sign-in succeeded, set up the UI
                 Toast.makeText(this, "Signed in!", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                intent.putExtra("username", mUsername);
-                // Timber.v("username: " + mUsername);
+                intent.putExtra(Constants.KEY_LIST_OWNER, mUsername);
+                intent.putExtra(Constants.KEY_ENCODED_EMAIL, mEncodedEmail);
                 startActivity(intent);
             } else if (resultCode == RESULT_CANCELED) {
                 // Sign in was canceled by the user, finish the activity

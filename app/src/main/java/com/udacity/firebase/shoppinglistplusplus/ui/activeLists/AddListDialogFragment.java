@@ -1,7 +1,6 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.activeLists;
 
 import com.google.android.gms.tasks.OnFailureListener;
-import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
@@ -20,12 +19,14 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
-import com.udacity.firebase.shoppinglistplusplus.ui.login.LoginActivity;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
+import com.udacity.firebase.shoppinglistplusplus.utils.Utils;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import timber.log.Timber;
 
@@ -38,7 +39,7 @@ public class AddListDialogFragment extends DialogFragment {
 
     // Firebase Realtime Database
     private FirebaseDatabase mFirebaseDatabase;
-    private DatabaseReference mShoppingListDatabaseReference;
+    private DatabaseReference mUserListsDatabaseReference;
 
     /**
      * Public static constructor that creates fragment and
@@ -59,10 +60,6 @@ public class AddListDialogFragment extends DialogFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mEncodedEmail = getArguments().getString(Constants.KEY_ENCODED_EMAIL);
-
-        // Initialize Firebase components
-        mFirebaseDatabase = FirebaseDatabase.getInstance();
-        mShoppingListDatabaseReference = mFirebaseDatabase.getReference("shoppingLists");
     }
 
     /**
@@ -114,7 +111,6 @@ public class AddListDialogFragment extends DialogFragment {
      * Add new active list
      */
     public void addShoppingList() {
-
         // Timber.v("inside addShoppingList()");
 
         String userEnteredName = mEditTextListName.getText().toString();
@@ -124,6 +120,18 @@ public class AddListDialogFragment extends DialogFragment {
          */
         if (!userEnteredName.equals("")) {
 
+            // Initialize Firebase components
+            mFirebaseDatabase = FirebaseDatabase.getInstance();
+            mUserListsDatabaseReference = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_USER_LISTS).child(mEncodedEmail);
+
+            DatabaseReference dbRef = mUserListsDatabaseReference.push();
+
+            /* Save listsRef.push() to maintain same random Id */
+            final String listId = dbRef.getKey();
+
+            /* HashMap for data to update */
+            HashMap<String, Object> updateShoppingListData = new HashMap<>();
+
             /**
              * Set raw version of date to the ServerValue.TIMESTAMP value and save into
              * timestampCreatedMap
@@ -131,15 +139,16 @@ public class AddListDialogFragment extends DialogFragment {
             HashMap<String, Object> timestampCreated = new HashMap<>();
             timestampCreated.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
 
-            Bundle bundle = new Bundle();
-            bundle.putString(FirebaseAnalytics.Param.CAMPAIGN, "add new list");
-            LoginActivity.mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
-
             /* Build the shopping list */
-            ShoppingList shoppingList = new ShoppingList(userEnteredName, mEncodedEmail,
-                    timestampCreated);
+            ShoppingList shoppingList = new ShoppingList(userEnteredName, mEncodedEmail, timestampCreated);
 
-            mShoppingListDatabaseReference.push().setValue(shoppingList).addOnFailureListener(new OnFailureListener() {
+            HashMap<String, Object> shoppingListMap = (HashMap<String, Object>)
+                    new ObjectMapper().convertValue(shoppingList, Map.class);
+
+            Utils.updateMapForAllWithValue(listId, mEncodedEmail,
+                    updateShoppingListData, "", shoppingListMap);
+
+            mUserListsDatabaseReference.push().setValue(shoppingList).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
                     Timber.v(e.getLocalizedMessage());

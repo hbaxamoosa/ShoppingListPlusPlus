@@ -24,24 +24,25 @@ import timber.log.Timber;
  * Lets user edit the list name for all copies of the current list
  */
 public class EditListNameDialogFragment extends EditListDialogFragment {
-    private static final String LOG_TAG = ActiveListDetailsActivity.class.getSimpleName();
-    String mListName;
-
-    // Firebase Realtime Database
-    private FirebaseDatabase mFirebaseDatabase;
-    private DatabaseReference mShoppingListDatabaseReference;
+    // private static final String LOG_TAG = ActiveListDetailsActivity.class.getSimpleName();
+    static String mListId;
+    static String mOwner;
+    static String mListKey;
 
     /**
      * Public static constructor that creates fragment and passes a bundle with data into it when adapter is created
      */
     public static EditListNameDialogFragment newInstance(ShoppingList shoppingList, String listId,
-                                                         String encodedEmail,
+                                                         String listKey, String encodedEmail,
                                                          HashMap<String, User> sharedWithUsers) {
         EditListNameDialogFragment editListNameDialogFragment = new EditListNameDialogFragment();
         Bundle bundle = EditListDialogFragment.newInstanceHelper(shoppingList,
                 R.layout.dialog_edit_list, listId, encodedEmail, sharedWithUsers);
         bundle.putString(Constants.KEY_LIST_NAME, shoppingList.getListName());
         editListNameDialogFragment.setArguments(bundle);
+        mListId = listId;
+        mListKey = listKey;
+        mOwner = encodedEmail;
         return editListNameDialogFragment;
     }
 
@@ -51,11 +52,7 @@ public class EditListNameDialogFragment extends EditListDialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mListName = getArguments().getString(Constants.KEY_LIST_NAME);
-
-        // Initialize Firebase components
-        mFirebaseDatabase = FirebaseDatabase.getInstance();
-        mShoppingListDatabaseReference = mFirebaseDatabase.getReference("shoppingLists");
+        mListId = getArguments().getString(Constants.KEY_LIST_NAME);
     }
 
 
@@ -70,7 +67,7 @@ public class EditListNameDialogFragment extends EditListDialogFragment {
          * {@link EditListDialogFragment#helpSetDefaultValueEditText(String)} is a superclass
          * method that sets the default text of the TextView
          */
-        helpSetDefaultValueEditText(mListName);
+        helpSetDefaultValueEditText(mListId);
         return dialog;
     }
 
@@ -84,23 +81,25 @@ public class EditListNameDialogFragment extends EditListDialogFragment {
          * and that the dialog was properly initialized with the current name and id of the list.
          */
 
-        Query query = mShoppingListDatabaseReference.orderByChild("listName").equalTo(mListName);
+        // Initialize Firebase components
+        FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
+        final DatabaseReference mUserListsDatabaseReference = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_USER_LISTS);
+
+        Query query = mUserListsDatabaseReference.orderByChild(Constants.FIREBASE_PROPERTY_LIST_NAME).equalTo(mListId);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                DataSnapshot nodeDataSnapshot = dataSnapshot.getChildren().iterator().next();
                 // Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
-                // Timber.v("nodeDataSnapshot.getKey(): " + nodeDataSnapshot.getKey());
 
                 HashMap<String, Object> result = new HashMap<>();
-                result.put("listName", inputListName);
+                result.put("/" + mOwner + "/" + mListKey + "/" + Constants.FIREBASE_PROPERTY_LIST_NAME, inputListName);
 
                 HashMap<String, Object> timestampNowHash = new HashMap<>();
                 timestampNowHash.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
 
-                result.put("timestampLastChanged", timestampNowHash);
+                result.put("/" + mOwner + "/" + mListKey + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED, timestampNowHash);
 
-                mShoppingListDatabaseReference.child(nodeDataSnapshot.getKey()).updateChildren(result);
+                mUserListsDatabaseReference.updateChildren(result);
             }
 
             @Override

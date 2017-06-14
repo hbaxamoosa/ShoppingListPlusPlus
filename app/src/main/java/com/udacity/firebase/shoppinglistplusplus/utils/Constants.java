@@ -17,8 +17,6 @@ public final class Constants {
     public static final String FIREBASE_LOCATION_UID_MAPPINGS = "uidMappings";
     public static final String FIREBASE_LOCATION_OWNER_MAPPINGS = "ownerMappings";
 
-
-
     /**
      * Constants for Firebase object properties
      */

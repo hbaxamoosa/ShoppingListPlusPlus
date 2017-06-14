@@ -31,8 +31,6 @@ import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
 import java.util.ArrayList;
 
-import timber.log.Timber;
-
 /**
  * Represents the home screen of the app which
  * has a {@link ViewPager} with {@link ShoppingListsFragment} and {@link MealsFragment}
@@ -59,7 +57,7 @@ public class MainActivity extends BaseActivity {
         Intent intent = getIntent();
         if (null != intent) { //Null Checking
             mEncodedEmail = intent.getStringExtra(Constants.KEY_ENCODED_EMAIL);
-            Timber.v("mEncodedEmail: " + mEncodedEmail);
+            // Timber.v("mEncodedEmail: " + mEncodedEmail);
         }
 
         /**

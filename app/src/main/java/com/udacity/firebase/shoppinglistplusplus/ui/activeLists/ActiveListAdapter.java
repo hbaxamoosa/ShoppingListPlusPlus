@@ -63,11 +63,11 @@ public class ActiveListAdapter extends RecyclerView.Adapter<ActiveListAdapter.Vi
         holder.ownerName.setText(shoppingList.get(position).getOwner());
         holder.listName.setText(shoppingList.get(position).getListName());
 
-/**
- * Show "1 person is shopping" if one person is shopping
- * Show "N people shopping" if two or more users are shopping
- * Show nothing if nobody is shopping
- */
+        /**
+         * Show "1 person is shopping" if one person is shopping
+         * Show "N people shopping" if two or more users are shopping
+         * Show nothing if nobody is shopping
+         */
         if (shoppingList.get(position).getUsersShopping() != null) {
             int usersShopping = shoppingList.get(position).getUsersShopping().size();
             if (usersShopping == 1) {
@@ -95,11 +95,11 @@ public class ActiveListAdapter extends RecyclerView.Adapter<ActiveListAdapter.Vi
 
                 // Initialize Firebase components
                 FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
-                DatabaseReference mUserRef = mFirebaseDatabase.getReference("shoppingLists");
+                DatabaseReference mUserListsDatabaseReference = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_USER_LISTS);
 
                 /* Save the most up-to-date version of current user in mCurrentUser */
 
-                mUserRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                mUserListsDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         // Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());

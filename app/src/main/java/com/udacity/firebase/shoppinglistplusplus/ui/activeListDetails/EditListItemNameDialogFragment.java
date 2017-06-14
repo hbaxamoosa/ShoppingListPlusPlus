@@ -31,7 +31,7 @@ public class EditListItemNameDialogFragment extends EditListDialogFragment {
 
     // Firebase Realtime Database
     private FirebaseDatabase mFirebaseDatabase;
-    private DatabaseReference mShoppingListDatabaseReference;
+    private DatabaseReference mListItemsRef;
 
     /**
      * Public static constructor that creates fragment and passes a bundle with data into it when
@@ -62,7 +62,7 @@ public class EditListItemNameDialogFragment extends EditListDialogFragment {
 
         // Initialize Firebase components
         mFirebaseDatabase = FirebaseDatabase.getInstance();
-        mShoppingListDatabaseReference = mFirebaseDatabase.getReference();
+        mListItemsRef = mFirebaseDatabase.getReference();
     }
 
 
@@ -88,8 +88,8 @@ public class EditListItemNameDialogFragment extends EditListDialogFragment {
     protected void doListEdit() {
         final String nameInput = mEditTextForList.getText().toString();
 
-        Timber.v("mItemName: " + mItemName);
-        Timber.v("mItemId: " + mItemId);
+        // Timber.v("mItemName: " + mItemName);
+        // Timber.v("mItemId: " + mItemId);
 
         /**
          * Set input text to be the current list item name if it is not empty and is not the
@@ -97,19 +97,19 @@ public class EditListItemNameDialogFragment extends EditListDialogFragment {
          */
         if (!nameInput.equals("") && !nameInput.equals(mItemName)) {
 
-/**
- * Check that the user inputted list name is not empty, has changed the original name
- * and that the dialog was properly initialized with the current name and id of the list.
- */
+            /**
+             * Check that the user inputted list name is not empty, has changed the original name
+             * and that the dialog was properly initialized with the current name and id of the list.
+             */
 
 
-            Query query = mShoppingListDatabaseReference.child("shoppingLists").orderByKey();
-            Timber.v("query.getRef(): " + query.getRef());
+            Query query = mListItemsRef.child(Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS).orderByChild(mItemId);
+            // Timber.v("query.getRef(): " + query.getRef());
             query.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
-                    Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
+                    // Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
+                    // Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
 
                     /* Make a map for the item you are adding */
                     HashMap<String, Object> updatedItemToAddMap = new HashMap<String, Object>();
@@ -122,18 +122,20 @@ public class EditListItemNameDialogFragment extends EditListDialogFragment {
                     /**
                      * the path in 'put' must be the fully declared path
                      */
-                    updatedItemToAddMap.put("/" + "shoppingListItems" + "/" + mItemId + "/" + nameInput, itemToAdd);
-                    updatedItemToAddMap.put("/" + "shoppingListItems" + "/" + mItemId + "/" + mItemName, null);
+                    // add the nameInput as a new item
+                    updatedItemToAddMap.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mItemId + "/" + nameInput, itemToAdd);
+                    // delete the existing item
+                    updatedItemToAddMap.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mItemId + "/" + mItemName, null);
 
                     /* Make the timestamp for last changed */
                     HashMap<String, Object> changedTimestampMap = new HashMap<>();
                     changedTimestampMap.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
 
-                    /* Add the updated timestamp */
-                    updatedItemToAddMap.put("/" + "shoppingLists" + "/" + mItemId + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED, changedTimestampMap);
+                    /* Add the updated timestamp to the user list */
+                    updatedItemToAddMap.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + mEncodedEmail + "/" + mItemId + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED, changedTimestampMap);
 
                     /* Do the update */
-                    mShoppingListDatabaseReference.updateChildren(updatedItemToAddMap);
+                    mListItemsRef.updateChildren(updatedItemToAddMap);
                 }
 
                 @Override

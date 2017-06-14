@@ -93,6 +93,7 @@ public class RemoveListDialogFragment extends DialogFragment {
     }
 
     private void removeList() {
+        // TODO: 6/14/17 update the delete action to point to the correct paths
         Query query = mFirebaseDatabaseReference.orderByKey();
         Timber.v("query.getRef(): " + query.getRef());
         query.addListenerForSingleValueEvent(new ValueEventListener() {

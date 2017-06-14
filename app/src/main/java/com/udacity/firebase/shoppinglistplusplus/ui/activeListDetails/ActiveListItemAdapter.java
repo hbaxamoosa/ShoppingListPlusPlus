@@ -186,20 +186,20 @@ public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAd
             // Initialize Firebase components
             FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
             final DatabaseReference mShoppingListItemsDatabaseReference = mFirebaseDatabase.getReference("shoppingListItems");
-            Timber.v("ActiveListDetailsActivity.mKey " + ActiveListDetailsActivity.mKey);
-            Timber.v("mShoppingListItemsDatabaseReference.getRef(): " + mShoppingListItemsDatabaseReference.getRef());
+            // Timber.v("ActiveListDetailsActivity.mKey " + ActiveListDetailsActivity.mKey);
+            // Timber.v("mShoppingListItemsDatabaseReference.getRef(): " + mShoppingListItemsDatabaseReference.getRef());
 
 
             Query query = mShoppingListItemsDatabaseReference.child(ActiveListDetailsActivity.mKey);
-            Timber.v("one.getRef(): " + query.getRef());
+            // Timber.v("query.getRef(): " + query.getRef());
             query.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
+                    // Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
                     for (DataSnapshot listItems : dataSnapshot.getChildren()) {
-                        Timber.v("listItems.getKey(): " + listItems.getKey());
-                        Timber.v("listItems.getValue(): " + listItems.getValue());
-                        Timber.v("shoppingListItems.get(getAdapterPosition()).getItemName()): " + shoppingListItems.get(getAdapterPosition()).getItemName());
+                        // Timber.v("listItems.getKey(): " + listItems.getKey());
+                        // Timber.v("listItems.getValue(): " + listItems.getValue());
+                        // Timber.v("shoppingListItems.get(getAdapterPosition()).getItemName()): " + shoppingListItems.get(getAdapterPosition()).getItemName());
                         if (listItems.getKey().equals(shoppingListItems.get(getAdapterPosition()).getItemName())) {
                             Timber.v("true");
                             HashMap<String, Object> result = new HashMap<>();

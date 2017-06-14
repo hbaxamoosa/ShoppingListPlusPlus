@@ -45,7 +45,7 @@ public class ShoppingListsFragment extends Fragment {
 
     // Firebase Realtime Database
     private FirebaseDatabase mFirebaseDatabase;
-    private DatabaseReference mShoppingListDatabaseReference;
+    private DatabaseReference mUserListsDatabaseReference;
     // private ChildEventListener mChildEventListener;
     private ValueEventListener valueEventListener;
 
@@ -77,7 +77,7 @@ public class ShoppingListsFragment extends Fragment {
 
         // Initialize Firebase components
         mFirebaseDatabase = FirebaseDatabase.getInstance();
-        mShoppingListDatabaseReference = mFirebaseDatabase.getReference("shoppingLists");
+        mUserListsDatabaseReference = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_USER_LISTS).child(mEncodedEmail);
     }
 
     @Override
@@ -125,7 +125,7 @@ public class ShoppingListsFragment extends Fragment {
          * if it's been selected in the SettingsActivity
          */
         if (sortOrder.equals(Constants.ORDER_BY_KEY)) {
-            orderedList = mShoppingListDatabaseReference.orderByKey();
+            orderedList = mUserListsDatabaseReference.orderByKey();
         } else {
 
             /**
@@ -133,14 +133,13 @@ public class ShoppingListsFragment extends Fragment {
              * depending on what's been selected in SettingsActivity
              */
 
-            orderedList = mShoppingListDatabaseReference.orderByChild(sortOrder);
+            orderedList = mUserListsDatabaseReference.orderByChild(sortOrder);
         }
 
         orderedList.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // Timber.v("ValueEventListener onDataChange(DataSnapshot dataSnapshot) " + dataSnapshot.getValue());
-                // Timber.v("onChildAdded");
                 // Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
                 mShoppingList.clear();
                 mListKeys.clear();
@@ -177,14 +176,14 @@ public class ShoppingListsFragment extends Fragment {
         // Timber.v("onStop()");
     }
 
-    /**
-     * Cleanup the adapter when activity is paused.
-     */
     @Override
     public void onPause() {
         super.onPause();
         // Timber.v("onPause()");
 
+        /**
+         * Cleanup the adapter when activity is paused.
+         */
         mShoppingList.clear();
     }
 
@@ -193,6 +192,9 @@ public class ShoppingListsFragment extends Fragment {
         super.onDestroy();
         // Timber.v("onDestroy()");
 
+        /**
+         * Cleanup the adapter when activity is paused.
+         */
         mShoppingList.clear();
     }
 
