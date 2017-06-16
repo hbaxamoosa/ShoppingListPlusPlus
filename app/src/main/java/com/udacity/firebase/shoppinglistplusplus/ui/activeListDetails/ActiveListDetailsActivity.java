@@ -5,6 +5,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 
 import android.app.Activity;
@@ -25,6 +26,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.udacity.firebase.shoppinglistplusplus.R;
@@ -356,8 +358,8 @@ public class ActiveListDetailsActivity extends BaseActivity {
             @Override
             public void onClick(View view, final int position) {
                 //Values are passing to activity & to fragment as well
-                /*Toast.makeText(ActiveListDetailsActivity.this, "Single click on position: " + position,
-                        Toast.LENGTH_SHORT).show();*/
+                Toast.makeText(ActiveListDetailsActivity.this, "Single click on position: " + position,
+                        Toast.LENGTH_SHORT).show();
 
                 /* Check that the view is not the empty footer item */
                 if (view.getId() != R.id.list_view_footer_empty) {
@@ -365,20 +367,20 @@ public class ActiveListDetailsActivity extends BaseActivity {
                     // Timber.v("selectedListItem.isBought(): " + selectedListItem.isBought());
                     // Timber.v("selectedListItem.getItemName(): " + selectedListItem.getItemName());
 
-                        /* If current user is shopping */
+                    /* If current user is shopping */
                     if (mShopping) {
-                            /* Create map and fill it in with deep path multi write operations list */
+                        /* Create map and fill it in with deep path multi write operations list */
                         final HashMap<String, Object> updatedItemBoughtData = new HashMap<String, Object>();
 
-                            /* Buy selected item if it is NOT already bought */
+                        /* Buy selected item if it is NOT already bought */
                         if (!selectedListItem.isBought()) {
-                            updatedItemBoughtData.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mKey + "/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT, true);
-                            updatedItemBoughtData.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mKey + "/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT_BY, mEncodedEmail);
+                            updatedItemBoughtData.put("/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT, true);
+                            updatedItemBoughtData.put("/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT_BY, mEncodedEmail);
                         } else {
-                                /* Return selected item only if it was bought by current user */
+                            /* Return selected item only if it was bought by current user */
                             if (selectedListItem.getBoughtBy().equals(mEncodedEmail)) {
-                                updatedItemBoughtData.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mKey + "/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT, false);
-                                updatedItemBoughtData.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mKey + "/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT_BY, null);
+                                updatedItemBoughtData.put("/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT, false);
+                                updatedItemBoughtData.put("/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT_BY, null);
                             }
                         }
 
@@ -391,7 +393,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
                                 // Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
                                 // Timber.v("updatedItemBoughtData.toString(): " + updatedItemBoughtData.toString());
 
-                                    /* Do the update */
+                                /* Do the update */
                                 mListItemsRef.updateChildren(updatedItemBoughtData, new DatabaseReference.CompletionListener() {
                                     @Override
                                     public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
@@ -576,41 +578,57 @@ public class ActiveListDetailsActivity extends BaseActivity {
      * This method is called when user taps "Start/Stop shopping" button
      */
     public void toggleShopping(View view) {
-        // Timber.v("toggleShopping(View view)");
         /**
          * If current user is already shopping, remove current user from userLists/usersShopping map. Otherwise, add.
          */
 
-        // TODO: 6/14/17 there is a bug here. also determine if we need to update userLists when we track usersShopping
+        // Timber.v("toggleShopping(View view)");
+
         Query query = mCurrentListRef.child(Constants.FIREBASE_PROPERTY_USERS_SHOPPING).child(mEncodedEmail);
-        Timber.v("query.getRef(): " + query.getRef());
+        // Timber.v("query.getRef(): " + query.getRef());
         /* Check to see whether user is shopping; use a SingleValueEvent listener for memory efficiency */
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
                 HashMap<String, Object> updatedUserData = new HashMap<String, Object>();
-                String propertyToUpdate = "/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + mEncodedEmail + "/" + mKey + "/" + Constants.FIREBASE_PROPERTY_USERS_SHOPPING;
-                Timber.v("propertyToUpdate: " + propertyToUpdate);
+                String propertyToUpdate = "/" + Constants.FIREBASE_PROPERTY_USERS_SHOPPING + "/" + mEncodedEmail;
+                // Timber.v("propertyToUpdate: " + propertyToUpdate);
                 /* If current user is already shopping, remove current user from usersShopping map */
                 if (mShopping) {
                     Timber.v("mShopping is TRUE");
                     /* user WAS shopping, but now has STOPPED shopping */
 
-                    mCurrentListRef.removeValue();
+                    updatedUserData.put(propertyToUpdate, null); // set the User Shopping value to NULL
 
                     /* Do a deep-path update */
-                    // mFirebaseDatabase.getReference().updateChildren(updatedUserData);
+                    mCurrentListRef.updateChildren(updatedUserData, new DatabaseReference.CompletionListener() {
+                        @Override
+                        public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                            if (databaseError != null) {
+                                Timber.v(getString(R.string.log_error_updating_data) + databaseError.getMessage());
+                            }
+                        }
+                    });
                 } else {
                     Timber.v("mShopping is FALSE");
                     /* user WAS NOT shopping, but now has STARTED shopping */
                     /* If current user is not shopping, create map to represent User model add to usersShopping map */
                     HashMap<String, Object> currentUser = (HashMap<String, Object>) new ObjectMapper().convertValue(mCurrentUser, Map.class);
+                    updatedUserData.put(propertyToUpdate, currentUser); // set the User Shopping value to current user
 
-                    mCurrentListRef.setValue(mCurrentUser);
+                    HashMap<String, Object> changedTimestampMap = new HashMap<>();
+                    changedTimestampMap.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
 
                     /* Do a deep-path update */
-                    // mFirebaseDatabase.getReference().updateChildren(updatedUserData);
+                    mCurrentListRef.updateChildren(updatedUserData, new DatabaseReference.CompletionListener() {
+                        @Override
+                        public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                            if (databaseError != null) {
+                                Timber.v(getString(R.string.log_error_updating_data) + databaseError.getMessage());
+                            }
+                        }
+                    });
                 }
             }
 
