@@ -34,10 +34,6 @@ public class RemoveListDialogFragment extends DialogFragment {
     String mListOwner;
     HashMap mSharedWith;
 
-    // Firebase Realtime Database
-    private FirebaseDatabase mFirebaseDatabase;
-    private DatabaseReference mFirebaseDatabaseReference;
-
     /**
      * Public static constructor that creates fragment and passes a bundle with data into it when adapter is created
      */
@@ -63,10 +59,6 @@ public class RemoveListDialogFragment extends DialogFragment {
         mListOwner = getArguments().getString(Constants.KEY_LIST_OWNER);
         mKey = getArguments().getString("key");
         mSharedWith = (HashMap) getArguments().getSerializable(Constants.KEY_SHARED_WITH_USERS);
-
-        // Initialize Firebase components
-        mFirebaseDatabase = FirebaseDatabase.getInstance();
-        mFirebaseDatabaseReference = mFirebaseDatabase.getReference();
     }
 
     @Override
@@ -93,25 +85,33 @@ public class RemoveListDialogFragment extends DialogFragment {
     }
 
     private void removeList() {
-        // TODO: 6/14/17 update the delete action to point to the correct paths
+
+        // Firebase Realtime Database
+        FirebaseDatabase mFirebaseDatabase;
+        final DatabaseReference mFirebaseDatabaseReference;
+
+        // Initialize Firebase components
+        mFirebaseDatabase = FirebaseDatabase.getInstance();
+        mFirebaseDatabaseReference = mFirebaseDatabase.getReference();
+
         Query query = mFirebaseDatabaseReference.orderByKey();
-        Timber.v("query.getRef(): " + query.getRef());
+        // Timber.v("query.getRef(): " + query.getRef());
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                DataSnapshot mShoppingListsDataSnapshot = dataSnapshot.child("shoppingLists").child(mKey);
-                Timber.v("mShoppingListsDataSnapshot.getRef(): " + mShoppingListsDataSnapshot.getRef());
-                Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
-                Timber.v("nodeDataSnapshot.getKey(): " + mShoppingListsDataSnapshot.getKey());
+                DataSnapshot mShoppingListsDataSnapshot = dataSnapshot.child(Constants.FIREBASE_LOCATION_USER_LISTS).child(mListOwner).child(mKey);
+                // Timber.v("mShoppingListsDataSnapshot.getRef(): " + mShoppingListsDataSnapshot.getRef());
+                // Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
+                // Timber.v("nodeDataSnapshot.getKey(): " + mShoppingListsDataSnapshot.getKey());
 
-                DataSnapshot mShoppingListItemsDataSnapshot = dataSnapshot.child("shoppingListItems").child(mKey);
-                Timber.v("mShoppingListItemsDataSnapshot: " + mShoppingListItemsDataSnapshot.getRef());
-                Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
-                Timber.v("nodeDataSnapshot.getKey(): " + mShoppingListItemsDataSnapshot.getKey());
+                DataSnapshot mShoppingListItemsDataSnapshot = dataSnapshot.child(Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS).child(mKey);
+                // Timber.v("mShoppingListItemsDataSnapshot: " + mShoppingListItemsDataSnapshot.getRef());
+                // Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
+                // Timber.v("nodeDataSnapshot.getKey(): " + mShoppingListItemsDataSnapshot.getKey());
 
                 HashMap<String, Object> result = new HashMap<>();
-                result.put("/" + "shoppingLists" + "/" + mShoppingListsDataSnapshot.getKey(), null); // delete the Shopping List
-                result.put("/" + "shoppingListItems" + "/" + mShoppingListItemsDataSnapshot.getKey(), null); // delete the Shopping List Items
+                result.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + mListOwner + "/" + mShoppingListsDataSnapshot.getKey(), null); // delete the Shopping List
+                result.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mShoppingListItemsDataSnapshot.getKey(), null); // delete the Shopping List Items
 
                 mFirebaseDatabaseReference.updateChildren(result, new DatabaseReference.CompletionListener() {
                     @Override
@@ -131,6 +131,7 @@ public class RemoveListDialogFragment extends DialogFragment {
 
         // Go back to MainActivity.java
         Intent intent = new Intent(getActivity(), MainActivity.class);
+        intent.putExtra(Constants.KEY_ENCODED_EMAIL, mListOwner);
         startActivity(intent);
     }
 

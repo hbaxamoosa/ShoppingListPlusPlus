@@ -135,7 +135,7 @@ public class LoginActivity extends BaseActivity implements
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
-                Timber.v("user: " + user);
+                // Timber.v("user: " + user);
 
                 if (user != null) {
                     // User is signed in

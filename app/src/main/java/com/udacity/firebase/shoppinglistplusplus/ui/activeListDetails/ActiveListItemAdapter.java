@@ -22,6 +22,7 @@ import android.widget.Toast;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingListItem;
 import com.udacity.firebase.shoppinglistplusplus.model.User;
+import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
 import java.util.HashMap;
 import java.util.List;
@@ -185,7 +186,7 @@ public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAd
         private void removeItem(View v) {
             // Initialize Firebase components
             FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
-            final DatabaseReference mShoppingListItemsDatabaseReference = mFirebaseDatabase.getReference("shoppingListItems");
+            final DatabaseReference mShoppingListItemsDatabaseReference = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS);
             // Timber.v("ActiveListDetailsActivity.mKey " + ActiveListDetailsActivity.mKey);
             // Timber.v("mShoppingListItemsDatabaseReference.getRef(): " + mShoppingListItemsDatabaseReference.getRef());
 
@@ -201,7 +202,7 @@ public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAd
                         // Timber.v("listItems.getValue(): " + listItems.getValue());
                         // Timber.v("shoppingListItems.get(getAdapterPosition()).getItemName()): " + shoppingListItems.get(getAdapterPosition()).getItemName());
                         if (listItems.getKey().equals(shoppingListItems.get(getAdapterPosition()).getItemName())) {
-                            Timber.v("true");
+                            // Timber.v("true");
                             HashMap<String, Object> result = new HashMap<>();
                             result.put("/" + ActiveListDetailsActivity.mKey + "/" + listItems.getKey(), null);
 
