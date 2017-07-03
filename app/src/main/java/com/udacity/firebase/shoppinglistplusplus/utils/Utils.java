@@ -48,6 +48,15 @@ public class Utils {
     }
 
     /**
+     * Email is being decoded just once to display real email in AutocompleteFriendAdapter
+     *
+     * @see com.udacity.firebase.shoppinglistplusplus.ui.sharing.AutocompleteFriendAdapter
+     */
+    public static String decodeEmail(String userEmail) {
+        return userEmail.replace(",", ".");
+    }
+
+    /**
      * Adds values to a pre-existing HashMap for updating a property for all of the ShoppingList
      * copies. The HashMap can then be used with to update the property for all ShoppingList
      * copies.

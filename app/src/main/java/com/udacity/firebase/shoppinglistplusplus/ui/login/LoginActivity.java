@@ -1,14 +1,22 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.login;
 
 import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
@@ -28,8 +36,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.firebase.ui.auth.AuthUI;
-import com.udacity.firebase.shoppinglistplusplus.BuildConfig;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.User;
 import com.udacity.firebase.shoppinglistplusplus.ui.BaseActivity;
@@ -37,9 +43,7 @@ import com.udacity.firebase.shoppinglistplusplus.ui.MainActivity;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 import com.udacity.firebase.shoppinglistplusplus.utils.Utils;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 
 import timber.log.Timber;
 
@@ -90,6 +94,7 @@ public class LoginActivity extends BaseActivity implements
 
         /* Setup the Google API object to allow Google logins */
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
                 .build();
 
@@ -131,23 +136,22 @@ public class LoginActivity extends BaseActivity implements
             }
         });
 
-        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
+        /*mAuthStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                // Timber.v("user: " + user);
+                FirebaseUser user = mFirebaseAuth.getCurrentUser();
 
                 if (user != null) {
                     // User is signed in
 
-                    // Timber.v("user.getDisplayName(): " + user.getDisplayName());
-                    // Timber.v("user.getEmail(): " + user.getEmail());
+                    Timber.v("user.getDisplayName(): " + user.getDisplayName());
+                    Timber.v("user.getEmail(): " + user.getEmail());
 
                     mUsername = user.getDisplayName();
                     mEncodedEmail = Utils.encodeEmail(user.getEmail());
 
-                    SharedPreferences.Editor mSharedPrefEditor = mSharedPref.edit();
-                    /* Save provider name and encodedEmail for later use and start MainActivity */
+                    mSharedPrefEditor = mSharedPref.edit();
+                    *//* Save provider name and encodedEmail for later use and start MainActivity *//*
                     mSharedPrefEditor.putString(Constants.KEY_ENCODED_EMAIL, mEncodedEmail).apply();
                     mSharedPrefEditor.putString(Constants.KEY_PROVIDER, null);
 
@@ -159,51 +163,120 @@ public class LoginActivity extends BaseActivity implements
                     // User is signed out
                     onSignedOutCleanup();
                     List<AuthUI.IdpConfig> providers = Arrays.asList(
-                            new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
+                            // new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
                             new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build()
                     );
 
+                    Timber.v("user is not signed in!!!");
                     startActivityForResult(
                             AuthUI.getInstance()
                                     .createSignInIntentBuilder()
                                     .setIsSmartLockEnabled(!BuildConfig.DEBUG)
-                                    .setProviders(providers)
+                                    .setAvailableProviders(providers)
                                     .build(),
                             RC_GOOGLE_LOGIN);
                 }
             }
-        };
+        };*/
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
         if (requestCode == RC_GOOGLE_LOGIN) {
             if (resultCode == RESULT_OK) {
-                // Sign-in succeeded, set up the UI
-                Toast.makeText(this, "Signed in!", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                intent.putExtra(Constants.KEY_LIST_OWNER, mUsername);
-                intent.putExtra(Constants.KEY_ENCODED_EMAIL, mEncodedEmail);
-                startActivity(intent);
-            } else if (resultCode == RESULT_CANCELED) {
-                // Sign in was canceled by the user, finish the activity
-                Toast.makeText(this, "Sign in canceled", Toast.LENGTH_SHORT).show();
-                finish();
+                GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+                if (result != null) {
+                    if (result.isSuccess()) {
+                        // Google Sign In was successful, authenticate with Firebase
+                        GoogleSignInAccount account = result.getSignInAccount();
+                        firebaseAuthWithGoogle(account);
+                    } else if (resultCode == RESULT_CANCELED) {
+                        // Sign in was canceled by the user, finish the activity
+                        Toast.makeText(this, "Sign in canceled", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                } else {
+                    Status status = result.getStatus();
+                    Timber.v("status: " + status);
+                }
             }
         }
+    }
+
+    private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
+        Timber.v("firebaseAuthWithGoogle: " + acct.getId());
+
+        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
+        mFirebaseAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            Timber.v("signInWithCredential:success");
+                            FirebaseUser user = mFirebaseAuth.getCurrentUser();
+                            Timber.v("user.getDisplayName(): " + user.getDisplayName());
+                            Timber.v("user.getEmail(): " + user.getEmail());
+
+                            mUsername = user.getDisplayName();
+                            mEncodedEmail = Utils.encodeEmail(user.getEmail());
+
+                            mSharedPrefEditor = mSharedPref.edit();
+                            /* Save provider name and encodedEmail for later use and start MainActivity */
+                            mSharedPrefEditor.putString(Constants.KEY_ENCODED_EMAIL, mEncodedEmail).apply();
+                            mSharedPrefEditor.putString(Constants.KEY_PROVIDER, null);
+
+                            onSignedInInitialize(mUsername);
+                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                            intent.putExtra(Constants.KEY_ENCODED_EMAIL, mEncodedEmail);
+                            startActivity(intent);
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            Timber.v("signInWithCredential:failure", task.getException());
+                            Toast.makeText(LoginActivity.this, "Authentication failed.",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        mFirebaseAuth.addAuthStateListener(mAuthStateListener);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        // Check if user is signed in (non-null) and update UI accordingly.
+        FirebaseUser currentUser = mFirebaseAuth.getCurrentUser();
+        if (currentUser != null) {
+            // Sign in success, update UI with the signed-in user's information
+            Timber.v("signInWithCredential:success");
+            FirebaseUser user = mFirebaseAuth.getCurrentUser();
+            Timber.v("user.getDisplayName(): " + user.getDisplayName());
+            Timber.v("user.getEmail(): " + user.getEmail());
+
+            mUsername = user.getDisplayName();
+            mEncodedEmail = Utils.encodeEmail(user.getEmail());
+
+            mSharedPrefEditor = mSharedPref.edit();
+            /* Save provider name and encodedEmail for later use and start MainActivity */
+            mSharedPrefEditor.putString(Constants.KEY_ENCODED_EMAIL, mEncodedEmail).apply();
+            mSharedPrefEditor.putString(Constants.KEY_PROVIDER, null);
+
+            onSignedInInitialize(mUsername);
+            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+            intent.putExtra(Constants.KEY_ENCODED_EMAIL, mEncodedEmail);
+            startActivity(intent);
+        }
     }
 
     private void onSignedInInitialize(String username) {

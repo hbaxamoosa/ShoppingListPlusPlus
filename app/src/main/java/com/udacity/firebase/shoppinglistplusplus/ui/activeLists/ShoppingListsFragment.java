@@ -46,8 +46,6 @@ public class ShoppingListsFragment extends Fragment {
     // Firebase Realtime Database
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mUserListsDatabaseReference;
-    // private ChildEventListener mChildEventListener;
-    private ValueEventListener valueEventListener;
 
     public ShoppingListsFragment() {
         /* Required empty public constructor */

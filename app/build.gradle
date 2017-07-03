@@ -1,5 +1,4 @@
 apply plugin: 'com.android.application'
-apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.firebase-perf'
 
 android {
@@ -31,7 +30,6 @@ android {
         exclude 'META-INF/LICENSE.txt'
         exclude 'META-INF/NOTICE.txt'
     }
-
 }
 
 dependencies {
@@ -49,14 +47,15 @@ dependencies {
     // Displaying images
     compile 'com.github.bumptech.glide:glide:3.7.0'
     // Firebase Realtime Database
-    compile 'com.google.firebase:firebase-database:10.2.6'
+    compile 'com.google.firebase:firebase-database:11.0.2'
     // FirebaseUI Auth
-    compile 'com.google.firebase:firebase-auth:10.2.6'
-    compile 'com.firebaseui:firebase-ui-auth:1.2.0'
+    compile 'com.google.firebase:firebase-auth:11.0.2'
+    compile 'com.google.android.gms:play-services-auth:11.0.2'
+    compile 'com.firebaseui:firebase-ui-auth:2.0.1'
     // Firebase Analytics
-    compile 'com.google.firebase:firebase-core:10.2.6'
+    compile 'com.google.firebase:firebase-core:11.0.2'
     // Firebase Performance Monitoring
-    compile 'com.google.firebase:firebase-perf:10.2.6'
+    compile 'com.google.firebase:firebase-perf:11.0.2'
 
     // Jackson
     compile 'com.fasterxml.jackson.core:jackson-core:2.7.2'

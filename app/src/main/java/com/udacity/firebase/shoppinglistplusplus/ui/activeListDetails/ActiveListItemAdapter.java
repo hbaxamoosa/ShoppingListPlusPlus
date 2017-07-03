@@ -97,7 +97,7 @@ public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAd
 
                 // Initialize Firebase components
                 FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
-                DatabaseReference mShoppingListDatabaseReference = mFirebaseDatabase.getReference("users");
+                DatabaseReference mShoppingListDatabaseReference = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_USERS);
 
                 Query query = mShoppingListDatabaseReference.child(shoppingListItems.get(position).getOwner());
                 Timber.v("query.getRef(): " + query.getRef());
