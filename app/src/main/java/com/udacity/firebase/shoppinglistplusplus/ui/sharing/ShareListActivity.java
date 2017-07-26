@@ -115,6 +115,7 @@ public class ShareListActivity extends BaseActivity {
                         mSharedWithUsers.put(listSnapshot.getKey(), listSnapshot.getValue(User.class));
                         mFriendAdapter.notifyDataSetChanged();
                     }
+                    Timber.v("mFriendAdapter.getItemCount(): " + mFriendAdapter.getItemCount());
                 }
             }
 

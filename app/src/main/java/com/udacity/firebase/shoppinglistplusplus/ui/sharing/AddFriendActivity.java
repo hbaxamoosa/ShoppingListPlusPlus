@@ -34,9 +34,12 @@ public class AddFriendActivity extends BaseActivity {
     private AutocompleteFriendAdapter mFriendsAutocompleteAdapter;
     private String mInput;
     private RecyclerView mRecyclerView;
+    private List<User> mUserList;
+
+    // Firebase
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mUsersReference;
-    private List<User> mUserList;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +51,12 @@ public class AddFriendActivity extends BaseActivity {
          */
         initializeScreen();
 
+        /**
+         * Create Firebase references
+         */
+        mFirebaseDatabase = FirebaseDatabase.getInstance();
+        mUsersReference = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_USERS);
+
         mUserList = new ArrayList<>();
 
         LinearLayoutManager manager = new LinearLayoutManager(this);
@@ -55,7 +64,7 @@ public class AddFriendActivity extends BaseActivity {
         mRecyclerView.setLayoutManager(manager);
 
         try {
-            mFriendsAutocompleteAdapter = new AutocompleteFriendAdapter(mUserList);
+            mFriendsAutocompleteAdapter = new AutocompleteFriendAdapter(mUserList, this);
             mRecyclerView.setAdapter(mFriendsAutocompleteAdapter);
         } catch (Exception e) {
             e.printStackTrace();
@@ -94,6 +103,40 @@ public class AddFriendActivity extends BaseActivity {
             /* Define and set the adapter otherwise. */
             } else {
                 Timber.v("FALSE");
+
+                /**
+                 * Add ValueEventListeners to Firebase references
+                 * to control get data and control behavior and visibility of elements
+                 */
+                Query userFriends = mUsersReference.getRef().orderByChild(Constants.FIREBASE_PROPERTY_EMAIL)
+                        .startAt(mInput).endAt(mInput + "~").limitToFirst(5);
+                Timber.v("userFriends.getRef(): " + userFriends.getRef());
+                /* Get the user's friends list; use a SingleValueEvent listener for memory efficiency */
+                userFriends.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Timber.v("ValueEventListener onDataChange(DataSnapshot dataSnapshot) " + dataSnapshot.getValue());
+                        Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
+                        if (mUserList != null) {
+                            mUserList.clear();
+                        }
+                        Iterator<DataSnapshot> it = dataSnapshot.getChildren().iterator();
+                        for (int i = 0; i < dataSnapshot.getChildrenCount(); i++) {
+                            if (it.hasNext()) {
+                                DataSnapshot listSnapshot = it.next();
+                                Timber.v("listSnapshot.getKey(): " + listSnapshot.getKey());
+                                Timber.v("listSnapshot.getValue(): " + listSnapshot.getValue());
+                                mUserList.add(listSnapshot.getValue(User.class));
+                                mFriendsAutocompleteAdapter.notifyDataSetChanged();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Timber.v("Error: " + databaseError);
+                    }
+                });
                 mRecyclerView.setAdapter(mFriendsAutocompleteAdapter);
             }
         }
@@ -104,14 +147,7 @@ public class AddFriendActivity extends BaseActivity {
     @Override
     public void onResume() {
         super.onResume();
-        // Timber.v("onResume()");
-
-        /**
-         * Create Firebase references
-         */
-        mFirebaseDatabase = FirebaseDatabase.getInstance();
-        mUsersReference = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_USERS);
-
+        Timber.v("onResume()");
 
         /**
          * Add ValueEventListeners to Firebase references

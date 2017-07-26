@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.User;
+import com.udacity.firebase.shoppinglistplusplus.utils.Utils;
 
 import java.util.HashMap;
 
@@ -19,8 +20,7 @@ import timber.log.Timber;
  * Populates the list_view_friends_share inside ShareListActivity
  */
 public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder> {
-    private static final String LOG_TAG = FriendAdapter.class.getSimpleName();
-    private String mListId;
+    // private String mListId;
     private HashMap<String, User> mSharedUsersList;
     private Context context;
     private String mEncodedEmail;
@@ -46,7 +46,7 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder
 
     @Override
     public void onBindViewHolder(FriendAdapter.ViewHolder holder, int position) {
-
+        holder.userName.setText(Utils.decodeEmail(mSharedUsersList.values().iterator().next().getEmail()));
     }
 
     @Override
@@ -61,13 +61,14 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder
         public ViewHolder(View itemView) {
             super(itemView);
             userName = (TextView) itemView.findViewById(R.id.user_name);
+            itemView.setOnClickListener(this);
         }
 
         @Override
         public void onClick(View v) {
-            Timber.v("class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener");
+            Timber.v("onClick(View v)");
             int adapterPosition = getAdapterPosition();
-            Toast.makeText(v.getContext(), "adapterPosition: " + adapterPosition, Toast.LENGTH_LONG).show();
+            Toast.makeText(v.getContext(), "adapterPosition: " + adapterPosition, Toast.LENGTH_SHORT).show();
         }
     }
 }

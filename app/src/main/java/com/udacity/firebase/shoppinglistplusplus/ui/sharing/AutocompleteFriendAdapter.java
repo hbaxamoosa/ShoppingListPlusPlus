@@ -1,6 +1,14 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.sharing;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +18,7 @@ import android.widget.Toast;
 
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.User;
+import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 import com.udacity.firebase.shoppinglistplusplus.utils.Utils;
 
 import java.util.List;
@@ -20,17 +29,14 @@ import timber.log.Timber;
  * Populates the list_view_friends_autocomplete inside AddFriendActivity
  */
 public class AutocompleteFriendAdapter extends RecyclerView.Adapter<AutocompleteFriendAdapter.ViewHolder> {
-    private Context context;
-    private List<User> userList;
+    private static List<User> userList;
+    private static String mEncodedEmail;
 
-
-    public AutocompleteFriendAdapter(List<User> users) {
-        this.userList = users;
-    }
-
-    // Easy access to the context object in the recyclerview
-    private Context getContext() {
-        return context;
+    public AutocompleteFriendAdapter(List<User> users, Context c) {
+        userList = users;
+        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(c);
+        mEncodedEmail = sharedPref.getString(Constants.KEY_ENCODED_EMAIL, null);
+        Timber.v("mEncodedEmail: " + mEncodedEmail);
     }
 
     @Override
@@ -68,10 +74,73 @@ public class AutocompleteFriendAdapter extends RecyclerView.Adapter<Autocomplete
         }
 
         @Override
-        public void onClick(View v) {
+        public void onClick(final View v) {
             Timber.v("class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener");
-            int adapterPosition = getAdapterPosition();
+            final int adapterPosition = getAdapterPosition();
             Toast.makeText(v.getContext(), "adapterPosition: " + adapterPosition, Toast.LENGTH_LONG).show();
+
+            /**
+             * If selected user is not current user proceed
+             */
+            if (isNotCurrentUser(userList.get(adapterPosition))) {
+
+                /**
+                 * Create Firebase references
+                 */
+                // TODO: 7/4/17 debug this. location for userFriends needs to be set correctly 
+                FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
+                final DatabaseReference mUserFriendsReference = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_USER_FRIENDS).child(mEncodedEmail);
+
+                /**
+                 * Add listener for single value event to perform a one time operation
+                 */
+                mUserFriendsReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+
+                        /**
+                         * Add selected user to current user's friends if not in friends yet
+                         */
+                        if (isNotAlreadyAdded(dataSnapshot, userList.get(adapterPosition))) {
+                            mUserFriendsReference.child(userList.get(adapterPosition).getEmail()).setValue(userList.get(adapterPosition));
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Timber.v(itemView.getContext().getString(R.string.log_error_the_read_failed) +
+                                databaseError.getMessage());
+                    }
+                });
+
+            }
+        }
+
+        private boolean isNotCurrentUser(User user) {
+
+            if (user.getEmail().equals(mEncodedEmail)) {
+            /* Toast appropriate error message if the user is trying to add themselves  */
+                Toast.makeText(itemView.getContext(),
+                        itemView.getContext().getResources().getString(R.string.toast_you_cant_add_yourself),
+                        Toast.LENGTH_LONG).show();
+                return false;
+            }
+            return true;
+        }
+
+        private boolean isNotAlreadyAdded(DataSnapshot dataSnapshot, User user) {
+            if (dataSnapshot.getValue(User.class) != null) {
+            /* Toast appropriate error message if the user is already a friend of the user */
+                String friendError = String.format(itemView.getContext().getResources().
+                                getString(R.string.toast_is_already_your_friend),
+                        user.getName());
+
+                Toast.makeText(itemView.getContext(),
+                        friendError,
+                        Toast.LENGTH_LONG).show();
+                return false;
+            }
+            return true;
         }
     }
 }
