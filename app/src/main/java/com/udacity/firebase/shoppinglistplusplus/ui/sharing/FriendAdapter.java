@@ -60,6 +60,13 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder
     }
 
     @Override
+    public void onDetachedFromRecyclerView(RecyclerView recyclerView) {
+        super.onDetachedFromRecyclerView(recyclerView);
+        Timber.v("onDetachedFromRecyclerView(RecyclerView recyclerView)");
+
+    }
+
+    @Override
     public void onBindViewHolder(final FriendAdapter.ViewHolder holder, final int position) {
         if (mSharedUsersList.get(position) != null) {
             holder.userName.setText(Utils.decodeEmail(mSharedUsersList.get(position).getEmail()));
@@ -95,7 +102,6 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder
          * list)
          */
 
-        // TODO: 8/14/17 use a value event listener, instead of a addListenerForSingleValueEvent, so that the button image is always current
         if (mFriendRef != null) {
             Timber.v("ViewHolder mFriendRef.getRef(): " + mFriendRef.getRef());
             ValueEventListener listener = mFriendRef.addValueEventListener(new ValueEventListener() {
@@ -117,8 +123,6 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder
 
                                 Timber.v("clicking on checkbox icon");
                                 addFriend(false);
-
-                                // TODO: 8/15/17 implement the FRTDB update with the user being removed from the sharedWith node
                             }
                         });
                     } else {
@@ -133,12 +137,12 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder
                             @Override
                             public void onClick(View v) {
                                 Timber.v("clicking on plus icon");
-                                // TODO: 8/15/17 implement the FRTDB update with the user being added to the sharedWith node and add the new list to the friend's lists
                                 addFriend(true);
                             }
                         });
                     }
                 }
+                // TODO: 8/23/17 keep track of the listeners, so that they can be cleaned up from the ShareListActivity.java 
 
                 private void addFriend(boolean isFriend) {
                     Timber.v("inside addFriend");
@@ -198,6 +202,8 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder
                     Timber.v("Error: " + databaseError);
                 }
             });
+
+            Timber.v("listener.toString(): " + listener.toString());
             ShareListActivity.setShareWithListener(listener);
         } else {
             Timber.v("ref is NULL");

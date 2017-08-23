@@ -28,7 +28,7 @@ import timber.log.Timber;
  * Allows for you to check and un-check friends that you share the current list with
  */
 public class ShareListActivity extends BaseActivity {
-    private static ValueEventListener mSharedWithListener;
+    private static ArrayList<ValueEventListener> mSharedWithListener;
     FirebaseDatabase mFirebaseDatabase;
     private FriendAdapter mFriendAdapter;
     private String mListId;
@@ -45,7 +45,7 @@ public class ShareListActivity extends BaseActivity {
      * ValueEventListener
      */
     public static void setShareWithListener(ValueEventListener valueEventListener) {
-        mSharedWithListener = valueEventListener;
+        mSharedWithListener.add(valueEventListener);
     }
 
     @Override
@@ -63,6 +63,7 @@ public class ShareListActivity extends BaseActivity {
         }
         mEncodedEmail = intent.getStringExtra(Constants.KEY_ENCODED_EMAIL);
         mUsersFriends = new ArrayList<>();
+        mSharedWithListener = new ArrayList<>();
 
         /**
          * Create Firebase references
@@ -186,14 +187,20 @@ public class ShareListActivity extends BaseActivity {
     public void onDestroy() {
         super.onDestroy();
         if (mFriendsListener != null) {
+            Timber.v("mCurrentUserFriendsReference.removeEventListener(mFriendsListener)");
             mCurrentUserFriendsReference.removeEventListener(mFriendsListener);
         }
         if (mActiveListRefListener != null) {
+            Timber.v("mActiveListRef.removeEventListener(mActiveListRefListener)");
             mActiveListRef.removeEventListener(mActiveListRefListener);
         }
         if (mSharedWithListener != null) {
             // TODO: 8/20/17 this needs to be done for each listener in the sharedWith node for the user
-            mSharedFriendInShoppingListRef.removeEventListener(mSharedWithListener);
+            Timber.v("mSharedFriendInShoppingListRef.removeEventListener(mSharedWithListener)");
+            for (int i = 0; i < mSharedWithListener.size(); i++) {
+                Timber.v("mListeners.get(i): " + mSharedWithListener.get(i));
+                mSharedFriendInShoppingListRef.removeEventListener(mSharedWithListener.get(i));
+            }
         }
 
     }
