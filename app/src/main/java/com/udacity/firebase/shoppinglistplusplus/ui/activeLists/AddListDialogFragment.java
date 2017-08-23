@@ -154,6 +154,7 @@ public class AddListDialogFragment extends DialogFragment {
                     Timber.v(e.getLocalizedMessage());
                 }
             });
+
             /* Close the dialog fragment */
             AddListDialogFragment.this.getDialog().cancel();
         }

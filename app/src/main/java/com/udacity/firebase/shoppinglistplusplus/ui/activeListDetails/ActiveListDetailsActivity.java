@@ -236,7 +236,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
          */
         if (id == R.id.action_share_list) {
             Intent intent = new Intent(ActiveListDetailsActivity.this, ShareListActivity.class);
-            intent.putExtra(Constants.KEY_LIST_ID, mListId);
+            intent.putExtra(Constants.KEY_LIST_ID, mKey);
             intent.putExtra(Constants.KEY_ENCODED_EMAIL, mEncodedEmail);
             /* Starts an active showing the details for the selected list */
             startActivity(intent);

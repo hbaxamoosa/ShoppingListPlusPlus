@@ -36,7 +36,7 @@ public class AutocompleteFriendAdapter extends RecyclerView.Adapter<Autocomplete
         userList = users;
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(c);
         mEncodedEmail = sharedPref.getString(Constants.KEY_ENCODED_EMAIL, null);
-        Timber.v("mEncodedEmail: " + mEncodedEmail);
+        // Timber.v("mEncodedEmail: " + mEncodedEmail);
     }
 
     @Override
@@ -50,7 +50,6 @@ public class AutocompleteFriendAdapter extends RecyclerView.Adapter<Autocomplete
 
     @Override
     public void onBindViewHolder(AutocompleteFriendAdapter.ViewHolder holder, int position) {
-        Timber.v("onBindViewHolder(AutocompleteFriendAdapter.ViewHolder holder, int position)");
         holder.userItem.setText(Utils.decodeEmail(userList.get(position).getEmail()));
     }
 
@@ -75,9 +74,9 @@ public class AutocompleteFriendAdapter extends RecyclerView.Adapter<Autocomplete
 
         @Override
         public void onClick(final View v) {
-            Timber.v("class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener");
+            // Timber.v("class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener");
             final int adapterPosition = getAdapterPosition();
-            Toast.makeText(v.getContext(), "adapterPosition: " + adapterPosition, Toast.LENGTH_LONG).show();
+            // Toast.makeText(v.getContext(), "adapterPosition: " + adapterPosition, Toast.LENGTH_SHORT).show();
 
             /**
              * If selected user is not current user proceed
@@ -87,10 +86,12 @@ public class AutocompleteFriendAdapter extends RecyclerView.Adapter<Autocomplete
                 /**
                  * Create Firebase references
                  */
-                // TODO: 7/4/17 debug this. location for userFriends needs to be set correctly 
-                FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
-                final DatabaseReference mUserFriendsReference = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_USER_FRIENDS).child(mEncodedEmail);
 
+                FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
+                final DatabaseReference mUserFriendsReference = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_USER_FRIENDS)
+                        .child(mEncodedEmail).child(userList.get(adapterPosition).getEmail());
+
+                Timber.v("mUserFriendsReference.getRef(): " + mUserFriendsReference.getRef());
                 /**
                  * Add listener for single value event to perform a one time operation
                  */
@@ -98,11 +99,14 @@ public class AutocompleteFriendAdapter extends RecyclerView.Adapter<Autocomplete
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
 
+                        Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
+                        Timber.v("userList.get(adapterPosition).getEmail(): " + userList.get(adapterPosition).getEmail());
+
                         /**
                          * Add selected user to current user's friends if not in friends yet
                          */
                         if (isNotAlreadyAdded(dataSnapshot, userList.get(adapterPosition))) {
-                            mUserFriendsReference.child(userList.get(adapterPosition).getEmail()).setValue(userList.get(adapterPosition));
+                            mUserFriendsReference.setValue(userList.get(adapterPosition));
                         }
                     }
 
@@ -117,7 +121,6 @@ public class AutocompleteFriendAdapter extends RecyclerView.Adapter<Autocomplete
         }
 
         private boolean isNotCurrentUser(User user) {
-
             if (user.getEmail().equals(mEncodedEmail)) {
             /* Toast appropriate error message if the user is trying to add themselves  */
                 Toast.makeText(itemView.getContext(),
@@ -130,7 +133,7 @@ public class AutocompleteFriendAdapter extends RecyclerView.Adapter<Autocomplete
 
         private boolean isNotAlreadyAdded(DataSnapshot dataSnapshot, User user) {
             if (dataSnapshot.getValue(User.class) != null) {
-            /* Toast appropriate error message if the user is already a friend of the user */
+                /* Toast appropriate error message if the user is already a friend of the user */
                 String friendError = String.format(itemView.getContext().getResources().
                                 getString(R.string.toast_is_already_your_friend),
                         user.getName());

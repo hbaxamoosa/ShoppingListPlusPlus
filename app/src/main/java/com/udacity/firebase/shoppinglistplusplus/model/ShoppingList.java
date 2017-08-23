@@ -5,7 +5,6 @@ import com.google.firebase.database.ServerValue;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Defines the data structure for both Active and Archived ShoppingList objects.
@@ -21,7 +20,6 @@ public class ShoppingList {
     /**
      * Required public constructor
      */
-
     public ShoppingList() {
     }
 
@@ -51,14 +49,6 @@ public class ShoppingList {
         return owner;
     }
 
-    public Map<String, Object> toMap() {
-        HashMap<String, Object> result = new HashMap<>();
-        result.put("listName", listName);
-        result.put("owner", owner);
-
-        return result;
-    }
-
     public HashMap<String, Object> getTimestampLastChanged() {
         return timestampLastChanged;
     }
@@ -67,8 +57,25 @@ public class ShoppingList {
         return timestampCreated;
     }
 
+    /*@JsonIgnore
+    public long getTimestampLastChangedLong() {
+
+        return (long) timestampLastChanged.get(Constants.FIREBASE_PROPERTY_TIMESTAMP);
+    }
+
+    @JsonIgnore
+    public long getTimestampCreatedLong() {
+        return (long) timestampLastChanged.get(Constants.FIREBASE_PROPERTY_TIMESTAMP);
+    }*/
+
     public HashMap getUsersShopping() {
         return usersShopping;
+    }
+
+    public void setTimestampLastChangedToNow() {
+        HashMap<String, Object> timestampNowObject = new HashMap<String, Object>();
+        timestampNowObject.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
+        this.timestampLastChanged = timestampNowObject;
     }
 }
 

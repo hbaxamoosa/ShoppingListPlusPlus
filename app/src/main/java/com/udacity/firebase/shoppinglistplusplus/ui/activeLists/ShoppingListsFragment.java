@@ -46,6 +46,8 @@ public class ShoppingListsFragment extends Fragment {
     // Firebase Realtime Database
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mUserListsDatabaseReference;
+    private DatabaseReference orderedList;
+    private ValueEventListener orderedListListener;
 
     public ShoppingListsFragment() {
         /* Required empty public constructor */
@@ -134,7 +136,7 @@ public class ShoppingListsFragment extends Fragment {
             orderedList = mUserListsDatabaseReference.orderByChild(sortOrder);
         }
 
-        orderedList.addValueEventListener(new ValueEventListener() {
+        ValueEventListener orderedListListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // Timber.v("ValueEventListener onDataChange(DataSnapshot dataSnapshot) " + dataSnapshot.getValue());
@@ -159,7 +161,9 @@ public class ShoppingListsFragment extends Fragment {
             public void onCancelled(DatabaseError databaseError) {
                 Timber.v("Error: " + databaseError.toString());
             }
-        });
+        };
+
+        orderedList.addValueEventListener(orderedListListener);
     }
 
     @Override
@@ -172,6 +176,11 @@ public class ShoppingListsFragment extends Fragment {
     public void onStop() {
         super.onStop();
         // Timber.v("onStop()");
+
+        // Remove orderedListListener value event listener
+        if (orderedListListener != null) {
+            orderedList.removeEventListener(orderedListListener);
+        }
     }
 
     @Override

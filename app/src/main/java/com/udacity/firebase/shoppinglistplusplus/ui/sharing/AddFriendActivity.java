@@ -34,7 +34,7 @@ public class AddFriendActivity extends BaseActivity {
     private AutocompleteFriendAdapter mFriendsAutocompleteAdapter;
     private String mInput;
     private RecyclerView mRecyclerView;
-    private List<User> mUserList;
+    private List<User> mFriendList;
 
     // Firebase
     private FirebaseDatabase mFirebaseDatabase;
@@ -45,6 +45,8 @@ public class AddFriendActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_friend);
+
+        Timber.v("onCreate()");
 
         /**
          * Link layout elements from XML and setup the toolbar
@@ -57,14 +59,14 @@ public class AddFriendActivity extends BaseActivity {
         mFirebaseDatabase = FirebaseDatabase.getInstance();
         mUsersReference = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_USERS);
 
-        mUserList = new ArrayList<>();
+        mFriendList = new ArrayList<>();
 
         LinearLayoutManager manager = new LinearLayoutManager(this);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(manager);
 
         try {
-            mFriendsAutocompleteAdapter = new AutocompleteFriendAdapter(mUserList, this);
+            mFriendsAutocompleteAdapter = new AutocompleteFriendAdapter(mFriendList, this);
             mRecyclerView.setAdapter(mFriendsAutocompleteAdapter);
         } catch (Exception e) {
             e.printStackTrace();
@@ -90,7 +92,7 @@ public class AddFriendActivity extends BaseActivity {
 
         @Override
         public void afterTextChanged(Editable s) {
-                /* Get the input after every textChanged event and transform it to lowercase */
+            /* Get the input after every textChanged event and transform it to lowercase */
             mInput = mEditTextAddFriendEmail.getText().toString().toLowerCase();
 
             /* Clean up the old adapter */
@@ -99,11 +101,8 @@ public class AddFriendActivity extends BaseActivity {
             /* Nullify the adapter data if the input length is less than 2 characters */
             if (mInput.equals("") || mInput.length() < 2) {
                 mRecyclerView.setAdapter(null);
-                Timber.v("TRUE");
             /* Define and set the adapter otherwise. */
             } else {
-                Timber.v("FALSE");
-
                 /**
                  * Add ValueEventListeners to Firebase references
                  * to control get data and control behavior and visibility of elements
@@ -117,8 +116,8 @@ public class AddFriendActivity extends BaseActivity {
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         Timber.v("ValueEventListener onDataChange(DataSnapshot dataSnapshot) " + dataSnapshot.getValue());
                         Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
-                        if (mUserList != null) {
-                            mUserList.clear();
+                        if (mFriendList != null) {
+                            mFriendList.clear();
                         }
                         Iterator<DataSnapshot> it = dataSnapshot.getChildren().iterator();
                         for (int i = 0; i < dataSnapshot.getChildrenCount(); i++) {
@@ -126,7 +125,7 @@ public class AddFriendActivity extends BaseActivity {
                                 DataSnapshot listSnapshot = it.next();
                                 Timber.v("listSnapshot.getKey(): " + listSnapshot.getKey());
                                 Timber.v("listSnapshot.getValue(): " + listSnapshot.getValue());
-                                mUserList.add(listSnapshot.getValue(User.class));
+                                mFriendList.add(listSnapshot.getValue(User.class));
                                 mFriendsAutocompleteAdapter.notifyDataSetChanged();
                             }
                         }
@@ -161,8 +160,8 @@ public class AddFriendActivity extends BaseActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Timber.v("ValueEventListener onDataChange(DataSnapshot dataSnapshot) " + dataSnapshot.getValue());
                 Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
-                if (mUserList != null) {
-                    mUserList.clear();
+                if (mFriendList != null) {
+                    mFriendList.clear();
                 }
                 Iterator<DataSnapshot> it = dataSnapshot.getChildren().iterator();
                 for (int i = 0; i < dataSnapshot.getChildrenCount(); i++) {
@@ -170,7 +169,7 @@ public class AddFriendActivity extends BaseActivity {
                         DataSnapshot listSnapshot = it.next();
                         Timber.v("listSnapshot.getKey(): " + listSnapshot.getKey());
                         Timber.v("listSnapshot.getValue(): " + listSnapshot.getValue());
-                        mUserList.add(listSnapshot.getValue(User.class));
+                        mFriendList.add(listSnapshot.getValue(User.class));
                         mFriendsAutocompleteAdapter.notifyDataSetChanged();
                     }
                 }
