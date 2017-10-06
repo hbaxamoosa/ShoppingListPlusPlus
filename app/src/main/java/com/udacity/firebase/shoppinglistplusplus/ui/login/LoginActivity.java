@@ -1,5 +1,20 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.login;
 
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
+import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -20,22 +35,6 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
-
-import android.app.ProgressDialog;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.View;
-import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
-
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.User;
 import com.udacity.firebase.shoppinglistplusplus.ui.BaseActivity;
@@ -185,10 +184,13 @@ public class LoginActivity extends BaseActivity implements
         super.onActivityResult(requestCode, resultCode, data);
         // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
         if (requestCode == RC_GOOGLE_LOGIN) {
+            Timber.v("requestCode == RC_GOOGLE_LOGIN");
             if (resultCode == RESULT_OK) {
+                Timber.v("resultCode == RESULT_OK");
                 GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
                 if (result != null) {
                     if (result.isSuccess()) {
+                        Timber.v("result.isSuccess()");
                         // Google Sign In was successful, authenticate with Firebase
                         GoogleSignInAccount account = result.getSignInAccount();
                         firebaseAuthWithGoogle(account);
@@ -276,6 +278,8 @@ public class LoginActivity extends BaseActivity implements
             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
             intent.putExtra(Constants.KEY_ENCODED_EMAIL, mEncodedEmail);
             startActivity(intent);
+        } else {
+            Timber.v("user does not yet exist");
         }
     }
 
@@ -342,6 +346,7 @@ public class LoginActivity extends BaseActivity implements
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Timber.v("onSignInGooglePressed(v)");
                 onSignInGooglePressed(v);
             }
         });
