@@ -156,7 +156,6 @@ public class ShareListActivity extends BaseActivity {
                         Timber.v("listSnapshot.getKey(): " + listSnapshot.getKey());
                         Timber.v("listSnapshot.getValue(): " + listSnapshot.getValue());
                         mUsersFriends.add(listSnapshot.getValue(User.class));
-                        // TODO: 8/18/17 should this be collecting the users in the userFriends node, or the sharedWith node?
                         Timber.v("mSharedWithUsers.get(i).getEmail(): " + mUsersFriends.get(i).getEmail());
                         if (mFriendAdapter != null) {
                             mFriendAdapter.setSharedWithUsers(mUsersFriends);
@@ -195,7 +194,6 @@ public class ShareListActivity extends BaseActivity {
             mActiveListRef.removeEventListener(mActiveListRefListener);
         }
         if (mSharedWithListener != null) {
-            // TODO: 8/20/17 this needs to be done for each listener in the sharedWith node for the user
             Timber.v("mSharedFriendInShoppingListRef.removeEventListener(mSharedWithListener)");
             for (int i = 0; i < mSharedWithListener.size(); i++) {
                 Timber.v("mListeners.get(i): " + mSharedWithListener.get(i));
@@ -209,8 +207,8 @@ public class ShareListActivity extends BaseActivity {
      * Link layout elements from XML and setup the toolbar
      */
     public void initializeScreen() {
-        mRecyclerView = (RecyclerView) findViewById(R.id.list_view_friends_share);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.app_bar);
+        mRecyclerView = findViewById(R.id.list_view_friends_share);
+        Toolbar toolbar = findViewById(R.id.app_bar);
         setSupportActionBar(toolbar);
         /* Add back button to the action bar */
         if (getSupportActionBar() != null) {

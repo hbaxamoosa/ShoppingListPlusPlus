@@ -108,8 +108,8 @@ public class EditListItemNameDialogFragment extends EditListDialogFragment {
             query.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    // Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
-                    // Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
+                    Timber.v("dataSnapshot.getValue(): %s", dataSnapshot.getValue());
+                    Timber.v("dataSnapshot.getKey(): %s", dataSnapshot.getKey());
 
                     /* Make a map for the item you are adding */
                     HashMap<String, Object> updatedItemToAddMap = new HashMap<String, Object>();
@@ -127,6 +127,12 @@ public class EditListItemNameDialogFragment extends EditListDialogFragment {
                     // delete the existing item
                     updatedItemToAddMap.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mItemId + "/" + mItemName, null);
 
+                    /* need to query the path /sharedWith/mItemID for all users/emails that this list is shared with and store into an ArrayList*/
+                    // TODO: 11/1/17 write query here
+
+                    /* for each user/email in the ArrayList ^ we need to update the list name in the /userLists/email/mItemID/listName path */
+                    // TODO: 11/1/17 write query here
+
                     /* Make the timestamp for last changed */
                     HashMap<String, Object> changedTimestampMap = new HashMap<>();
                     changedTimestampMap.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
@@ -140,7 +146,7 @@ public class EditListItemNameDialogFragment extends EditListDialogFragment {
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
-                    Timber.v("Error: " + databaseError);
+                    Timber.v("Error: %s", databaseError);
                 }
             });
 

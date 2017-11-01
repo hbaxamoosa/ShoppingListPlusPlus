@@ -337,7 +337,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
      * Link layout elements from XML and setup the toolbar
      */
     private void initializeScreen() {
-        mRecyclerView = (RecyclerView) findViewById(R.id.recyclerView);
+        mRecyclerView = findViewById(R.id.recyclerView);
         LinearLayoutManager manager = new LinearLayoutManager(ActiveListDetailsActivity.this);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(manager);
@@ -434,9 +434,9 @@ public class ActiveListDetailsActivity extends BaseActivity {
 
         }));
 
-        mTextViewPeopleShopping = (TextView) findViewById(R.id.text_view_people_shopping);
-        mButtonShopping = (Button) findViewById(R.id.button_shopping);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.app_bar);
+        mTextViewPeopleShopping = findViewById(R.id.text_view_people_shopping);
+        mButtonShopping = findViewById(R.id.button_shopping);
+        Toolbar toolbar = findViewById(R.id.app_bar);
         /* Common toolbar setup */
         setSupportActionBar(toolbar);
         /* Add back button to the action bar */
@@ -559,6 +559,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
      */
     public void showEditListNameDialog() {
         /* Create an instance of the dialog fragment and show it */
+        // TODO: 8/23/17 pass a hashmap or array list of sharedWith users so that the list name can be updated for all users 
         DialogFragment dialog = EditListNameDialogFragment.newInstance(mShoppingList, mListId, mKey,
                 mEncodedEmail, mSharedWithUsers);
         dialog.show(this.getFragmentManager(), "EditListNameDialogFragment");

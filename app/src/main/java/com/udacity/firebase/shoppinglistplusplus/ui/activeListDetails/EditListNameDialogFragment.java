@@ -89,8 +89,9 @@ public class EditListNameDialogFragment extends EditListDialogFragment {
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                // Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
+                Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
 
+                // TODO: 8/23/17 need to update the list name for all users the list is sharedWith
                 HashMap<String, Object> result = new HashMap<>();
                 result.put("/" + mOwner + "/" + mListKey + "/" + Constants.FIREBASE_PROPERTY_LIST_NAME, inputListName);
 

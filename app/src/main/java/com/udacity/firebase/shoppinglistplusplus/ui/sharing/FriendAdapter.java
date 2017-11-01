@@ -142,7 +142,6 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder
                         });
                     }
                 }
-                // TODO: 8/23/17 keep track of the listeners, so that they can be cleaned up from the ShareListActivity.java 
 
                 private void addFriend(boolean isFriend) {
                     Timber.v("inside addFriend");
@@ -240,8 +239,8 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder
 
         public ViewHolder(View itemView) {
             super(itemView);
-            userName = (TextView) itemView.findViewById(R.id.user_name);
-            buttonToggleShare = (ImageButton) itemView.findViewById(R.id.button_toggle_share);
+            userName = itemView.findViewById(R.id.user_name);
+            buttonToggleShare = itemView.findViewById(R.id.button_toggle_share);
         }
     }
 }

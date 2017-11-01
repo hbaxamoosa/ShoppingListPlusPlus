@@ -102,11 +102,13 @@ public class ActiveListAdapter extends RecyclerView.Adapter<ActiveListAdapter.Vi
                 mUserListsDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        // Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
+                        Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
                         User user = dataSnapshot.getValue(User.class);
 
                         if (user != null) {
+                            Timber.v("user.getName(): " + user.getName());
                             holder.textViewCreatedByUser.setText(user.getName());
+                            // TODO: 8/23/17 possible bug here? when viewing the shared list from a SharedWith user, the owner name flashes into and out of the textViewCreatedByUser
                         }
                     }
 
@@ -131,10 +133,10 @@ public class ActiveListAdapter extends RecyclerView.Adapter<ActiveListAdapter.Vi
         ViewHolder(View itemView) {
             super(itemView);
 
-            listName = (TextView) itemView.findViewById(R.id.text_view_list_name);
-            ownerName = (TextView) itemView.findViewById(R.id.text_view_created_by_user);
-            textViewCreatedByUser = (TextView) itemView.findViewById(R.id.text_view_created_by_user);
-            textViewUsersShopping = (TextView) itemView.findViewById(R.id.text_view_people_shopping_count);
+            listName = itemView.findViewById(R.id.text_view_list_name);
+            ownerName = itemView.findViewById(R.id.text_view_created_by_user);
+            textViewCreatedByUser = itemView.findViewById(R.id.text_view_created_by_user);
+            textViewUsersShopping = itemView.findViewById(R.id.text_view_people_shopping_count);
             itemView.setOnClickListener(this);
         }
 
@@ -144,7 +146,7 @@ public class ActiveListAdapter extends RecyclerView.Adapter<ActiveListAdapter.Vi
             int adapterPosition = getAdapterPosition();
             // Toast.makeText(getContext(), "adapterPosition: " + adapterPosition, Toast.LENGTH_LONG).show();
 
-            /* Starts an active showing the details for the selected list */
+            /* Starts an Activity showing the details for the selected list */
             Intent intent = new Intent(v.getContext(), ActiveListDetailsActivity.class);
             intent.putExtra(Constants.KEY_LIST_ITEM_ID, adapterPosition);
             intent.putExtra(Constants.KEY_LIST_NAME, shoppingList.get(adapterPosition).getListName());
