@@ -134,49 +134,6 @@ public class LoginActivity extends BaseActivity implements
                 return true;
             }
         });
-
-        /*mAuthStateListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = mFirebaseAuth.getCurrentUser();
-
-                if (user != null) {
-                    // User is signed in
-
-                    Timber.v("user.getDisplayName(): " + user.getDisplayName());
-                    Timber.v("user.getEmail(): " + user.getEmail());
-
-                    mUsername = user.getDisplayName();
-                    mEncodedEmail = Utils.encodeEmail(user.getEmail());
-
-                    mSharedPrefEditor = mSharedPref.edit();
-                    *//* Save provider name and encodedEmail for later use and start MainActivity *//*
-                    mSharedPrefEditor.putString(Constants.KEY_ENCODED_EMAIL, mEncodedEmail).apply();
-                    mSharedPrefEditor.putString(Constants.KEY_PROVIDER, null);
-
-                    onSignedInInitialize(mUsername);
-                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                    intent.putExtra(Constants.KEY_ENCODED_EMAIL, mEncodedEmail);
-                    startActivity(intent);
-                } else {
-                    // User is signed out
-                    onSignedOutCleanup();
-                    List<AuthUI.IdpConfig> providers = Arrays.asList(
-                            // new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
-                            new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build()
-                    );
-
-                    Timber.v("user is not signed in!!!");
-                    startActivityForResult(
-                            AuthUI.getInstance()
-                                    .createSignInIntentBuilder()
-                                    .setIsSmartLockEnabled(!BuildConfig.DEBUG)
-                                    .setAvailableProviders(providers)
-                                    .build(),
-                            RC_GOOGLE_LOGIN);
-                }
-            }
-        };*/
     }
 
     @Override
@@ -242,16 +199,6 @@ public class LoginActivity extends BaseActivity implements
                         }
                     }
                 });
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
     }
 
     @Override
@@ -326,9 +273,9 @@ public class LoginActivity extends BaseActivity implements
      * Link layout elements from XML and setup the progress dialog
      */
     public void initializeScreen() {
-        mEditTextEmailInput = (EditText) findViewById(R.id.edit_text_email);
-        mEditTextPasswordInput = (EditText) findViewById(R.id.edit_text_password);
-        LinearLayout linearLayoutLoginActivity = (LinearLayout) findViewById(R.id.linear_layout_login_activity);
+        mEditTextEmailInput = findViewById(R.id.edit_text_email);
+        mEditTextPasswordInput = findViewById(R.id.edit_text_password);
+        LinearLayout linearLayoutLoginActivity = findViewById(R.id.linear_layout_login_activity);
         initializeBackground(linearLayoutLoginActivity);
         /* Setup the progress dialog that is displayed later when authenticating with Firebase */
         mAuthProgressDialog = new ProgressDialog(this);
@@ -341,7 +288,7 @@ public class LoginActivity extends BaseActivity implements
 
     /* Sets up the Google Sign In Button : https://developers.google.com/android/reference/com/google/android/gms/common/SignInButton */
     private void setupGoogleSignIn() {
-        SignInButton signInButton = (SignInButton) findViewById(R.id.login_with_google);
+        SignInButton signInButton = findViewById(R.id.login_with_google);
         signInButton.setSize(SignInButton.SIZE_WIDE);
         signInButton.setOnClickListener(new View.OnClickListener() {
             @Override

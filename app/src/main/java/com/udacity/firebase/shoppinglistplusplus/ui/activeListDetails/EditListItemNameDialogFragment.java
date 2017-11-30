@@ -1,5 +1,9 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.activeListDetails;
 
+import android.app.Dialog;
+import android.os.Bundle;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -7,11 +11,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
-
-import android.app.Dialog;
-import android.os.Bundle;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingListItem;
@@ -102,9 +101,8 @@ public class EditListItemNameDialogFragment extends EditListDialogFragment {
              * and that the dialog was properly initialized with the current name and id of the list.
              */
 
-
             Query query = mListItemsRef.child(Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS).orderByChild(mItemId);
-            // Timber.v("query.getRef(): " + query.getRef());
+            Timber.v("query.getRef(): %s", query.getRef());
             query.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
@@ -126,12 +124,6 @@ public class EditListItemNameDialogFragment extends EditListDialogFragment {
                     updatedItemToAddMap.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mItemId + "/" + nameInput, itemToAdd);
                     // delete the existing item
                     updatedItemToAddMap.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mItemId + "/" + mItemName, null);
-
-                    /* need to query the path /sharedWith/mItemID for all users/emails that this list is shared with and store into an ArrayList*/
-                    // TODO: 11/1/17 write query here
-
-                    /* for each user/email in the ArrayList ^ we need to update the list name in the /userLists/email/mItemID/listName path */
-                    // TODO: 11/1/17 write query here
 
                     /* Make the timestamp for last changed */
                     HashMap<String, Object> changedTimestampMap = new HashMap<>();

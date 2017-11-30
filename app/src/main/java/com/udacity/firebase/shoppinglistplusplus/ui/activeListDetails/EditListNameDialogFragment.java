@@ -1,5 +1,9 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.activeListDetails;
 
+import android.annotation.SuppressLint;
+import android.app.Dialog;
+import android.os.Bundle;
+
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -7,16 +11,14 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
-
-import android.app.Dialog;
-import android.os.Bundle;
-
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.model.User;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
+import com.udacity.firebase.shoppinglistplusplus.utils.Utils;
 
 import java.util.HashMap;
+import java.util.Iterator;
 
 import timber.log.Timber;
 
@@ -83,29 +85,45 @@ public class EditListNameDialogFragment extends EditListDialogFragment {
 
         // Initialize Firebase components
         FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
-        final DatabaseReference mUserListsDatabaseReference = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_USER_LISTS);
+        final DatabaseReference mUserListsDatabaseReference = mFirebaseDatabase.getReference();
 
         Query query = mUserListsDatabaseReference.orderByChild(Constants.FIREBASE_PROPERTY_LIST_NAME).equalTo(mListId);
         query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @SuppressLint("TimberArgCount")
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
+                Timber.v("dataSnapshot.getKey(): %s", dataSnapshot.getKey());
 
-                // TODO: 8/23/17 need to update the list name for all users the list is sharedWith
-                HashMap<String, Object> result = new HashMap<>();
-                result.put("/" + mOwner + "/" + mListKey + "/" + Constants.FIREBASE_PROPERTY_LIST_NAME, inputListName);
+                final HashMap<String, Object> result = new HashMap<>();
+                result.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + mOwner + "/" + mListKey + "/" + Constants.FIREBASE_PROPERTY_LIST_NAME, inputListName);
 
-                HashMap<String, Object> timestampNowHash = new HashMap<>();
+                final HashMap<String, Object> timestampNowHash = new HashMap<>();
                 timestampNowHash.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
 
                 result.put("/" + mOwner + "/" + mListKey + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED, timestampNowHash);
+
+                Timber.v("mSharedWith: %s", mSharedWith.size());
+
+                Iterator<User> it = mSharedWith.values().iterator();
+                for (int i = 0; i < mSharedWith.size(); i++) {
+                    if (it.hasNext()) {
+                        User user = it.next();
+                        String email = user.getEmail();
+                        Timber.v("email: %s", email);
+                        result.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(email) + "/" + mListKey + "/" + Constants.FIREBASE_PROPERTY_LIST_NAME, inputListName);
+                        Timber.v("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(email) + "/" + mListKey + "/" + Constants.FIREBASE_PROPERTY_LIST_NAME, inputListName);
+                        result.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(email) + "/" + mListKey + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED, timestampNowHash);
+                    }
+                }
+
+                Timber.v("result: %s", result.size());
 
                 mUserListsDatabaseReference.updateChildren(result);
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Timber.v("Error: " + databaseError);
+                Timber.v("Error: %s", databaseError);
             }
         });
     }

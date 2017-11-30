@@ -1,11 +1,5 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.activeLists;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
@@ -14,6 +8,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.model.User;
@@ -31,11 +30,11 @@ import timber.log.Timber;
 public class ActiveListAdapter extends RecyclerView.Adapter<ActiveListAdapter.ViewHolder> {
 
     public static List<ShoppingList> shoppingList;
-    public static List<String> listKeys;
+    static List<String> listKeys;
     private Context context;
     private String mEncodedEmail;
 
-    public ActiveListAdapter(Context c, List<ShoppingList> s, ArrayList<String> k, String encodedEmail) {
+    ActiveListAdapter(Context c, List<ShoppingList> s, ArrayList<String> k, String encodedEmail) {
         context = c;
         shoppingList = s;
         listKeys = k;
@@ -63,7 +62,7 @@ public class ActiveListAdapter extends RecyclerView.Adapter<ActiveListAdapter.Vi
         holder.ownerName.setText(shoppingList.get(position).getOwner());
         holder.listName.setText(shoppingList.get(position).getListName());
 
-        /**
+        /*
          * Show "1 person is shopping" if one person is shopping
          * Show "N people shopping" if two or more users are shopping
          * Show nothing if nobody is shopping
@@ -84,7 +83,7 @@ public class ActiveListAdapter extends RecyclerView.Adapter<ActiveListAdapter.Vi
             holder.textViewUsersShopping.setText("");
         }
 
-        /**
+        /*
          * Set "Created by" text to "You" if current user is owner of the list
          * Set "Created by" text to userName if current user is NOT owner of the list
          */
@@ -102,11 +101,11 @@ public class ActiveListAdapter extends RecyclerView.Adapter<ActiveListAdapter.Vi
                 mUserListsDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
+                        Timber.v("dataSnapshot.getValue(): %s", dataSnapshot.getValue());
                         User user = dataSnapshot.getValue(User.class);
 
                         if (user != null) {
-                            Timber.v("user.getName(): " + user.getName());
+                            Timber.v("user.getName(): %s", user.getName());
                             holder.textViewCreatedByUser.setText(user.getName());
                             // TODO: 8/23/17 possible bug here? when viewing the shared list from a SharedWith user, the owner name flashes into and out of the textViewCreatedByUser
                         }
@@ -114,7 +113,7 @@ public class ActiveListAdapter extends RecyclerView.Adapter<ActiveListAdapter.Vi
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-                        Timber.v("error: " + databaseError.toString());
+                        Timber.v("error: %s", databaseError.toString());
                     }
                 });
             }
@@ -134,7 +133,7 @@ public class ActiveListAdapter extends RecyclerView.Adapter<ActiveListAdapter.Vi
             super(itemView);
 
             listName = itemView.findViewById(R.id.text_view_list_name);
-            ownerName = itemView.findViewById(R.id.text_view_created_by_user);
+            ownerName = itemView.findViewById(R.id.created_by);
             textViewCreatedByUser = itemView.findViewById(R.id.text_view_created_by_user);
             textViewUsersShopping = itemView.findViewById(R.id.text_view_people_shopping_count);
             itemView.setOnClickListener(this);

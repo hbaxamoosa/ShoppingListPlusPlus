@@ -1,13 +1,5 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.activeListDetails;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ServerValue;
-import com.google.firebase.database.ValueEventListener;
-
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.Context;
@@ -29,6 +21,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ServerValue;
+import com.google.firebase.database.ValueEventListener;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingListItem;
@@ -40,6 +39,7 @@ import com.udacity.firebase.shoppinglistplusplus.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import timber.log.Timber;
@@ -64,7 +64,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
     private ShoppingList mShoppingList;
     private ArrayList<ShoppingList> mShoppingListArray = new ArrayList<>();
     private ArrayList<ShoppingListItem> mShoppingListItemsArray = new ArrayList<>();
-    private HashMap<String, User> mSharedWithUsers;
+    private HashMap<String, User> mSharedWithUsers = new HashMap<>();
     private ActiveListItemAdapter mActiveListItemAdapter;
 
     // SharedPrefs
@@ -72,7 +72,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
 
     // Firebase Realtime Database
     private FirebaseDatabase mFirebaseDatabase;
-    private DatabaseReference mCurrentUserRef, mCurrentListRef, mListItemsRef;
+    private DatabaseReference mCurrentUserRef, mCurrentListRef, mListItemsRef, mSharedWithRef;
     private ValueEventListener mCurrentUserRefListener, mCurrentListRefListener;
 
     @Override
@@ -98,12 +98,13 @@ public class ActiveListDetailsActivity extends BaseActivity {
         // Initialize Firebase components
         mFirebaseDatabase = FirebaseDatabase.getInstance();
 
-        /**
+        /*
          * Create Firebase references
          */
         mCurrentListRef = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_USER_LISTS).child(mEncodedEmail).child(mKey);
         mCurrentUserRef = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_USERS).child(mEncodedEmail);
         mListItemsRef = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS).child(mKey);
+        mSharedWithRef = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_LISTS_SHARED_WITH);
 
         // Timber.v("mListItemsRef.toString(): " + mListItemsRef.toString());
         // use this call to Firebase rtdb to grab the correct Shopping List
@@ -126,14 +127,14 @@ public class ActiveListDetailsActivity extends BaseActivity {
                     /* Set title appropriately. */
                     setTitle(mShoppingList.getListName());
 
-                    /**
+                    /*
                      * Handle the Start/Stop Shopping button
                      */
-                    HashMap<String, User> usersShopping = mShoppingList.getUsersShopping();
+                    HashMap usersShopping = mShoppingList.getUsersShopping();
                     if (mShoppingList.getUsersShopping() != null) {
-                        // Timber.v("mShoppingList.getUsersShopping(): " + mShoppingList.getUsersShopping().toString());
+                        Timber.v("mShoppingList.getUsersShopping(): %s", mShoppingList.getUsersShopping().toString());
                     } else {
-                        // Timber.v("mShoppingList.getUsersShopping(): NULL");
+                        Timber.v("mShoppingList.getUsersShopping(): NULL");
                     }
                     if (usersShopping != null && usersShopping.size() != 0 && usersShopping.containsKey(mEncodedEmail)) {
                         // Timber.v("mShopping is TRUE");
@@ -147,7 +148,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
                         mButtonShopping.setBackgroundColor(ContextCompat.getColor(ActiveListDetailsActivity.this, R.color.primary_dark));
                     }
 
-                    /**
+                    /*
                      * Display list of users that are currently shopping
                      */
                     setWhosShoppingText(mShoppingList.getUsersShopping());
@@ -156,7 +157,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Timber.v("error: " + databaseError.toString());
+                Timber.v("error: %s", databaseError.toString());
             }
         });
 
@@ -172,11 +173,11 @@ public class ActiveListDetailsActivity extends BaseActivity {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Timber.v("error: " + databaseError.toString());
+                Timber.v("error: %s", databaseError.toString());
             }
         });
 
-        /**
+        /*
          * Link layout elements from XML and setup the toolbar
          */
         initializeScreen();
@@ -194,7 +195,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
         /* Inflate the menu; this adds items to the action bar if it is present. */
         getMenuInflater().inflate(R.menu.menu_list_details, menu);
 
-        /**
+        /*
          * Get menu items
          */
         MenuItem remove = menu.findItem(R.id.action_remove_list);
@@ -215,7 +216,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        /**
+        /*
          * Show edit list dialog when the edit action is selected
          */
         if (id == R.id.action_edit_list_name) {
@@ -223,7 +224,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
             return true;
         }
 
-        /**
+        /*
          * removeList() when the remove action is selected
          */
         if (id == R.id.action_remove_list) {
@@ -231,7 +232,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
             return true;
         }
 
-        /**
+        /*
          * Eventually we'll add this
          */
         if (id == R.id.action_share_list) {
@@ -243,7 +244,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
             return true;
         }
 
-        /**
+        /*
          * archiveList() when the archive action is selected
          */
         if (id == R.id.action_archive) {
@@ -291,10 +292,35 @@ public class ActiveListDetailsActivity extends BaseActivity {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Timber.v("Error: " + databaseError.toString());
+                Timber.v("Error: %s", databaseError.toString());
             }
         });
-        // mShoppingListItemsReference.addValueEventListener(mShoppingListItemsValueEventListener);
+
+        Query query = mSharedWithRef.child(mKey);
+        Timber.v("query.getRef(): %s", query.getRef());
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Timber.v("dataSnapshot: %s", dataSnapshot);
+                Iterator<DataSnapshot> it = dataSnapshot.getChildren().iterator();
+                for (int i = 0; i < dataSnapshot.getChildrenCount(); i++) {
+                    if (it.hasNext()) {
+                        DataSnapshot listSnapshot = it.next();
+                        Timber.v("listSnapshot.getValue(): %s", listSnapshot.getValue());
+                        User user = listSnapshot.getValue(User.class);
+                        Timber.v("listSnapshot.getKey(): %s", listSnapshot.getKey());
+                        Timber.v("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + listSnapshot.getKey() + "/" + mKey + "/" + Constants.FIREBASE_PROPERTY_LIST_NAME);
+                        mSharedWithUsers.put(listSnapshot.getKey(), user);
+                        Timber.v("mSharedWithUsers.size(): %s", mSharedWithUsers.size());
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Timber.v("Error: %s", databaseError);
+            }
+        });
     }
 
     @Override
@@ -323,6 +349,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
 
         mShoppingListArray.clear();
         mShoppingListItemsArray.clear();
+        mSharedWithUsers.clear();
 
         if (mCurrentUserRefListener != null) {
             mCurrentUserRef.removeEventListener(mCurrentUserRefListener);
@@ -399,7 +426,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
                                     @Override
                                     public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                                         if (databaseError != null) {
-                                            Timber.v("datebaseError: " + databaseError.toString());
+                                            Timber.v("datebaseError: %s", databaseError.toString());
                                         }
                                     }
                                 });
@@ -407,7 +434,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
 
                             @Override
                             public void onCancelled(DatabaseError databaseError) {
-                                Timber.v("Error: " + databaseError);
+                                Timber.v("Error: %s", databaseError);
                             }
                         });
                     }
@@ -424,7 +451,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
                 // Timber.v("mShoppingListItemsArray.get(position).getItemName(): " + mShoppingListItemsArray.get(position).getItemName());
                 // Timber.v("mActiveListItemAdapter.getItemId(position): " + mActiveListItemAdapter.getItemId(position));
 
-                /**
+                /*
                  * If the person is the owner and not shopping and the item is not bought, then they can edit it.
                  */
                 if (mShoppingListItemsArray.get(position).getOwner().equals(mEncodedEmail) && !mShopping && !mShoppingListItemsArray.get(position).isBought()) {
@@ -453,7 +480,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
 
         if (usersShopping != null) {
             ArrayList<String> usersWhoAreNotYou = new ArrayList<>();
-            /**
+            /*
              * If at least one user is shopping
              * Add userName to the list of users shopping if this user is not current user
              */
@@ -466,7 +493,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
             int numberOfUsersShopping = usersShopping.size();
             String usersShoppingText;
 
-            /**
+            /*
              * If current user is shopping...
              * If current user is the only person shopping, set text to "You are shopping"
              * If current user and one user are shopping, set text "You and userName are shopping"
@@ -487,7 +514,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
                                 getString(R.string.text_you_and_number_are_shopping),
                                 usersWhoAreNotYou.size());
                 }
-                /**
+                /*
                  * If current user is not shopping..
                  * If there is only one person shopping, set text to "userName is shopping"
                  * If there are two users shopping, set text "userName1 and userName2 are shopping"
@@ -559,7 +586,6 @@ public class ActiveListDetailsActivity extends BaseActivity {
      */
     public void showEditListNameDialog() {
         /* Create an instance of the dialog fragment and show it */
-        // TODO: 8/23/17 pass a hashmap or array list of sharedWith users so that the list name can be updated for all users 
         DialogFragment dialog = EditListNameDialogFragment.newInstance(mShoppingList, mListId, mKey,
                 mEncodedEmail, mSharedWithUsers);
         dialog.show(this.getFragmentManager(), "EditListNameDialogFragment");
@@ -580,7 +606,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
      * This method is called when user taps "Start/Stop shopping" button
      */
     public void toggleShopping(View view) {
-        /**
+        /*
          * If current user is already shopping, remove current user from userLists/usersShopping map. Otherwise, add.
          */
 
@@ -592,7 +618,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
+                Timber.v("dataSnapshot.getValue(): %s", dataSnapshot.getValue());
                 HashMap<String, Object> updatedUserData = new HashMap<String, Object>();
                 String propertyToUpdate = "/" + Constants.FIREBASE_PROPERTY_USERS_SHOPPING + "/" + mEncodedEmail;
                 // Timber.v("propertyToUpdate: " + propertyToUpdate);
@@ -608,7 +634,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
                         @Override
                         public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                             if (databaseError != null) {
-                                Timber.v(getString(R.string.log_error_updating_data) + databaseError.getMessage());
+                                Timber.v("%s %s", getString(R.string.log_error_updating_data), databaseError.getMessage());
                             }
                         }
                     });
@@ -627,7 +653,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
                         @Override
                         public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                             if (databaseError != null) {
-                                Timber.v(getString(R.string.log_error_updating_data) + databaseError.getMessage());
+                                Timber.v("%s %s", getString(R.string.log_error_updating_data), databaseError.getMessage());
                             }
                         }
                     });
@@ -636,7 +662,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Timber.v("Error: " + databaseError);
+                Timber.v("Error: %s", databaseError);
             }
         });
     }
@@ -652,7 +678,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
         private ClickListener clicklistener;
         private GestureDetector gestureDetector;
 
-        public RecyclerTouchListener(Context context, final RecyclerView recycleView, final ClickListener clicklistener) {
+        RecyclerTouchListener(Context context, final RecyclerView recycleView, final ClickListener clicklistener) {
 
             this.clicklistener = clicklistener;
             gestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {

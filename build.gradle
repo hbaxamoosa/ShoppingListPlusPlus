@@ -3,12 +3,12 @@
 buildscript {
     repositories {
         jcenter()
+        google()
         mavenLocal()
         maven { url 'https://maven.fabric.io/public' }
-        maven { url 'https://maven.google.com' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.0.0'
+        classpath 'com.android.tools.build:gradle:3.0.1'
         classpath 'com.google.gms:google-services:3.1.0'
         classpath 'com.google.firebase:firebase-plugins:1.1.1'
 
@@ -21,8 +21,7 @@ allprojects {
     repositories {
         jcenter()
         mavenLocal()
-        maven { url 'https://maven.fabric.io/public' }
-        maven { url "https://maven.google.com" /*Google's Maven repository*/ }
+        google()
     }
 }
 
