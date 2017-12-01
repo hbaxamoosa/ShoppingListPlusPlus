@@ -61,11 +61,11 @@ public class EditListNameDialogFragment extends EditListDialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
-        /** {@link EditListDialogFragment#createDialogHelper(int)} is a
+        /* {@link EditListDialogFragment#createDialogHelper(int)} is a
          * superclass method that creates the dialog
-         **/
+         */
         Dialog dialog = super.createDialogHelper(R.string.positive_button_edit_item);
-        /**
+        /*
          * {@link EditListDialogFragment#helpSetDefaultValueEditText(String)} is a superclass
          * method that sets the default text of the TextView
          */
@@ -78,7 +78,7 @@ public class EditListNameDialogFragment extends EditListDialogFragment {
      */
     protected void doListEdit() {
         final String inputListName = mEditTextForList.getText().toString();
-        /**
+        /*
          * Check that the user inputted list name is not empty, has changed the original name
          * and that the dialog was properly initialized with the current name and id of the list.
          */

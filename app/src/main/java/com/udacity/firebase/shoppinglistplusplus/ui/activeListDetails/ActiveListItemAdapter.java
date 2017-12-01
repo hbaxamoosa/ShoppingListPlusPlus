@@ -1,12 +1,5 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.activeListDetails;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
-
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Paint;
@@ -19,6 +12,12 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingListItem;
 import com.udacity.firebase.shoppinglistplusplus.model.User;
@@ -40,7 +39,7 @@ public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAd
     private String mEncodedEmail;
     private String mListKey;
 
-    public ActiveListItemAdapter(Context c, List<ShoppingListItem> s, String userEmail, String key) {
+    ActiveListItemAdapter(Context c, List<ShoppingListItem> s, String userEmail, String key) {
         mContex = c;
         shoppingListItems = s;
         mEncodedEmail = userEmail;
@@ -66,7 +65,7 @@ public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAd
         holder.textViewItemName.setText(shoppingListItems.get(position).getItemName());
         // holder.textViewBoughtBy.setText(shoppingListItems.get(position).getBoughtBy());
 
-        /**
+        /*
          * If selected item is bought
          * Set "Bought by" text to "You" if current user is owner of the list
          * Set "Bought by" text to userName if current user is NOT owner of the list
@@ -77,7 +76,7 @@ public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAd
             holder.textViewBoughtBy.setVisibility(View.VISIBLE);
             holder.textViewBoughtByUser.setVisibility(View.VISIBLE);
 
-            /**
+            /*
              * If you are the owner of the item or the owner of the list, then the remove icon
              * is visible.
              */
@@ -100,7 +99,7 @@ public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAd
                 DatabaseReference mShoppingListDatabaseReference = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_USERS);
 
                 Query query = mShoppingListDatabaseReference.child(shoppingListItems.get(position).getOwner());
-                Timber.v("query.getRef(): " + query.getRef());
+                Timber.v("query.getRef(): %s", query.getRef());
                 /* Get the item's owner's name; use a SingleValueEvent listener for memory efficiency */
                 query.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -113,12 +112,12 @@ public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAd
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-                        Timber.v("Error: " + databaseError);
+                        Timber.v("Error: %s", databaseError);
                     }
                 });
             }
         } else {
-            /**
+            /*
              * If selected item is NOT bought
              * Set "Bought by" text to be empty and invisible
              * Set the remove item button visible if current user is owner of the list or selected item
@@ -146,13 +145,13 @@ public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAd
         ImageButton buttonRemoveItem;
         private Context context;
 
-        public ViewHolder(View itemView) {
+        ViewHolder(View itemView) {
             super(itemView);
 
-            textViewItemName = (TextView) itemView.findViewById(R.id.text_view_active_list_item_name);
-            textViewBoughtBy = (TextView) itemView.findViewById(R.id.text_view_bought_by);
-            textViewBoughtByUser = (TextView) itemView.findViewById(R.id.text_view_bought_by_user);
-            buttonRemoveItem = (ImageButton) itemView.findViewById(R.id.button_remove_item);
+            textViewItemName = itemView.findViewById(R.id.text_view_active_list_item_name);
+            textViewBoughtBy = itemView.findViewById(R.id.text_view_bought_by);
+            textViewBoughtByUser = itemView.findViewById(R.id.text_view_bought_by_user);
+            buttonRemoveItem = itemView.findViewById(R.id.button_remove_item);
             buttonRemoveItem.setOnClickListener(this);
         }
 
@@ -210,7 +209,7 @@ public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAd
                                 @Override
                                 public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                                     if (databaseError != null) {
-                                        Timber.v("Error: " + databaseError.getMessage());
+                                        Timber.v("Error: %s", databaseError.getMessage());
                                     }
                                 }
                             });
@@ -220,7 +219,7 @@ public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAd
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
-                    Timber.v("Error: " + databaseError);
+                    Timber.v("Error: %s", databaseError);
                 }
             });
         }

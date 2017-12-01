@@ -1,10 +1,5 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.activeLists;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ServerValue;
-
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
@@ -20,6 +15,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ServerValue;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
@@ -30,18 +29,14 @@ import java.util.Map;
 
 import timber.log.Timber;
 
-/**
+/*
  * Adds a new shopping list
  */
 public class AddListDialogFragment extends DialogFragment {
     String mEncodedEmail;
     EditText mEditTextListName;
 
-    // Firebase Realtime Database
-    private FirebaseDatabase mFirebaseDatabase;
-    private DatabaseReference mUserListsDatabaseReference;
-
-    /**
+    /*
      * Public static constructor that creates fragment and
      * passes a bundle with data into it when adapter is created
      */
@@ -53,7 +48,7 @@ public class AddListDialogFragment extends DialogFragment {
         return addListDialogFragment;
     }
 
-    /**
+    /*
      * Initialize instance variables with data from bundle
      */
     @Override
@@ -62,7 +57,7 @@ public class AddListDialogFragment extends DialogFragment {
         mEncodedEmail = getArguments().getString(Constants.KEY_ENCODED_EMAIL);
     }
 
-    /**
+    /*
      * Open the keyboard automatically when the dialog fragment is opened
      */
     @Override
@@ -78,9 +73,9 @@ public class AddListDialogFragment extends DialogFragment {
         // Get the layout inflater
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View rootView = inflater.inflate(R.layout.dialog_add_list, null);
-        mEditTextListName = (EditText) rootView.findViewById(R.id.edit_text_list_name);
+        mEditTextListName = rootView.findViewById(R.id.edit_text_list_name);
 
-        /**
+        /*
          * Call addShoppingList() when user taps "Done" keyboard action
          */
         mEditTextListName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -115,15 +110,14 @@ public class AddListDialogFragment extends DialogFragment {
 
         String userEnteredName = mEditTextListName.getText().toString();
 
-        /**
+        /*
          * If EditText input is not empty
          */
         if (!userEnteredName.equals("")) {
 
             // Initialize Firebase components
-            mFirebaseDatabase = FirebaseDatabase.getInstance();
-            mUserListsDatabaseReference = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_USER_LISTS).child(mEncodedEmail);
-
+            FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
+            DatabaseReference mUserListsDatabaseReference = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_USER_LISTS).child(mEncodedEmail);
             DatabaseReference dbRef = mUserListsDatabaseReference.push();
 
             /* Save listsRef.push() to maintain same random Id */
@@ -132,7 +126,7 @@ public class AddListDialogFragment extends DialogFragment {
             /* HashMap for data to update */
             HashMap<String, Object> updateShoppingListData = new HashMap<>();
 
-            /**
+            /*
              * Set raw version of date to the ServerValue.TIMESTAMP value and save into
              * timestampCreatedMap
              */

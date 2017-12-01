@@ -37,15 +37,31 @@ public class User {
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getEmail() {
         return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public HashMap<String, Object> getTimestampJoined() {
         return timestampJoined;
     }
 
+    public void setTimestampJoined(HashMap<String, Object> timestampJoined) {
+        this.timestampJoined = timestampJoined;
+    }
+
     public boolean isHasLoggedInWithPassword() {
         return hasLoggedInWithPassword;
+    }
+
+    public void setHasLoggedInWithPassword(boolean hasLoggedInWithPassword) {
+        this.hasLoggedInWithPassword = hasLoggedInWithPassword;
     }
 }

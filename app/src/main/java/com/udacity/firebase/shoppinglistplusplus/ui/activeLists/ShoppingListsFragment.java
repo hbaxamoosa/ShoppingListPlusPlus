@@ -1,12 +1,5 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.activeLists;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
-
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -17,6 +10,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
@@ -26,12 +25,12 @@ import java.util.Iterator;
 
 import timber.log.Timber;
 
-/**
+/*
  * Great reference on RecyclerView: https://medium.com/@harivigneshjayapalan/android-implementing-custom-recycler-view-part-i-9ce5e9af7fea
  * https://medium.com/@harivigneshjayapalan/android-recyclerview-implementing-single-item-click-and-long-press-part-ii-b43ef8cb6ad8
  */
 
-/**
+/*
  * A simple {@link Fragment} subclass that shows a list of all shopping lists a user can see.
  * Use the {@link ShoppingListsFragment#newInstance} factory method to
  * create an instance of this fragment.
@@ -39,12 +38,8 @@ import timber.log.Timber;
 public class ShoppingListsFragment extends Fragment {
     private String mEncodedEmail;
     private ActiveListAdapter mActiveListAdapter;
-    private RecyclerView mRecyclerView;
     private ArrayList<ShoppingList> mShoppingList = new ArrayList<>();
     private ArrayList<String> mListKeys = new ArrayList<>();
-
-    // Firebase Realtime Database
-    private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mUserListsDatabaseReference;
     private DatabaseReference orderedList;
     private ValueEventListener orderedListListener;
@@ -65,7 +60,7 @@ public class ShoppingListsFragment extends Fragment {
         return fragment;
     }
 
-    /**
+    /*
      * Initialize instance variables with data from bundle
      */
     @Override
@@ -76,7 +71,7 @@ public class ShoppingListsFragment extends Fragment {
         }
 
         // Initialize Firebase components
-        mFirebaseDatabase = FirebaseDatabase.getInstance();
+        FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
         mUserListsDatabaseReference = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_USER_LISTS).child(mEncodedEmail);
     }
 
@@ -85,7 +80,7 @@ public class ShoppingListsFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_shopping_lists, container, false);
 
-        mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerView);
+        RecyclerView mRecyclerView = rootView.findViewById(R.id.recyclerView);
 
         LinearLayoutManager manager = new LinearLayoutManager(getContext());
         mRecyclerView.setHasFixedSize(true);
@@ -106,7 +101,7 @@ public class ShoppingListsFragment extends Fragment {
         return rootView;
     }
 
-    /**
+    /*
      * Updates the order of mListView onResume to handle sortOrderChanges properly
      */
     @Override
@@ -120,7 +115,7 @@ public class ShoppingListsFragment extends Fragment {
 
         Query orderedList;
 
-        /**
+        /*
          * Sort active lists by "date created"
          * if it's been selected in the SettingsActivity
          */
@@ -128,7 +123,7 @@ public class ShoppingListsFragment extends Fragment {
             orderedList = mUserListsDatabaseReference.orderByKey();
         } else {
 
-            /**
+            /*
              * Sort active by lists by name or datelastChanged. Otherwise
              * depending on what's been selected in SettingsActivity
              */
@@ -147,9 +142,9 @@ public class ShoppingListsFragment extends Fragment {
                 for (int i = 0; i < dataSnapshot.getChildrenCount(); i++) {
                     if (it.hasNext()) {
                         DataSnapshot listSnapshot = it.next();
-                        // Timber.v("listSnapshot.getValue(): " + listSnapshot.getValue());
+                        Timber.v("listSnapshot.getValue(): %s", listSnapshot.getValue());
                         ShoppingList shoppingList = listSnapshot.getValue(ShoppingList.class);
-                        // Timber.v("listSnapshot.getKey(): " + listSnapshot.getKey());
+                        Timber.v("listSnapshot.getKey(): %s", listSnapshot.getKey());
                         mListKeys.add(listSnapshot.getKey());
                         mShoppingList.add(shoppingList);
                         mActiveListAdapter.notifyDataSetChanged();
@@ -159,7 +154,7 @@ public class ShoppingListsFragment extends Fragment {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Timber.v("Error: " + databaseError.toString());
+                Timber.v("Error: %s", databaseError.toString());
             }
         };
 
@@ -188,7 +183,7 @@ public class ShoppingListsFragment extends Fragment {
         super.onPause();
         // Timber.v("onPause()");
 
-        /**
+        /*
          * Cleanup the adapter when activity is paused.
          */
         mShoppingList.clear();
@@ -199,7 +194,7 @@ public class ShoppingListsFragment extends Fragment {
         super.onDestroy();
         // Timber.v("onDestroy()");
 
-        /**
+        /*
          * Cleanup the adapter when activity is paused.
          */
         mShoppingList.clear();

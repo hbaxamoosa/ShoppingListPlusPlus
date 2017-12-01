@@ -1,13 +1,12 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.activeListDetails;
 
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ServerValue;
-
 import android.app.Dialog;
 import android.os.Bundle;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ServerValue;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingListItem;
@@ -52,7 +51,7 @@ public class AddListItemDialogFragment extends EditListDialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        /** {@link EditListDialogFragment#createDialogHelper(int)} is a
+        /* {@link EditListDialogFragment#createDialogHelper(int)} is a
          * superclass method that creates the dialog
          **/
         return super.createDialogHelper(R.string.positive_button_add_list_item);
@@ -69,7 +68,7 @@ public class AddListItemDialogFragment extends EditListDialogFragment {
         FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
         DatabaseReference mShoppingListItemsDatabaseReference = mFirebaseDatabase.getReference();
 
-        /**
+        /*
          * Adds list item if the input name is not empty
          */
         if (!mItemName.equals("")) {
@@ -96,7 +95,7 @@ public class AddListItemDialogFragment extends EditListDialogFragment {
             /* Do the update */
             mShoppingListItemsDatabaseReference.updateChildren(updatedItemToAddMap);
 
-            /**
+            /*
              * Close the dialog fragment when done
              */
             AddListItemDialogFragment.this.getDialog().cancel();

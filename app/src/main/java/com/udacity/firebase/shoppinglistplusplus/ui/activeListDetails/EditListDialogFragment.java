@@ -81,9 +81,9 @@ public abstract class EditListDialogFragment extends DialogFragment {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         /* Inflate the layout, set root ViewGroup to null*/
         View rootView = inflater.inflate(mResource, null);
-        mEditTextForList = (EditText) rootView.findViewById(R.id.edit_text_list_dialog);
+        mEditTextForList = rootView.findViewById(R.id.edit_text_list_dialog);
 
-        /**
+        /*
          * Call doListEdit() when user taps "Done" keyboard action
          */
         mEditTextForList.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -92,7 +92,7 @@ public abstract class EditListDialogFragment extends DialogFragment {
                 if (actionId == EditorInfo.IME_ACTION_DONE || keyEvent.getAction() == KeyEvent.ACTION_DOWN) {
                     doListEdit();
 
-                    /**
+                    /*
                      * Close the dialog fragment when done
                      */
                     EditListDialogFragment.this.getDialog().cancel();
@@ -109,7 +109,7 @@ public abstract class EditListDialogFragment extends DialogFragment {
                     public void onClick(DialogInterface dialog, int id) {
                         doListEdit();
 
-                        /**
+                        /*
                          * Close the dialog fragment
                          */
                         EditListDialogFragment.this.getDialog().cancel();
@@ -119,7 +119,7 @@ public abstract class EditListDialogFragment extends DialogFragment {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
 
-                        /**
+                        /*
                          * Close the dialog fragment
                          */
                         EditListDialogFragment.this.getDialog().cancel();

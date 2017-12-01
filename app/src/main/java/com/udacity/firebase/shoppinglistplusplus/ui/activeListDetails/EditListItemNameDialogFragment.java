@@ -68,11 +68,11 @@ public class EditListItemNameDialogFragment extends EditListDialogFragment {
     @Override
 
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        /** {@link EditListDialogFragment#createDialogHelper(int)} is a
+        /* {@link EditListDialogFragment#createDialogHelper(int)} is a
          * superclass method that creates the dialog
          */
         Dialog dialog = super.createDialogHelper(R.string.positive_button_edit_item);
-        /**
+        /*
          * {@link EditListDialogFragment#helpSetDefaultValueEditText(String)} is a superclass
          * method that sets the default text of the TextView
          */
@@ -90,13 +90,13 @@ public class EditListItemNameDialogFragment extends EditListDialogFragment {
         // Timber.v("mItemName: " + mItemName);
         // Timber.v("mItemId: " + mItemId);
 
-        /**
+        /*
          * Set input text to be the current list item name if it is not empty and is not the
          * previous name.
          */
         if (!nameInput.equals("") && !nameInput.equals(mItemName)) {
 
-            /**
+            /*
              * Check that the user inputted list name is not empty, has changed the original name
              * and that the dialog was properly initialized with the current name and id of the list.
              */
@@ -116,10 +116,8 @@ public class EditListItemNameDialogFragment extends EditListDialogFragment {
                     HashMap<String, Object> itemToAdd =
                             (HashMap<String, Object>) new ObjectMapper().convertValue(itemToAddObject, Map.class);
 
-                    /* Add the item to the update map */
-                    /**
-                     * the path in 'put' must be the fully declared path
-                     */
+                    // Add the item to the update map
+                    // the path in 'put' must be relative to the database refernece, in this case mListItemsRef, which points to root
                     // add the nameInput as a new item
                     updatedItemToAddMap.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mItemId + "/" + nameInput, itemToAdd);
                     // delete the existing item

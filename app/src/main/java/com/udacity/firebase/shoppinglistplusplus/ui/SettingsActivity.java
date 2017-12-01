@@ -11,7 +11,7 @@ import android.preference.PreferenceManager;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
-/**
+/*
  * SettingsActivity represents preference screen and functionality
  */
 public class SettingsActivity extends PreferenceActivity {
@@ -26,7 +26,7 @@ public class SettingsActivity extends PreferenceActivity {
                 .commit();
     }
 
-    /**
+    /*
      * This fragment shows the preferences for the first header.
      */
     public static class SortPreferenceFragment extends PreferenceFragment implements Preference.OnPreferenceChangeListener {
@@ -36,13 +36,13 @@ public class SettingsActivity extends PreferenceActivity {
             /* Load the preferences from an XML resource */
             addPreferencesFromResource(R.xml.preference_screen);
 
-            /**
+            /*
              * Bind preference summary to value for lists and meals sorting list preferences
              */
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_name_sort_order_lists)));
         }
 
-        /**
+        /*
          * When preference is changed, save it's new value to default shared preferences
          *
          * @param preference
@@ -67,7 +67,7 @@ public class SettingsActivity extends PreferenceActivity {
                             .getString(preference.getKey(), ""));
         }
 
-        /**
+        /*
          * Sets preference summary to appropriate value
          *
          * @param preference

@@ -1,8 +1,5 @@
 package com.udacity.firebase.shoppinglistplusplus.ui;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-
 import android.app.DialogFragment;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -20,6 +17,8 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.firebase.ui.auth.AuthUI;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.ui.activeLists.AddListDialogFragment;
@@ -60,7 +59,7 @@ public class MainActivity extends BaseActivity {
             // Timber.v("mEncodedEmail: " + mEncodedEmail);
         }
 
-        /**
+        /*
          * Link layout elements from XML and setup the toolbar
          */
         initializeScreen();
@@ -121,23 +120,23 @@ public class MainActivity extends BaseActivity {
      * Link layout elements from XML and setup the toolbar
      */
     public void initializeScreen() {
-        ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.app_bar);
+        ViewPager viewPager = findViewById(R.id.pager);
+        TabLayout tabLayout = findViewById(R.id.tab_layout);
+        Toolbar toolbar = findViewById(R.id.app_bar);
         setSupportActionBar(toolbar);
-        /**
+        /*
          * Create SectionPagerAdapter, set it as adapter to viewPager with setOffscreenPageLimit(2)
-         **/
+         */
         SectionPagerAdapter adapter = new SectionPagerAdapter(getSupportFragmentManager());
         viewPager.setOffscreenPageLimit(2);
         viewPager.setAdapter(adapter);
-        /**
+        /*
          * Setup the mTabLayout with view pager
          */
         tabLayout.setupWithViewPager(viewPager);
     }
 
-    /**
+    /*
      * Create an instance of the AddList dialog fragment and show it
      */
     public void showAddListDialog(View view) {
@@ -146,7 +145,7 @@ public class MainActivity extends BaseActivity {
         dialog.show(MainActivity.this.getFragmentManager(), "AddListDialogFragment");
     }
 
-    /**
+    /*
      * Create an instance of the AddMeal dialog fragment and show it
      */
     public void showAddMealDialog(View view) {
@@ -155,7 +154,7 @@ public class MainActivity extends BaseActivity {
         dialog.show(MainActivity.this.getFragmentManager(), "AddMealDialogFragment");
     }
 
-    /**
+    /*
      * SectionPagerAdapter class that extends FragmentStatePagerAdapter to save fragments state
      */
     public class SectionPagerAdapter extends FragmentStatePagerAdapter {
@@ -164,7 +163,7 @@ public class MainActivity extends BaseActivity {
             super(fm);
         }
 
-        /**
+        /*
          * Use positions (0 and 1) to find and instantiate fragments with newInstance()
          *
          * @param position
@@ -174,7 +173,7 @@ public class MainActivity extends BaseActivity {
 
             Fragment fragment = null;
 
-            /**
+            /*
              * Set fragment to different fragments depending on position in ViewPager
              */
             switch (position) {

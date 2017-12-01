@@ -1,11 +1,5 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.sharing;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -13,6 +7,11 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.model.User;
@@ -65,7 +64,7 @@ public class ShareListActivity extends BaseActivity {
         mUsersFriends = new ArrayList<>();
         mSharedWithListener = new ArrayList<>();
 
-        /**
+        /*
          * Create Firebase references
          */
         mFirebaseDatabase = FirebaseDatabase.getInstance();
@@ -73,7 +72,7 @@ public class ShareListActivity extends BaseActivity {
         mActiveListRef = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_USER_LISTS).child(mEncodedEmail).child(mListId);
         mSharedFriendInShoppingListRef = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_LISTS_SHARED_WITH).child(mListId);
 
-        /**
+        /*
          * Link layout elements from XML and setup the toolbar
          */
         initializeScreen();
@@ -83,8 +82,8 @@ public class ShareListActivity extends BaseActivity {
         mRecyclerView.setLayoutManager(manager);
 
         try {
-            Timber.v("mListId: " + mListId);
-            Timber.v("mEncodedEmail: " + mEncodedEmail);
+            // Timber.v("mListId: %s", mListId);
+            // Timber.v("mEncodedEmail: %s", mEncodedEmail);
             mFriendAdapter = new FriendAdapter(mUsersFriends, mListId, mEncodedEmail, mSharedFriendInShoppingListRef);
             mRecyclerView.setAdapter(mFriendAdapter);
         } catch (Exception e) {
@@ -102,23 +101,23 @@ public class ShareListActivity extends BaseActivity {
         super.onResume();
         // Timber.v("onResume()");
 
-        /**
+        /*
          * Add ValueEventListeners to Firebase references
          * to control get data and control behavior and visibility of elements
          */
 
-        /**
+        /*
          * Returns datasnapshot from /userLists/mEncodedEmail/mLisrId node to provide the active list
          */
         mActiveListRefListener = mActiveListRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Timber.v("ValueEventListener onDataChange(DataSnapshot dataSnapshot) " + dataSnapshot.getValue());
-                Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
+                // Timber.v("ValueEventListener onDataChange(DataSnapshot dataSnapshot) %s", dataSnapshot.getValue());
+                // Timber.v("dataSnapshot.getValue(): %s", dataSnapshot.getValue());
 
                 ShoppingList shoppingList = dataSnapshot.getValue(ShoppingList.class);
 
-                /**
+                /*
                  * Saving the most recent version of current shopping list into mShoppingList
                  * and pass it to setShoppingList() if present
                  * finish() the activity otherwise
@@ -137,26 +136,26 @@ public class ShareListActivity extends BaseActivity {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Timber.v(getString(R.string.log_error_the_read_failed) + databaseError);
+                Timber.v("%s%s", getString(R.string.log_error_the_read_failed), databaseError);
             }
         });
 
-        /**
+        /*
          * Returns datasnapshot from /userFriends/mEncodedEmail node
          */
         mFriendsListener = mCurrentUserFriendsReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
+                // Timber.v("dataSnapshot.getValue(): %s", dataSnapshot.getValue());
                 mUsersFriends.clear();
                 Iterator<DataSnapshot> it = dataSnapshot.getChildren().iterator();
                 for (int i = 0; i < dataSnapshot.getChildrenCount(); i++) {
                     if (it.hasNext()) {
                         DataSnapshot listSnapshot = it.next();
-                        Timber.v("listSnapshot.getKey(): " + listSnapshot.getKey());
-                        Timber.v("listSnapshot.getValue(): " + listSnapshot.getValue());
+                        // Timber.v("listSnapshot.getKey(): %s", listSnapshot.getKey());
+                        // Timber.v("listSnapshot.getValue(): %s", listSnapshot.getValue());
                         mUsersFriends.add(listSnapshot.getValue(User.class));
-                        Timber.v("mSharedWithUsers.get(i).getEmail(): " + mUsersFriends.get(i).getEmail());
+                        // Timber.v("mSharedWithUsers.get(i).getEmail(): %s", mUsersFriends.get(i).getEmail());
                         if (mFriendAdapter != null) {
                             mFriendAdapter.setSharedWithUsers(mUsersFriends);
                             mFriendAdapter.notifyDataSetChanged();
@@ -165,7 +164,7 @@ public class ShareListActivity extends BaseActivity {
                         }
                     }
                     if (mFriendAdapter != null) {
-                        Timber.v("mFriendAdapter.getItemCount(): " + mFriendAdapter.getItemCount());
+                        Timber.v("mFriendAdapter.getItemCount(): %s", mFriendAdapter.getItemCount());
                     } else {
                         Timber.v("mFriendAdapter is NULL 03");
                     }
@@ -174,7 +173,7 @@ public class ShareListActivity extends BaseActivity {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Timber.v(getString(R.string.log_error_the_read_failed) + databaseError);
+                Timber.v("%s%s", getString(R.string.log_error_the_read_failed), databaseError);
             }
         });
     }
@@ -196,7 +195,7 @@ public class ShareListActivity extends BaseActivity {
         if (mSharedWithListener != null) {
             Timber.v("mSharedFriendInShoppingListRef.removeEventListener(mSharedWithListener)");
             for (int i = 0; i < mSharedWithListener.size(); i++) {
-                Timber.v("mListeners.get(i): " + mSharedWithListener.get(i));
+                Timber.v("mListeners.get(i): %s", mSharedWithListener.get(i));
                 mSharedFriendInShoppingListRef.removeEventListener(mSharedWithListener.get(i));
             }
         }

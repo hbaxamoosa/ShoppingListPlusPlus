@@ -32,17 +32,17 @@ public class CreateAccountActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_account);
 
-        /**
+        /*
          * Create Firebase references
          */
 
-        /**
+        /*
          * Link layout elements from XML and setup the progress dialog
          */
         initializeScreen();
     }
 
-    /**
+    /*
      * Override onCreateOptionsMenu to inflate nothing
      *
      * @param menu The menu with which nothing will happen
@@ -53,13 +53,13 @@ public class CreateAccountActivity extends BaseActivity {
     }
 
 
-    /**
+    /*
      * Link layout elements from XML and setup the progress dialog
      */
     public void initializeScreen() {
-        mEditTextUsernameCreate = (EditText) findViewById(R.id.edit_text_username_create);
-        mEditTextEmailCreate = (EditText) findViewById(R.id.edit_text_email_create);
-        LinearLayout linearLayoutCreateAccountActivity = (LinearLayout) findViewById(R.id.linear_layout_create_account_activity);
+        mEditTextUsernameCreate = findViewById(R.id.edit_text_username_create);
+        mEditTextEmailCreate = findViewById(R.id.edit_text_email_create);
+        LinearLayout linearLayoutCreateAccountActivity = findViewById(R.id.linear_layout_create_account_activity);
         initializeBackground(linearLayoutCreateAccountActivity);
 
         /* Setup the progress dialog that is displayed later when authenticating with Firebase */
@@ -69,7 +69,7 @@ public class CreateAccountActivity extends BaseActivity {
         mAuthProgressDialog.setCancelable(false);
     }
 
-    /**
+    /*
      * Open LoginActivity when user taps on "Sign in" textView
      */
     public void onSignInPressed(View view) {
@@ -79,7 +79,7 @@ public class CreateAccountActivity extends BaseActivity {
         finish();
     }
 
-    /**
+    /*
      * Create new account using Firebase email/password provider
      */
     public void onCreateAccountPressed(View view) {
@@ -87,27 +87,27 @@ public class CreateAccountActivity extends BaseActivity {
         mUserEmail = mEditTextEmailCreate.getText().toString().toLowerCase();
         mPassword = new BigInteger(130, mRandom).toString(32);
 
-        /**
+        /*
          * Check that email and user name are okay
          */
         boolean validEmail = isEmailValid(mUserEmail);
         boolean validUserName = isUserNameValid(mUserName);
         if (!validEmail || !validUserName) return;
 
-        /**
+        /*
          * If everything was valid show the progress dialog to indicate that
          * account creation has started
          */
         mAuthProgressDialog.show();
 
-        /**
+        /*
          * Create new user with specified email and password
          */
 
 
     }
 
-    /**
+    /*
      * Creates a new user in Firebase from the Java POJO
      */
     private void createUserInFirebaseHelper(final String authUserId) {
@@ -133,8 +133,7 @@ public class CreateAccountActivity extends BaseActivity {
         return true;
     }
 
-
-    /**
+    /*
      * Show error toast to users
      */
     private void showErrorToast(String message) {

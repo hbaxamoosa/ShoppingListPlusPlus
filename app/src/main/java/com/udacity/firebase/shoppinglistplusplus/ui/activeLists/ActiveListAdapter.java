@@ -15,7 +15,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
-import com.udacity.firebase.shoppinglistplusplus.model.User;
 import com.udacity.firebase.shoppinglistplusplus.ui.activeListDetails.ActiveListDetailsActivity;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
@@ -24,7 +23,7 @@ import java.util.List;
 
 import timber.log.Timber;
 
-/**
+/*
  * Populates the list_view_active_lists inside ShoppingListsFragment
  */
 public class ActiveListAdapter extends RecyclerView.Adapter<ActiveListAdapter.ViewHolder> {
@@ -89,25 +88,23 @@ public class ActiveListAdapter extends RecyclerView.Adapter<ActiveListAdapter.Vi
          */
         if (shoppingList.get(position).getOwner() != null) {
             if (shoppingList.get(position).getOwner().equals(mEncodedEmail)) {
-                holder.textViewCreatedByUser.setText(context.getResources().getString(R.string.text_you));
-            } else {
-
+                holder.textViewCreatedByUser.setText("Created by " + context.getResources().getString(R.string.text_you));
+            } else { // owenr of the list is another user
                 // Initialize Firebase components
                 FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
-                DatabaseReference mUserListsDatabaseReference = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_USER_LISTS);
+                DatabaseReference mUserListsDatabaseReference = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_USER_LISTS).child(mEncodedEmail).child(listKeys.get(position));
 
                 /* Save the most up-to-date version of current user in mCurrentUser */
 
                 mUserListsDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        Timber.v("dataSnapshot.getValue(): %s", dataSnapshot.getValue());
-                        User user = dataSnapshot.getValue(User.class);
+                        // Timber.v("dataSnapshot.getValue(): %s", dataSnapshot.getValue());
+                        ShoppingList shoppingList = dataSnapshot.getValue(ShoppingList.class);
 
-                        if (user != null) {
-                            Timber.v("user.getName(): %s", user.getName());
-                            holder.textViewCreatedByUser.setText(user.getName());
-                            // TODO: 8/23/17 possible bug here? when viewing the shared list from a SharedWith user, the owner name flashes into and out of the textViewCreatedByUser
+                        if (shoppingList != null) {
+                            // Timber.v("shoppingList.getOwner(): %s", shoppingList.getOwner());
+                            holder.textViewCreatedByUser.setText("Created by " + shoppingList.getOwner());
                         }
                     }
 

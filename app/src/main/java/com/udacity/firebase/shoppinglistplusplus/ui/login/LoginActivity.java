@@ -81,7 +81,7 @@ public class LoginActivity extends BaseActivity implements
         mSharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         mSharedPrefEditor = mSharedPref.edit();
 
-        /**
+        /*
          * Initialize Firebase components
          */
         mFirebaseAuth = FirebaseAuth.getInstance();
@@ -97,7 +97,7 @@ public class LoginActivity extends BaseActivity implements
                 .requestEmail()
                 .build();
 
-        /**
+        /*
          * Build a GoogleApiClient with access to the Google Sign-In API and the
          * options specified by gso.
          */
@@ -108,7 +108,7 @@ public class LoginActivity extends BaseActivity implements
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
 
-        /**
+        /*
          * Getting mProvider and mEncodedEmail from SharedPreferences
          */
         final SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
@@ -116,12 +116,12 @@ public class LoginActivity extends BaseActivity implements
         mEncodedEmail = sp.getString(Constants.KEY_ENCODED_EMAIL, null);
         mProvider = sp.getString(Constants.KEY_PROVIDER, null);
 
-        /**
+        /*
          * Link layout elements from XML and setup progress dialog
          */
         initializeScreen();
 
-        /**
+        /*
          * Call signInPassword() when user taps "Done" keyboard action
          */
         mEditTextPasswordInput.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -129,7 +129,8 @@ public class LoginActivity extends BaseActivity implements
             public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
 
                 if (actionId == EditorInfo.IME_ACTION_DONE || keyEvent.getAction() == KeyEvent.ACTION_DOWN) {
-
+                    // do nothing at this time
+                    Timber.v("inside if");
                 }
                 return true;
             }
@@ -158,14 +159,14 @@ public class LoginActivity extends BaseActivity implements
                     }
                 } else {
                     Status status = result.getStatus();
-                    Timber.v("status: " + status);
+                    Timber.v("status: %s", status);
                 }
             }
         }
     }
 
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
-        Timber.v("firebaseAuthWithGoogle: " + acct.getId());
+        Timber.v("firebaseAuthWithGoogle: %s", acct.getId());
 
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
         mFirebaseAuth.signInWithCredential(credential)
@@ -174,10 +175,10 @@ public class LoginActivity extends BaseActivity implements
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
-                            Timber.v("signInWithCredential:success");
+                            // Timber.v("signInWithCredential:success");
                             FirebaseUser user = mFirebaseAuth.getCurrentUser();
-                            Timber.v("user.getDisplayName(): " + user.getDisplayName());
-                            Timber.v("user.getEmail(): " + user.getEmail());
+                            // Timber.v("user.getDisplayName(): %s", user.getDisplayName());
+                            // Timber.v("user.getEmail(): %s", user.getEmail());
 
                             mUsername = user.getDisplayName();
                             mEncodedEmail = Utils.encodeEmail(user.getEmail());
@@ -193,7 +194,7 @@ public class LoginActivity extends BaseActivity implements
                             startActivity(intent);
                         } else {
                             // If sign in fails, display a message to the user.
-                            Timber.v("signInWithCredential:failure", task.getException());
+                            Timber.v("signInWithCredential:failure with error: %s", task.getException());
                             Toast.makeText(LoginActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
                         }
@@ -208,10 +209,10 @@ public class LoginActivity extends BaseActivity implements
         FirebaseUser currentUser = mFirebaseAuth.getCurrentUser();
         if (currentUser != null) {
             // Sign in success, update UI with the signed-in user's information
-            Timber.v("signInWithCredential:success");
+            // Timber.v("signInWithCredential:success");
             FirebaseUser user = mFirebaseAuth.getCurrentUser();
-            Timber.v("user.getDisplayName(): " + user.getDisplayName());
-            Timber.v("user.getEmail(): " + user.getEmail());
+            // Timber.v("user.getDisplayName(): %s", user.getDisplayName());
+            // Timber.v("user.getEmail(): %s", user.getEmail());
 
             mUsername = user.getDisplayName();
             mEncodedEmail = Utils.encodeEmail(user.getEmail());
@@ -233,7 +234,7 @@ public class LoginActivity extends BaseActivity implements
     private void onSignedInInitialize(String username) {
         mUsername = username;
 
-        /**
+        /*
          * Set raw version of date to the ServerValue.TIMESTAMP value and save into
          * timestampCreatedMap
          */
@@ -312,6 +313,6 @@ public class LoginActivity extends BaseActivity implements
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         // An unresolvable error has occurred and Google APIs (including Sign-In) will not be available.
-        Timber.v("onConnectionFailed:" + connectionResult);
+        Timber.v("onConnectionFailed:%s", connectionResult);
     }
 }

@@ -1,12 +1,5 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.activeListDetails;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
-
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
@@ -14,6 +7,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.model.User;
@@ -117,7 +116,7 @@ public class RemoveListDialogFragment extends DialogFragment {
                     @Override
                     public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                         if (databaseError != null) {
-                            Timber.v(getString(R.string.log_error_updating_data) + databaseError.getMessage());
+                            Timber.v("%s%s", getString(R.string.log_error_updating_data), databaseError.getMessage());
                         }
                     }
                 });
@@ -125,7 +124,7 @@ public class RemoveListDialogFragment extends DialogFragment {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Timber.v("Error: " + databaseError);
+                Timber.v("Error: %s", databaseError);
             }
         });
 
@@ -134,5 +133,4 @@ public class RemoveListDialogFragment extends DialogFragment {
         intent.putExtra(Constants.KEY_ENCODED_EMAIL, mListOwner);
         startActivity(intent);
     }
-
 }

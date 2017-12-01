@@ -1,11 +1,5 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.sharing;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -16,6 +10,11 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.User;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
@@ -32,7 +31,7 @@ public class AutocompleteFriendAdapter extends RecyclerView.Adapter<Autocomplete
     private static List<User> userList;
     private static String mEncodedEmail;
 
-    public AutocompleteFriendAdapter(List<User> users, Context c) {
+    AutocompleteFriendAdapter(List<User> users, Context c) {
         userList = users;
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(c);
         mEncodedEmail = sharedPref.getString(Constants.KEY_ENCODED_EMAIL, null);
@@ -66,9 +65,9 @@ public class AutocompleteFriendAdapter extends RecyclerView.Adapter<Autocomplete
 
         TextView userItem;
 
-        public ViewHolder(View itemView) {
+        ViewHolder(View itemView) {
             super(itemView);
-            userItem = (TextView) itemView.findViewById(R.id.text_view_autocomplete_item);
+            userItem = itemView.findViewById(R.id.text_view_autocomplete_item);
             userItem.setOnClickListener(this);
         }
 
@@ -78,12 +77,12 @@ public class AutocompleteFriendAdapter extends RecyclerView.Adapter<Autocomplete
             final int adapterPosition = getAdapterPosition();
             // Toast.makeText(v.getContext(), "adapterPosition: " + adapterPosition, Toast.LENGTH_SHORT).show();
 
-            /**
+            /*
              * If selected user is not current user proceed
              */
             if (isNotCurrentUser(userList.get(adapterPosition))) {
 
-                /**
+                /*
                  * Create Firebase references
                  */
 
@@ -91,18 +90,18 @@ public class AutocompleteFriendAdapter extends RecyclerView.Adapter<Autocomplete
                 final DatabaseReference mUserFriendsReference = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_USER_FRIENDS)
                         .child(mEncodedEmail).child(userList.get(adapterPosition).getEmail());
 
-                Timber.v("mUserFriendsReference.getRef(): " + mUserFriendsReference.getRef());
-                /**
+                // Timber.v("mUserFriendsReference.getRef(): %s", mUserFriendsReference.getRef());
+                /*
                  * Add listener for single value event to perform a one time operation
                  */
                 mUserFriendsReference.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
 
-                        Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
-                        Timber.v("userList.get(adapterPosition).getEmail(): " + userList.get(adapterPosition).getEmail());
+                        // Timber.v("dataSnapshot.getValue(): %s", dataSnapshot.getValue());
+                        // Timber.v("userList.get(adapterPosition).getEmail(): %s", userList.get(adapterPosition).getEmail());
 
-                        /**
+                        /*
                          * Add selected user to current user's friends if not in friends yet
                          */
                         if (isNotAlreadyAdded(dataSnapshot, userList.get(adapterPosition))) {
@@ -112,8 +111,7 @@ public class AutocompleteFriendAdapter extends RecyclerView.Adapter<Autocomplete
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-                        Timber.v(itemView.getContext().getString(R.string.log_error_the_read_failed) +
-                                databaseError.getMessage());
+                        Timber.v("%s%s", itemView.getContext().getString(R.string.log_error_the_read_failed), databaseError.getMessage());
                     }
                 });
 
