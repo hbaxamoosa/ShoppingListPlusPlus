@@ -117,7 +117,7 @@ public class EditListItemNameDialogFragment extends EditListDialogFragment {
                             (HashMap<String, Object>) new ObjectMapper().convertValue(itemToAddObject, Map.class);
 
                     // Add the item to the update map
-                    // the path in 'put' must be relative to the database refernece, in this case mListItemsRef, which points to root
+                    // the path in 'put' must be relative to the database reference, in this case mListItemsRef, which points to root
                     // add the nameInput as a new item
                     updatedItemToAddMap.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mItemId + "/" + nameInput, itemToAdd);
                     // delete the existing item

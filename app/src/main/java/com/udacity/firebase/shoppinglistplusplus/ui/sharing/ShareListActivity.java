@@ -30,8 +30,6 @@ public class ShareListActivity extends BaseActivity {
     private static ArrayList<ValueEventListener> mSharedWithListener;
     FirebaseDatabase mFirebaseDatabase;
     private FriendAdapter mFriendAdapter;
-    private String mListId;
-    private String mEncodedEmail;
     private ArrayList<User> mUsersFriends;
     private DatabaseReference mCurrentUserFriendsReference, mActiveListRef, mSharedFriendInShoppingListRef;
     private ValueEventListener mActiveListRefListener;
@@ -54,13 +52,13 @@ public class ShareListActivity extends BaseActivity {
 
         /* Get the push ID from the extra passed by ActiveListDetailsActivity */
         Intent intent = this.getIntent();
-        mListId = intent.getStringExtra(Constants.KEY_LIST_ID);
+        String mListId = intent.getStringExtra(Constants.KEY_LIST_ID);
         if (mListId == null) {
             /* No point in continuing without a valid ID. */
             finish();
             return;
         }
-        mEncodedEmail = intent.getStringExtra(Constants.KEY_ENCODED_EMAIL);
+        String mEncodedEmail = intent.getStringExtra(Constants.KEY_ENCODED_EMAIL);
         mUsersFriends = new ArrayList<>();
         mSharedWithListener = new ArrayList<>();
 

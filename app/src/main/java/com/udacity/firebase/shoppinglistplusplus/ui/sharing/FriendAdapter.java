@@ -32,16 +32,14 @@ import timber.log.Timber;
  */
 public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder> {
     private static ArrayList<User> mSharedUsersList;
-    private static String mEncodedEmail;
     private static String mListId;
     private static ShoppingList mShoppingList;
-    private static DatabaseReference mSharedFriendInShoppingListRef, mFriendRef;
+    private static DatabaseReference mSharedFriendInShoppingListRef;
     private Context context;
 
     FriendAdapter(ArrayList<User> arrayList, String listId, String encodedEmail, DatabaseReference sharedFriendInShoppingListRef) {
         mSharedUsersList = arrayList;
         mListId = listId;
-        mEncodedEmail = encodedEmail;
         mSharedFriendInShoppingListRef = sharedFriendInShoppingListRef;
         // Timber.v("mSharedFriendInShoppingListRef: %s", mSharedFriendInShoppingListRef.getRef());
     }
@@ -80,7 +78,7 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder
         // Timber.v("mSharedUsersList.size(): %s", mSharedUsersList.size());
         // Timber.v("mSharedUsersList.get(position).getEmail(): %s", mSharedUsersList.get(position).getEmail());
         // Timber.v("mSharedUsersList.get(position).toString(): %s", mSharedUsersList.get(position).toString());
-        mFriendRef = mSharedFriendInShoppingListRef.child(mSharedUsersList.get(position).getEmail());
+        DatabaseReference mFriendRef = mSharedFriendInShoppingListRef.child(mSharedUsersList.get(position).getEmail());
         // Timber.v("onBindViewHolder mFriendRef.getRef(): %s", mFriendRef.getRef());
 
         holder.userName.setOnClickListener(new View.OnClickListener() {
@@ -97,8 +95,7 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder
          * and then allows the friend to be toggled as shared with or not.
          *
          * The friend in the snapshot (sharedFriendInShoppingList) will either be a User object
-         * (if they are in the the sharedWith list) or null (if they are not in the sharedWith
-         * list)
+         * (if they are in the the sharedWith list) or null (if they are not in the sharedWith list)
          */
 
         if (mFriendRef != null) {
@@ -150,7 +147,6 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder
                     String propertyToUpdateList = "/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + mSharedUsersList.get(position).getEmail() + "/" + mListId;
 
                     if (isFriend) { // we are adding a user/friend to the list
-                        Timber.v("isFriend: %s", isFriend);
                         // create hashmap of user that needs to be added to the sharedWith node
                         HashMap<String, Object> currentUser = (HashMap<String, Object>) new ObjectMapper().convertValue(mSharedUsersList.get(position), Map.class);
                         updatedUserData.put(propertyToUpdateUser, currentUser); // set the User Shopping value to current user
@@ -172,10 +168,10 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder
                         });
 
                     } else { // we are removing a user/friend from the list
-                        // Timber.v("isFriend: %s", isFriend);
+                        Timber.v("isFriend: %s", isFriend);
                         // create hashmap of user that needs to be added to the sharedWith node
                         HashMap<String, Object> currentUser = (HashMap<String, Object>) new ObjectMapper().convertValue(mSharedUsersList.get(position), Map.class);
-                        updatedUserData.put(propertyToUpdateUser, null); // set the User Shopping value to current user
+                        updatedUserData.put(propertyToUpdateUser, null); // set the User Shopping value to NULL
 
                         HashMap<String, Object> changedTimestampMap = new HashMap<>();
                         changedTimestampMap.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);

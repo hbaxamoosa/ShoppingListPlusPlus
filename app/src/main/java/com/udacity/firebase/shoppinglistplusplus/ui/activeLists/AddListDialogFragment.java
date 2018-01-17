@@ -4,7 +4,6 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -15,14 +14,15 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.android.gms.tasks.OnFailureListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
+import com.google.firebase.database.ValueEventListener;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
-import com.udacity.firebase.shoppinglistplusplus.utils.Utils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -123,12 +123,8 @@ public class AddListDialogFragment extends DialogFragment {
             /* Save listsRef.push() to maintain same random Id */
             final String listId = dbRef.getKey();
 
-            /* HashMap for data to update */
-            HashMap<String, Object> updateShoppingListData = new HashMap<>();
-
             /*
-             * Set raw version of date to the ServerValue.TIMESTAMP value and save into
-             * timestampCreatedMap
+             * Set raw version of date to the ServerValue.TIMESTAMP value and save into timestampCreatedMap
              */
             HashMap<String, Object> timestampCreated = new HashMap<>();
             timestampCreated.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
@@ -136,16 +132,46 @@ public class AddListDialogFragment extends DialogFragment {
             /* Build the shopping list */
             ShoppingList shoppingList = new ShoppingList(userEnteredName, mEncodedEmail, timestampCreated);
 
+            /* HashMap for data to update */
+            HashMap<String, Object> updateShoppingListData = new HashMap<>();
+
             HashMap<String, Object> shoppingListMap = (HashMap<String, Object>)
                     new ObjectMapper().convertValue(shoppingList, Map.class);
 
-            Utils.updateMapForAllWithValue(listId, mEncodedEmail,
-                    updateShoppingListData, "", shoppingListMap);
+            updateShoppingListData.put("/" + listId + "/", shoppingListMap);
 
-            mUserListsDatabaseReference.push().setValue(shoppingList).addOnFailureListener(new OnFailureListener() {
+            mUserListsDatabaseReference.updateChildren(updateShoppingListData, new DatabaseReference.CompletionListener() {
+
                 @Override
-                public void onFailure(@NonNull Exception e) {
-                    Timber.v(e.getLocalizedMessage());
+                public void onComplete(DatabaseError databaseError, final DatabaseReference databaseReference) {
+                    if (databaseError != null) {
+                        Timber.v("%s %s", getString(R.string.log_error_updating_data), databaseError.getMessage());
+                    } else {
+                        Timber.v("detabaseReference is %s", databaseReference.child(listId).toString());
+                        // Utils.updateTimestampReversed(databaseError, databaseReference);
+                        databaseReference.child(listId).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                ShoppingList list = dataSnapshot.getValue(ShoppingList.class);
+                                Timber.v("list.getTimestampLastChangedLong(): %s", list.getTimestampLastChangedLong());
+                                if (list != null) {
+                                    long timeReverse = -(list.getTimestampLastChangedLong());
+                                    String timeReverseLocation = Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED_REVERSE
+                                            + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP;
+
+                                    Timber.v("path is " + databaseReference.child(listId).toString() + "/" + timeReverseLocation);
+                                    databaseReference.child(listId).child(Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED_REVERSE)
+                                            .child(Constants.FIREBASE_PROPERTY_TIMESTAMP).setValue(timeReverse);
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+                                Timber.v("%s %s", "Error updating data: ", databaseError.getMessage());
+                            }
+                        });
+                    }
                 }
             });
 

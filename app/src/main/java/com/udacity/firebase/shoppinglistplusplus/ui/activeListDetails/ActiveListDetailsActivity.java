@@ -52,9 +52,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
     public static String mKey;
     private Button mButtonShopping;
     private TextView mTextViewPeopleShopping;
-    private RecyclerView mRecyclerView;
     private String mListId;
-    private int mPosition;
     private User mCurrentUser;
     private String mEncodedEmail;
     /* Stores whether the current user is shopping */
@@ -67,11 +65,6 @@ public class ActiveListDetailsActivity extends BaseActivity {
     private HashMap<String, User> mSharedWithUsers = new HashMap<>();
     private ActiveListItemAdapter mActiveListItemAdapter;
 
-    // SharedPrefs
-    private SharedPreferences mSharedPref;
-
-    // Firebase Realtime Database
-    private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mCurrentUserRef, mCurrentListRef, mListItemsRef, mSharedWithRef;
     private ValueEventListener mCurrentUserRefListener, mCurrentListRefListener;
 
@@ -88,15 +81,15 @@ public class ActiveListDetailsActivity extends BaseActivity {
             finish();
             return;
         }
-        mPosition = intent.getIntExtra(Constants.KEY_LIST_ITEM_ID, 999);
+        int mPosition = intent.getIntExtra(Constants.KEY_LIST_ITEM_ID, 999);
         mKey = intent.getStringExtra("listKey");
 
         // get SharedPrefs
-        mSharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences mSharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         mEncodedEmail = mSharedPref.getString(Constants.KEY_ENCODED_EMAIL, null);
 
         // Initialize Firebase components
-        mFirebaseDatabase = FirebaseDatabase.getInstance();
+        FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
 
         /*
          * Create Firebase references
@@ -364,7 +357,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
      * Link layout elements from XML and setup the toolbar
      */
     private void initializeScreen() {
-        mRecyclerView = findViewById(R.id.recyclerView);
+        RecyclerView mRecyclerView = findViewById(R.id.recyclerView);
         LinearLayoutManager manager = new LinearLayoutManager(ActiveListDetailsActivity.this);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(manager);
@@ -479,18 +472,24 @@ public class ActiveListDetailsActivity extends BaseActivity {
     private void setWhosShoppingText(HashMap<String, User> usersShopping) {
 
         if (usersShopping != null) {
+            Timber.v("private void setWhosShoppingText(HashMap<String, User> usersShopping) && usersShopping != null");
             ArrayList<String> usersWhoAreNotYou = new ArrayList<>();
             /*
              * If at least one user is shopping
              * Add userName to the list of users shopping if this user is not current user
              */
             for (User user : usersShopping.values()) {
+                Timber.v("user.getEmail(): %s", user.getEmail());
+                Timber.v("mEncodedEmail" + mEncodedEmail);
+                Timber.v("usersWhoAreNotYou.size(): %s", usersWhoAreNotYou.size());
                 if (user != null && !(user.getEmail().equals(mEncodedEmail))) {
                     usersWhoAreNotYou.add(user.getName());
+                    Timber.v("user.getName(): %s", user.getName());
                 }
             }
 
             int numberOfUsersShopping = usersShopping.size();
+            Timber.v("numberOfUsersShopping: %s", numberOfUsersShopping);
             String usersShoppingText;
 
             /*
@@ -499,6 +498,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
              * If current user and one user are shopping, set text "You and userName are shopping"
              * Else set text "You and N others shopping"
              */
+            Timber.v("mShopping: %s", mShopping);
             if (mShopping) {
                 switch (numberOfUsersShopping) {
                     case 1:
@@ -523,6 +523,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
             } else {
                 switch (numberOfUsersShopping) {
                     case 1:
+                        Timber.v("usersWhoAreNotYou.get(0): %s", usersWhoAreNotYou.get(0));
                         usersShoppingText = String.format(
                                 getString(R.string.text_other_is_shopping),
                                 usersWhoAreNotYou.get(0));
@@ -610,10 +611,12 @@ public class ActiveListDetailsActivity extends BaseActivity {
          * If current user is already shopping, remove current user from userLists/usersShopping map. Otherwise, add.
          */
 
-        // Timber.v("toggleShopping(View view)");
+        Timber.v("toggleShopping(View view)");
 
-        Query query = mCurrentListRef.child(Constants.FIREBASE_PROPERTY_USERS_SHOPPING).child(mEncodedEmail);
-        // Timber.v("query.getRef(): " + query.getRef());
+        Query query = mCurrentListRef.child(Constants.FIREBASE_PROPERTY_USERS_SHOPPING);
+        // TODO: 1/4/2018 the above reference needs to be updated to remove the last child node
+
+        Timber.v("query.getRef(): %s", query.getRef());
         /* Check to see whether user is shopping; use a SingleValueEvent listener for memory efficiency */
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -621,13 +624,15 @@ public class ActiveListDetailsActivity extends BaseActivity {
                 Timber.v("dataSnapshot.getValue(): %s", dataSnapshot.getValue());
                 HashMap<String, Object> updatedUserData = new HashMap<String, Object>();
                 String propertyToUpdate = "/" + Constants.FIREBASE_PROPERTY_USERS_SHOPPING + "/" + mEncodedEmail;
-                // Timber.v("propertyToUpdate: " + propertyToUpdate);
+
+                Timber.v("propertyToUpdate: %s", propertyToUpdate);
                 /* If current user is already shopping, remove current user from usersShopping map */
                 if (mShopping) {
                     Timber.v("mShopping is TRUE");
                     /* user WAS shopping, but now has STOPPED shopping */
 
                     updatedUserData.put(propertyToUpdate, null); // set the User Shopping value to NULL
+                    // TODO: 1/4/2018 this update needs to be made for EACH instance of the list under all users that are sharing the list
 
                     /* Do a deep-path update */
                     mCurrentListRef.updateChildren(updatedUserData, new DatabaseReference.CompletionListener() {
@@ -635,6 +640,33 @@ public class ActiveListDetailsActivity extends BaseActivity {
                         public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                             if (databaseError != null) {
                                 Timber.v("%s %s", getString(R.string.log_error_updating_data), databaseError.getMessage());
+                            } else {
+                                Utils.updateTimestampReversed(databaseError, databaseReference);
+                                // TODO: 1/4/2018 pass the mSharedWithUsers so that this update can be made for all instance of the shared list
+
+                                Timber.v("mSharedWith: %s", mSharedWithUsers.size());
+
+                                final HashMap<String, Object> result = new HashMap<>();
+
+                                final HashMap<String, Object> timestampNowHash = new HashMap<>();
+                                timestampNowHash.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
+
+                                Iterator<User> it = mSharedWithUsers.values().iterator();
+                                for (int i = 0; i < mSharedWithUsers.size(); i++) {
+                                    Timber.v("i am here 01");
+                                    if (it.hasNext()) {
+                                        Timber.v("i am here 01");
+                                        User user = it.next();
+                                        String email = user.getEmail();
+                                        Timber.v("email: %s", email);
+                                        result.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(email) + "/" + mKey + "/" + Constants.FIREBASE_PROPERTY_USERS_SHOPPING + "/" + mEncodedEmail, null);
+                                        Timber.v("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(email) + "/" + mKey + "/" + Constants.FIREBASE_PROPERTY_USERS_SHOPPING + "/" + mEncodedEmail);
+                                        result.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(email) + "/" + mKey + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED, timestampNowHash);
+                                    }
+                                }
+                                Timber.v("result: %s", result.size());
+
+                                mCurrentListRef.getRoot().updateChildren(result);
                             }
                         }
                     });
@@ -644,6 +676,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
                     /* If current user is not shopping, create map to represent User model add to usersShopping map */
                     HashMap<String, Object> currentUser = (HashMap<String, Object>) new ObjectMapper().convertValue(mCurrentUser, Map.class);
                     updatedUserData.put(propertyToUpdate, currentUser); // set the User Shopping value to current user
+                    // TODO: 1/4/2018 this update needs to be made for EACH instance of the list under all users that are sharing the list
 
                     HashMap<String, Object> changedTimestampMap = new HashMap<>();
                     changedTimestampMap.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
@@ -654,6 +687,31 @@ public class ActiveListDetailsActivity extends BaseActivity {
                         public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                             if (databaseError != null) {
                                 Timber.v("%s %s", getString(R.string.log_error_updating_data), databaseError.getMessage());
+                            } else {
+                                Utils.updateTimestampReversed(databaseError, databaseReference);
+                                // TODO: 1/4/2018 pass the mSharedWithUsers so that this update can be made for all instance of the shared list
+
+                                Timber.v("mSharedWith: %s", mSharedWithUsers.size());
+
+                                final HashMap<String, Object> result = new HashMap<>();
+
+                                final HashMap<String, Object> timestampNowHash = new HashMap<>();
+                                timestampNowHash.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
+
+                                Iterator<User> it = mSharedWithUsers.values().iterator();
+                                for (int i = 0; i < mSharedWithUsers.size(); i++) {
+                                    if (it.hasNext()) {
+                                        User user = it.next();
+                                        String email = user.getEmail();
+                                        Timber.v("email: %s", email);
+                                        result.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(email) + "/" + mKey + "/" + Constants.FIREBASE_PROPERTY_USERS_SHOPPING + "/" + mEncodedEmail, user);
+                                        Timber.v("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(email) + "/" + mKey + "/" + Constants.FIREBASE_PROPERTY_USERS_SHOPPING + "/" + mEncodedEmail);
+                                        result.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(email) + "/" + mKey + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED, timestampNowHash);
+                                    }
+                                }
+                                Timber.v("result: %s", result.size());
+
+                                mCurrentListRef.getRoot().updateChildren(result);
                             }
                         }
                     });

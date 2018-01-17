@@ -1,7 +1,7 @@
 package com.udacity.firebase.shoppinglistplusplus.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.firebase.database.ServerValue;
-
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
 import java.util.HashMap;
@@ -15,6 +15,7 @@ public class ShoppingList {
     private String owner;
     private HashMap<String, Object> timestampLastChanged;
     private HashMap<String, Object> timestampCreated;
+    private HashMap<String, Object> timestampLastChangedReverse;
     private HashMap<String, User> usersShopping;
 
     /**
@@ -38,6 +39,7 @@ public class ShoppingList {
         HashMap<String, Object> timestampNowObject = new HashMap<String, Object>();
         timestampNowObject.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
         this.timestampLastChanged = timestampNowObject;
+        this.timestampLastChangedReverse = null;
         this.usersShopping = new HashMap<>();
     }
 
@@ -53,20 +55,28 @@ public class ShoppingList {
         return timestampLastChanged;
     }
 
+    public HashMap<String, Object> getTimestampLastChangedReverse() {
+        return timestampLastChangedReverse;
+    }
+
     public HashMap<String, Object> getTimestampCreated() {
         return timestampCreated;
     }
 
-    /*@JsonIgnore
+    @JsonIgnore
     public long getTimestampLastChangedLong() {
-
         return (long) timestampLastChanged.get(Constants.FIREBASE_PROPERTY_TIMESTAMP);
     }
 
     @JsonIgnore
     public long getTimestampCreatedLong() {
         return (long) timestampLastChanged.get(Constants.FIREBASE_PROPERTY_TIMESTAMP);
-    }*/
+    }
+
+    @JsonIgnore
+    public long getTimestampLastChangedReverseLong() {
+        return (long) timestampLastChangedReverse.get(Constants.FIREBASE_PROPERTY_TIMESTAMP);
+    }
 
     public HashMap getUsersShopping() {
         return usersShopping;

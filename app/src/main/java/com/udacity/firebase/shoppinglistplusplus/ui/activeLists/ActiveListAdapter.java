@@ -58,7 +58,7 @@ public class ActiveListAdapter extends RecyclerView.Adapter<ActiveListAdapter.Vi
     public void onBindViewHolder(final ActiveListAdapter.ViewHolder holder, int position) {
 
         /* Set the list name and owner */
-        holder.ownerName.setText(shoppingList.get(position).getOwner());
+        // holder.ownerName.setText(shoppingList.get(position).getOwner());
         holder.listName.setText(shoppingList.get(position).getListName());
 
         /*
@@ -88,7 +88,7 @@ public class ActiveListAdapter extends RecyclerView.Adapter<ActiveListAdapter.Vi
          */
         if (shoppingList.get(position).getOwner() != null) {
             if (shoppingList.get(position).getOwner().equals(mEncodedEmail)) {
-                holder.textViewCreatedByUser.setText("Created by " + context.getResources().getString(R.string.text_you));
+                holder.textViewCreatedByUser.setText(context.getResources().getString(R.string.text_you));
             } else { // owenr of the list is another user
                 // Initialize Firebase components
                 FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
@@ -104,7 +104,7 @@ public class ActiveListAdapter extends RecyclerView.Adapter<ActiveListAdapter.Vi
 
                         if (shoppingList != null) {
                             // Timber.v("shoppingList.getOwner(): %s", shoppingList.getOwner());
-                            holder.textViewCreatedByUser.setText("Created by " + shoppingList.getOwner());
+                            holder.textViewCreatedByUser.setText(shoppingList.getOwner());
                         }
                     }
 

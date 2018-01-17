@@ -98,6 +98,7 @@ public class RemoveListDialogFragment extends DialogFragment {
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                // TODO: 1/4/2018 this update needs to be made for all user that the list was shared with 
                 DataSnapshot mShoppingListsDataSnapshot = dataSnapshot.child(Constants.FIREBASE_LOCATION_USER_LISTS).child(mListOwner).child(mKey);
                 // Timber.v("mShoppingListsDataSnapshot.getRef(): " + mShoppingListsDataSnapshot.getRef());
                 // Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
@@ -110,6 +111,7 @@ public class RemoveListDialogFragment extends DialogFragment {
 
                 HashMap<String, Object> result = new HashMap<>();
                 result.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + mListOwner + "/" + mShoppingListsDataSnapshot.getKey(), null); // delete the Shopping List
+                // TODO: 1/4/2018 we need to make this same call (above) for each user that the list is shared with 
                 result.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mShoppingListItemsDataSnapshot.getKey(), null); // delete the Shopping List Items
 
                 mFirebaseDatabaseReference.updateChildren(result, new DatabaseReference.CompletionListener() {
