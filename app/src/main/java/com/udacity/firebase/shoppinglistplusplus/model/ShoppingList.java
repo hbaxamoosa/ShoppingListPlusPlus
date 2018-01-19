@@ -1,6 +1,8 @@
 package com.udacity.firebase.shoppinglistplusplus.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.firebase.database.Exclude;
+import com.google.firebase.database.IgnoreExtraProperties;
 import com.google.firebase.database.ServerValue;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
 
@@ -10,6 +12,9 @@ import java.util.HashMap;
  * Defines the data structure for both Active and Archived ShoppingList objects.
  */
 
+// trying to solve this issue with https://stackoverflow.com/questions/33096128/when-making-a-pojo-in-firebase-can-you-use-servervalue-timestamp
+
+@IgnoreExtraProperties
 public class ShoppingList {
     private String listName;
     private String owner;
@@ -63,23 +68,26 @@ public class ShoppingList {
         return timestampCreated;
     }
 
+    public HashMap getUsersShopping() {
+        return usersShopping;
+    }
+
+    @Exclude
     @JsonIgnore
     public long getTimestampLastChangedLong() {
         return (long) timestampLastChanged.get(Constants.FIREBASE_PROPERTY_TIMESTAMP);
     }
 
+    @Exclude
     @JsonIgnore
     public long getTimestampCreatedLong() {
         return (long) timestampLastChanged.get(Constants.FIREBASE_PROPERTY_TIMESTAMP);
     }
 
+    @Exclude
     @JsonIgnore
     public long getTimestampLastChangedReverseLong() {
         return (long) timestampLastChangedReverse.get(Constants.FIREBASE_PROPERTY_TIMESTAMP);
-    }
-
-    public HashMap getUsersShopping() {
-        return usersShopping;
     }
 
     public void setTimestampLastChangedToNow() {

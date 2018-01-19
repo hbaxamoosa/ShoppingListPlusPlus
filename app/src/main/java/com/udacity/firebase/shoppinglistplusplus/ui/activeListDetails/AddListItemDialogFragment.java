@@ -94,6 +94,7 @@ public class AddListItemDialogFragment extends EditListDialogFragment {
 
             /* Do the update */
             mShoppingListItemsDatabaseReference.updateChildren(updatedItemToAddMap);
+            // TODO Need to update this such that the updateChildren has a completion listener to set the timestamp reversed for the list under each user the list is shared with
 
             /*
              * Close the dialog fragment when done

@@ -147,15 +147,16 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder
                     String propertyToUpdateList = "/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + mSharedUsersList.get(position).getEmail() + "/" + mListId;
 
                     if (isFriend) { // we are adding a user/friend to the list
+
                         // create hashmap of user that needs to be added to the sharedWith node
                         HashMap<String, Object> currentUser = (HashMap<String, Object>) new ObjectMapper().convertValue(mSharedUsersList.get(position), Map.class);
-                        updatedUserData.put(propertyToUpdateUser, currentUser); // set the User Shopping value to current user
+                        updatedUserData.put(propertyToUpdateUser, currentUser); // add the selected User to the hashMap
 
                         HashMap<String, Object> changedTimestampMap = new HashMap<>();
                         changedTimestampMap.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
 
                         // create hashmap of list that needs to be added to the userLists node
-                        updatedUserData.put(propertyToUpdateList, mShoppingList); // set the User Shopping value to current user
+                        updatedUserData.put(propertyToUpdateList, mShoppingList); // add the current Shopping List to the sharedWith user's userLists
 
                         /* Do a deep-path update */
                         mSharedFriendInShoppingListRef.getRoot().updateChildren(updatedUserData, new DatabaseReference.CompletionListener() {
@@ -184,7 +185,7 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder
                             @Override
                             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                                 if (databaseError != null) {
-                                    Timber.v("%s%s", R.string.log_error_updating_data, databaseError.getMessage());
+                                    Timber.v("%s %s", R.string.log_error_updating_data, databaseError.getMessage());
                                 }
                             }
                         });
