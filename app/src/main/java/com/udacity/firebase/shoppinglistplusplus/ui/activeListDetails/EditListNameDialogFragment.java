@@ -142,7 +142,6 @@ public class EditListNameDialogFragment extends EditListDialogFragment {
                                                 + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP;
 
                                         // Timber.v("path is %s", databaseReference.child(Constants.FIREBASE_LOCATION_USER_LISTS).child(mOwner).child(mListKey).child(timeReverseLocation).toString());
-                                        // TODO this path needs to be updated
                                         databaseReference.child(Constants.FIREBASE_LOCATION_USER_LISTS).child(mOwner).child(mListKey).child(timeReverseLocation).setValue(timeReverse);
                                     }
                                 }

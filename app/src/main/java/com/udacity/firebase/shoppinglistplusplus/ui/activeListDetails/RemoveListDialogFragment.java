@@ -18,8 +18,10 @@ import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.model.User;
 import com.udacity.firebase.shoppinglistplusplus.ui.MainActivity;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
+import com.udacity.firebase.shoppinglistplusplus.utils.Utils;
 
 import java.util.HashMap;
+import java.util.Iterator;
 
 import timber.log.Timber;
 
@@ -98,7 +100,6 @@ public class RemoveListDialogFragment extends DialogFragment {
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                // TODO: 1/4/2018 this update needs to be made for all user that the list was shared with 
                 DataSnapshot mShoppingListsDataSnapshot = dataSnapshot.child(Constants.FIREBASE_LOCATION_USER_LISTS).child(mListOwner).child(mKey);
                 // Timber.v("mShoppingListsDataSnapshot.getRef(): " + mShoppingListsDataSnapshot.getRef());
                 // Timber.v("dataSnapshot.getKey(): " + dataSnapshot.getKey());
@@ -110,8 +111,41 @@ public class RemoveListDialogFragment extends DialogFragment {
                 // Timber.v("nodeDataSnapshot.getKey(): " + mShoppingListItemsDataSnapshot.getKey());
 
                 HashMap<String, Object> result = new HashMap<>();
+
+                /*
+                 * Delete the list from the Owner
+                 */
                 result.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + mListOwner + "/" + mShoppingListsDataSnapshot.getKey(), null); // delete the Shopping List
-                // TODO: 1/4/2018 we need to make this same call (above) for each user that the list is shared with 
+
+                /*
+                 * Delete the list from any user that the list is shared with
+                 */
+                Iterator<User> userListsIterator = mSharedWith.values().iterator();
+                for (int i = 0; i < mSharedWith.size(); i++) {
+                    if (userListsIterator.hasNext()) {
+                        User user = userListsIterator.next();
+                        String email = user.getEmail();
+                        DataSnapshot mUserSharedWith = dataSnapshot.child(Constants.FIREBASE_LOCATION_USER_LISTS).child(Utils.encodeEmail(email)).child(mKey);
+                        result.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(email) + "/" + mUserSharedWith.getKey(), null); // delete the Shopping List
+                    }
+                }
+
+                /*
+                 * Delete the user from the sharedWith node, since the list no longer exists
+                 */
+                Iterator<User> sharedWithIterator = mSharedWith.values().iterator();
+                for (int i = 0; i < mSharedWith.size(); i++) {
+                    if (sharedWithIterator.hasNext()) {
+                        User user = sharedWithIterator.next();
+                        String email = user.getEmail();
+                        DataSnapshot mUsersSharedWith = dataSnapshot.child(Constants.FIREBASE_LOCATION_LISTS_SHARED_WITH).child(mKey);
+                        result.put("/" + Constants.FIREBASE_LOCATION_LISTS_SHARED_WITH + "/" + mUsersSharedWith.getKey(), null); // delete the Shopping List from sharedWith node
+                    }
+                }
+
+                /*
+                 * Remove all shopping list items that are associated with the shopping list being deleted
+                 */
                 result.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mShoppingListItemsDataSnapshot.getKey(), null); // delete the Shopping List Items
 
                 mFirebaseDatabaseReference.updateChildren(result, new DatabaseReference.CompletionListener() {
