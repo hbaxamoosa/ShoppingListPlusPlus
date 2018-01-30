@@ -19,6 +19,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.udacity.firebase.shoppinglistplusplus.R;
+import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingListItem;
 import com.udacity.firebase.shoppinglistplusplus.model.User;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
@@ -38,12 +39,31 @@ public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAd
     private Context mContex;
     private String mEncodedEmail;
     private String mListKey;
+    private ShoppingList mShoppingList;
+    private HashMap<String, User> mSharedWithUsers;
 
+    /*
+     * Public constructor that initializes private instance variables when adapter is created
+     */
     ActiveListItemAdapter(Context c, List<ShoppingListItem> s, String userEmail, String key) {
         mContex = c;
         shoppingListItems = s;
         mEncodedEmail = userEmail;
         mListKey = key;
+    }
+
+    /*
+     * Public method that is used to pass shoppingList object when it is loaded in ValueEventListener
+     */
+    // TODO investigate how these need to be set, and where they will be called from
+    public void setShoppingList(ShoppingList shoppingList) {
+        this.mShoppingList = shoppingList;
+        this.notifyDataSetChanged();
+    }
+
+    public void setSharedWithUsers(HashMap<String, User> sharedWithUsers) {
+        this.mSharedWithUsers = sharedWithUsers;
+        this.notifyDataSetChanged();
     }
 
     @Override
@@ -211,6 +231,7 @@ public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAd
                                     if (databaseError != null) {
                                         Timber.v("Error: %s", databaseError.getMessage());
                                     }
+                                    // TODO when an item is removed, we need to timestampLastChanged and timestampLastChangedReverse for each instance of the list
                                 }
                             });
                         }
