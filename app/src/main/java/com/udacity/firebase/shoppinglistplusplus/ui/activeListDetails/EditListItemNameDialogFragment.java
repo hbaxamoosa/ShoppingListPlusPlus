@@ -151,6 +151,7 @@ public class EditListItemNameDialogFragment extends EditListDialogFragment {
                             updatedItemToAddMap.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(email) + "/" + mListID + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED, changedTimestampMap);
                         }
                     }
+
                     /*
                      * After posting the update payload, we need to use the CompletionListener to update the FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED
                     */
