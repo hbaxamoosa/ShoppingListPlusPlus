@@ -404,13 +404,34 @@ public class ActiveListDetailsActivity extends BaseActivity {
 
                         /* Buy selected item if it is NOT already bought */
                         if (!selectedListItem.isBought()) {
-                            updatedItemBoughtData.put("/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT, true);
-                            updatedItemBoughtData.put("/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT_BY, mEncodedEmail);
+                            updatedItemBoughtData.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mKey + "/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT, true);
+                            updatedItemBoughtData.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mKey + "/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT_BY, mEncodedEmail);
                         } else {
                             /* Return selected item only if it was bought by current user */
                             if (selectedListItem.getBoughtBy().equals(mEncodedEmail)) {
-                                updatedItemBoughtData.put("/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT, false);
-                                updatedItemBoughtData.put("/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT_BY, null);
+                                updatedItemBoughtData.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mKey + "/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT, false);
+                                updatedItemBoughtData.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mKey + "/" + selectedListItem.getItemName() + "/" + Constants.FIREBASE_PROPERTY_BOUGHT_BY, null);
+                            }
+                        }
+
+                        final HashMap<String, Object> timestampNowHash = new HashMap<>();
+                        timestampNowHash.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
+
+                        /*
+                         * Set the timestampLastChange for the list owner
+                         */
+                        updatedItemBoughtData.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + mEncodedEmail + "/" + mKey + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED, timestampNowHash);
+
+                        /*
+                         * Set the timestampLastChange for the remaining user that the list is shared with
+                         */
+                        Iterator<User> it = mSharedWithUsers.values().iterator();
+                        for (int i = 0; i < mSharedWithUsers.size(); i++) {
+                            if (it.hasNext()) {
+                                User user = it.next();
+                                String email = user.getEmail();
+                                updatedItemBoughtData.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(email) + "/" + mKey + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED, timestampNowHash);
+                                // Timber.v("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(email) + "/" + mListKey + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED);
                             }
                         }
 
@@ -424,12 +445,70 @@ public class ActiveListDetailsActivity extends BaseActivity {
                                 // Timber.v("updatedItemBoughtData.toString(): " + updatedItemBoughtData.toString());
 
                                 /* Do the update */
-                                mListItemsRef.updateChildren(updatedItemBoughtData, new DatabaseReference.CompletionListener() {
+                                mListItemsRef.getRoot().updateChildren(updatedItemBoughtData, new DatabaseReference.CompletionListener() {
                                     @Override
                                     public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                                         if (databaseError != null) {
                                             Timber.v("datebaseError: %s", databaseError.toString());
-                                            // TODO update the timestampLastChanged and timestampLastChangedReverse here
+                                        } else {
+                                            /*
+                                             * Set the timestampLastChangeReverse for the list owner
+                                             */
+                                            databaseReference.child(Constants.FIREBASE_LOCATION_USER_LISTS).child(mEncodedEmail).child(mKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                                                @Override
+                                                public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                                    ShoppingList list = dataSnapshot.getValue(ShoppingList.class);
+                                                    // Timber.v("list.getTimestampLastChangedLong(): %s", list.getTimestampLastChangedLong());
+                                                    if (list != null) {
+                                                        long timeReverse = -(list.getTimestampLastChangedLong());
+                                                        String timeReverseLocation = Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED_REVERSE
+                                                                + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP;
+
+                                                        // Timber.v("path is %s", databaseReference.child(Constants.FIREBASE_LOCATION_USER_LISTS).child(mOwner).child(mListKey).child(timeReverseLocation).toString());
+                                                        databaseReference.child(Constants.FIREBASE_LOCATION_USER_LISTS).child(mEncodedEmail).child(mKey).child(timeReverseLocation).setValue(timeReverse);
+                                                    }
+                                                }
+
+                                                @Override
+                                                public void onCancelled(DatabaseError databaseError) {
+                                                    Timber.v("%s %s", "Error updating data: ", databaseError.getMessage());
+                                                }
+                                            });
+
+                                            /*
+                                             * Set the timestampLastChangeReverse for the remaining user that the list is shared with
+                                             */
+                                            Iterator<User> it = mSharedWithUsers.values().iterator();
+                                            for (int i = 0; i < mSharedWithUsers.size(); i++) {
+                                                if (it.hasNext()) {
+                                                    User user = it.next();
+                                                    String email = user.getEmail();
+                                                    databaseReference.child(Constants.FIREBASE_LOCATION_USER_LISTS).child(Utils.encodeEmail(email)).child(mKey).addListenerForSingleValueEvent(new ValueEventListener() {
+
+                                                        @Override
+                                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                                            ShoppingList list = dataSnapshot.getValue(ShoppingList.class);
+                                                            // Timber.v("list.getTimestampLastChangedLong(): %s", list.getTimestampLastChangedLong());
+                                                            if (list != null) {
+                                                                long timeReverse = -(list.getTimestampLastChangedLong());
+                                                                String timeReverseLocation = Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED_REVERSE
+                                                                        + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP;
+
+                                                                // Timber.v("path is %s", databaseReference.child(Constants.FIREBASE_LOCATION_USER_LISTS).child(Utils.encodeEmail(email)).child(mListKey).child(timeReverseLocation));
+                                                                databaseReference.child(Constants.FIREBASE_LOCATION_USER_LISTS).child(Utils.encodeEmail(email)).child(mKey).child(timeReverseLocation).setValue(timeReverse);
+                                                            }
+                                                        }
+
+                                                        @Override
+                                                        public void onCancelled(DatabaseError databaseError) {
+                                                            Timber.v("%s %s", "Error updating data: ", databaseError.getMessage());
+                                                        }
+                                                    });
+                                                } else {
+                                                    Timber.v("this list is not shared with anyone");
+                                                }
+                                            }
                                         }
                                     }
                                 });
@@ -672,6 +751,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
                                         result.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(email) + "/" + mKey + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED, timestampNowHash);
                                     }
                                 }
+                                // TODO need to update the timestampLastChangedReverse for owners and all user's the list is sharedWith
                                 // Timber.v("result: %s", result.size());
 
                                 mCurrentListRef.getRoot().updateChildren(result);

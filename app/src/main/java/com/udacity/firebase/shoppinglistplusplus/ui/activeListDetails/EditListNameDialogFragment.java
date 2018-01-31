@@ -90,7 +90,7 @@ public class EditListNameDialogFragment extends EditListDialogFragment {
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Timber.v("dataSnapshot.getKey(): %s", dataSnapshot.getKey());
+                // Timber.v("dataSnapshot.getKey(): %s", dataSnapshot.getKey());
 
                 final HashMap<String, Object> result = new HashMap<>();
                 result.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + mOwner + "/" + mListKey + "/" + Constants.FIREBASE_PROPERTY_LIST_NAME, inputListName);
@@ -98,10 +98,16 @@ public class EditListNameDialogFragment extends EditListDialogFragment {
                 final HashMap<String, Object> timestampNowHash = new HashMap<>();
                 timestampNowHash.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
 
+                /*
+                 * Set the timestampLastChange for the list owner
+                 */
                 result.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + mOwner + "/" + mListKey + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED, timestampNowHash);
 
-                Timber.v("mSharedWith: %s", mSharedWith.size());
+                // Timber.v("mSharedWith: %s", mSharedWith.size());
 
+                /*
+                 * Set the timestampLastChange for the remaining user that the list is shared with
+                 */
                 Iterator<User> it = mSharedWith.values().iterator();
                 for (int i = 0; i < mSharedWith.size(); i++) {
                     if (it.hasNext()) {
@@ -127,7 +133,7 @@ public class EditListNameDialogFragment extends EditListDialogFragment {
                             Timber.v("%s %s", getString(R.string.log_error_updating_data), databaseError.getMessage());
                         } else {
                             /*
-                             * Set the reversed timestamp for the list owner
+                             * Set the timestampLastChangeReverse for the list owner
                              */
 
                             databaseReference.child(Constants.FIREBASE_LOCATION_USER_LISTS).child(mOwner).child(mListKey).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -153,7 +159,7 @@ public class EditListNameDialogFragment extends EditListDialogFragment {
                             });
 
                             /*
-                             * Set the reversed timestamp for the remaining user that the list is shared with
+                             * Set the timestampLastChangeReverse for the remaining user that the list is shared with
                              */
                             Iterator<User> it = mSharedWith.values().iterator();
                             for (int i = 0; i < mSharedWith.size(); i++) {
