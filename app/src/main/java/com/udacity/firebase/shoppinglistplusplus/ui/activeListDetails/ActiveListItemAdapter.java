@@ -17,14 +17,17 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 import com.udacity.firebase.shoppinglistplusplus.R;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingList;
 import com.udacity.firebase.shoppinglistplusplus.model.ShoppingListItem;
 import com.udacity.firebase.shoppinglistplusplus.model.User;
 import com.udacity.firebase.shoppinglistplusplus.utils.Constants;
+import com.udacity.firebase.shoppinglistplusplus.utils.Utils;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import timber.log.Timber;
@@ -36,11 +39,11 @@ import timber.log.Timber;
 public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAdapter.ViewHolder> {
 
     private static List<ShoppingListItem> shoppingListItems;
+    private static String mListKey;
+    private static ShoppingList mShoppingList;
+    private static HashMap<String, User> mSharedWithUsers;
     private Context mContex;
     private String mEncodedEmail;
-    private String mListKey;
-    private ShoppingList mShoppingList;
-    private HashMap<String, User> mSharedWithUsers;
 
     /*
      * Public constructor that initializes private instance variables when adapter is created
@@ -55,14 +58,16 @@ public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAd
     /*
      * Public method that is used to pass shoppingList object when it is loaded in ValueEventListener
      */
-    // TODO investigate how these need to be set, and where they will be called from
     public void setShoppingList(ShoppingList shoppingList) {
-        this.mShoppingList = shoppingList;
+        mShoppingList = shoppingList;
+        // Timber.v("%s %s", "shoppingList.getListName(): ", shoppingList.getListName());
+        // Timber.v("%s %s", "shoppingList.getOwner(): ", shoppingList.getOwner());
         this.notifyDataSetChanged();
     }
 
     public void setSharedWithUsers(HashMap<String, User> sharedWithUsers) {
-        this.mSharedWithUsers = sharedWithUsers;
+        mSharedWithUsers = sharedWithUsers;
+        // Timber.v("%s %s", "sharedWithUsers.size(): ", sharedWithUsers.size());
         this.notifyDataSetChanged();
     }
 
@@ -113,13 +118,12 @@ public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAd
             if (shoppingListItems.get(position).getBoughtBy().equals(mEncodedEmail)) {
                 holder.textViewBoughtByUser.setText(mContex.getString(R.string.text_you));
             } else {
-
                 // Initialize Firebase components
                 FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
                 DatabaseReference mShoppingListDatabaseReference = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_USERS);
 
                 Query query = mShoppingListDatabaseReference.child(shoppingListItems.get(position).getOwner());
-                Timber.v("query.getRef(): %s", query.getRef());
+                // Timber.v("query.getRef(): %s", query.getRef());
                 /* Get the item's owner's name; use a SingleValueEvent listener for memory efficiency */
                 query.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -205,33 +209,112 @@ public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAd
         private void removeItem(View v) {
             // Initialize Firebase components
             FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
-            final DatabaseReference mShoppingListItemsDatabaseReference = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS);
+            final DatabaseReference mShoppingListItemsDatabaseReference = mFirebaseDatabase.getReference();
             // Timber.v("ActiveListDetailsActivity.mKey " + ActiveListDetailsActivity.mKey);
             // Timber.v("mShoppingListItemsDatabaseReference.getRef(): " + mShoppingListItemsDatabaseReference.getRef());
 
 
-            Query query = mShoppingListItemsDatabaseReference.child(ActiveListDetailsActivity.mKey);
-            // Timber.v("query.getRef(): " + query.getRef());
+            Query query = mShoppingListItemsDatabaseReference.child(Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS).child(mListKey);
+            // Timber.v("%s %s", "query.getRef(): ", query.getRef());
             query.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    // Timber.v("dataSnapshot.getValue(): " + dataSnapshot.getValue());
+                    // Timber.v("%s %s", "dataSnapshot.getValue(): ", dataSnapshot.getValue());
                     for (DataSnapshot listItems : dataSnapshot.getChildren()) {
-                        // Timber.v("listItems.getKey(): " + listItems.getKey());
-                        // Timber.v("listItems.getValue(): " + listItems.getValue());
-                        // Timber.v("shoppingListItems.get(getAdapterPosition()).getItemName()): " + shoppingListItems.get(getAdapterPosition()).getItemName());
+                        // Timber.v("%s %s", "listItems.getKey(): ", listItems.getKey());
+                        // Timber.v("%s %s", "listItems.getValue(): ", listItems.getValue());
+                        // Timber.v("%s %s", "shoppingListItems.get(getAdapterPosition()).getItemName()): ", shoppingListItems.get(getAdapterPosition()).getItemName());
                         if (listItems.getKey().equals(shoppingListItems.get(getAdapterPosition()).getItemName())) {
                             // Timber.v("true");
                             HashMap<String, Object> result = new HashMap<>();
-                            result.put("/" + ActiveListDetailsActivity.mKey + "/" + listItems.getKey(), null);
+                            result.put("/" + Constants.FIREBASE_LOCATION_SHOPPING_LIST_ITEMS + "/" + mListKey + "/" + shoppingListItems.get(getAdapterPosition()).getItemName(), null);
+
+                            /* Make the timestamp for last changed */
+                            HashMap<String, Object> changedTimestampMap = new HashMap<>();
+                            changedTimestampMap.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
+
+                            /* Add the updated timestamp to the owner's list */
+                            result.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + mShoppingList.getOwner() + "/" + mListKey + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED, changedTimestampMap);
+
+                            /* Add the updated timestamp to the sharedWith user's lists */
+                            Iterator<User> it = mSharedWithUsers.values().iterator();
+                            for (int i = 0; i < mSharedWithUsers.size(); i++) {
+                                if (it.hasNext()) {
+                                    User user = it.next();
+                                    String email = user.getEmail();
+                                    result.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(email) + "/" + mListKey + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED, changedTimestampMap);
+                                }
+                            }
 
                             mShoppingListItemsDatabaseReference.updateChildren(result, new DatabaseReference.CompletionListener() {
                                 @Override
                                 public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                                     if (databaseError != null) {
                                         Timber.v("Error: %s", databaseError.getMessage());
+                                    } else {
+                                        // Timber.v("%s %s", "mShoppingList.getListName(): ", mShoppingList.getListName());
+                                        // Timber.v("%s %s", "mShoppingList.getOwner(): ", mShoppingList.getOwner());
+                                        // Timber.v("%s %s", "mSharedWithUsers.size(): ", mSharedWithUsers.size());
+
+                                        /*
+                                         * Set the reversed timestamp for the list owner
+                                        */
+                                        databaseReference.child(Constants.FIREBASE_LOCATION_USER_LISTS).child(mShoppingList.getOwner()).child(mListKey).addListenerForSingleValueEvent(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                                                ShoppingList list = dataSnapshot.getValue(ShoppingList.class);
+                                                // Timber.v("list.getTimestampLastChangedLong(): %s", list.getTimestampLastChangedLong());
+                                                if (list != null) {
+                                                    long timeReverse = -(list.getTimestampLastChangedLong());
+                                                    String timeReverseLocation = Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED_REVERSE
+                                                            + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP;
+
+                                                    // Timber.v("path is %s", databaseReference.child(Constants.FIREBASE_LOCATION_USER_LISTS).child(mOwner).child(mListKey).child(timeReverseLocation).toString());
+                                                    databaseReference.child(Constants.FIREBASE_LOCATION_USER_LISTS).child(mShoppingList.getOwner()).child(mListKey).child(timeReverseLocation).setValue(timeReverse);
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onCancelled(DatabaseError databaseError) {
+                                                Timber.v("%s %s", "Error updating data: ", databaseError.getMessage());
+                                            }
+                                        });
+
+                                        /*
+                                         * Set the reversed timestamp for the remaining user that the list is shared with
+                                        */
+                                        Iterator<User> it = mSharedWithUsers.values().iterator();
+                                        for (int i = 0; i < mSharedWithUsers.size(); i++) {
+                                            if (it.hasNext()) {
+                                                User user = it.next();
+                                                String email = user.getEmail();
+                                                databaseReference.child(Constants.FIREBASE_LOCATION_USER_LISTS).child(Utils.encodeEmail(email)).child(mListKey).addListenerForSingleValueEvent(new ValueEventListener() {
+
+                                                    @Override
+                                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                                        ShoppingList list = dataSnapshot.getValue(ShoppingList.class);
+                                                        // Timber.v("list.getTimestampLastChangedLong(): %s", list.getTimestampLastChangedLong());
+                                                        if (list != null) {
+                                                            long timeReverse = -(list.getTimestampLastChangedLong());
+                                                            String timeReverseLocation = Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED_REVERSE
+                                                                    + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP;
+
+                                                            // Timber.v("path is %s", databaseReference.child(Constants.FIREBASE_LOCATION_USER_LISTS).child(Utils.encodeEmail(email)).child(mListKey).child(timeReverseLocation));
+                                                            databaseReference.child(Constants.FIREBASE_LOCATION_USER_LISTS).child(Utils.encodeEmail(email)).child(mListKey).child(timeReverseLocation).setValue(timeReverse);
+                                                        }
+                                                    }
+
+                                                    @Override
+                                                    public void onCancelled(DatabaseError databaseError) {
+                                                        Timber.v("%s %s", "Error updating data: ", databaseError.getMessage());
+                                                    }
+                                                });
+                                            } else {
+                                                Timber.v("this list is not shared with anyone");
+                                            }
+                                        }
                                     }
-                                    // TODO when an item is removed, we need to timestampLastChanged and timestampLastChangedReverse for each instance of the list
                                 }
                             });
                         }

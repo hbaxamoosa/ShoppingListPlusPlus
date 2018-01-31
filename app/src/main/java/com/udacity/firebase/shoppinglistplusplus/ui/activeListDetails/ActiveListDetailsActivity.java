@@ -145,6 +145,11 @@ public class ActiveListDetailsActivity extends BaseActivity {
                      * Display list of users that are currently shopping
                      */
                     setWhosShoppingText(mShoppingList.getUsersShopping());
+
+                    /*
+                     * Pass the current shopping list to the ActiveListItemAdapter
+                     */
+                    mActiveListItemAdapter.setShoppingList(mShoppingList);
                 }
             }
 
@@ -290,23 +295,27 @@ public class ActiveListDetailsActivity extends BaseActivity {
         });
 
         Query query = mSharedWithRef.child(mKey);
-        Timber.v("query.getRef(): %s", query.getRef());
+        // Timber.v("query.getRef(): %s", query.getRef());
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Timber.v("dataSnapshot: %s", dataSnapshot);
+                // Timber.v("dataSnapshot: %s", dataSnapshot);
                 Iterator<DataSnapshot> it = dataSnapshot.getChildren().iterator();
                 for (int i = 0; i < dataSnapshot.getChildrenCount(); i++) {
                     if (it.hasNext()) {
                         DataSnapshot listSnapshot = it.next();
-                        Timber.v("listSnapshot.getValue(): %s", listSnapshot.getValue());
+                        // Timber.v("listSnapshot.getValue(): %s", listSnapshot.getValue());
                         User user = listSnapshot.getValue(User.class);
-                        Timber.v("listSnapshot.getKey(): %s", listSnapshot.getKey());
-                        Timber.v("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + listSnapshot.getKey() + "/" + mKey + "/" + Constants.FIREBASE_PROPERTY_LIST_NAME);
+                        // Timber.v("listSnapshot.getKey(): %s", listSnapshot.getKey());
+                        // Timber.v("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + listSnapshot.getKey() + "/" + mKey + "/" + Constants.FIREBASE_PROPERTY_LIST_NAME);
                         mSharedWithUsers.put(listSnapshot.getKey(), user);
-                        Timber.v("mSharedWithUsers.size(): %s", mSharedWithUsers.size());
+                        // Timber.v("mSharedWithUsers.size(): %s", mSharedWithUsers.size());
                     }
                 }
+                /*
+                 * Pass the sharedWith users for the current shopping list to the ActiveListItemAdapter
+                */
+                mActiveListItemAdapter.setSharedWithUsers(mSharedWithUsers);
             }
 
             @Override
@@ -420,6 +429,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
                                     public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                                         if (databaseError != null) {
                                             Timber.v("datebaseError: %s", databaseError.toString());
+                                            // TODO update the timestampLastChanged and timestampLastChangedReverse here
                                         }
                                     }
                                 });
@@ -479,17 +489,17 @@ public class ActiveListDetailsActivity extends BaseActivity {
              * Add userName to the list of users shopping if this user is not current user
              */
             for (User user : usersShopping.values()) {
-                Timber.v("user.getEmail(): %s", user.getEmail());
-                Timber.v("mEncodedEmail" + mEncodedEmail);
-                Timber.v("usersWhoAreNotYou.size(): %s", usersWhoAreNotYou.size());
+                // Timber.v("user.getEmail(): %s", user.getEmail());
+                // Timber.v("mEncodedEmail" + mEncodedEmail);
+                // Timber.v("usersWhoAreNotYou.size(): %s", usersWhoAreNotYou.size());
                 if (user != null && !(user.getEmail().equals(mEncodedEmail))) {
                     usersWhoAreNotYou.add(user.getName());
-                    Timber.v("user.getName(): %s", user.getName());
+                    // Timber.v("user.getName(): %s", user.getName());
                 }
             }
 
             int numberOfUsersShopping = usersShopping.size();
-            Timber.v("numberOfUsersShopping: %s", numberOfUsersShopping);
+            // Timber.v("numberOfUsersShopping: %s", numberOfUsersShopping);
             String usersShoppingText;
 
             /*
@@ -498,7 +508,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
              * If current user and one user are shopping, set text "You and userName are shopping"
              * Else set text "You and N others shopping"
              */
-            Timber.v("mShopping: %s", mShopping);
+            // Timber.v("mShopping: %s", mShopping);
             if (mShopping) {
                 switch (numberOfUsersShopping) {
                     case 1:
@@ -611,24 +621,24 @@ public class ActiveListDetailsActivity extends BaseActivity {
          * If current user is already shopping, remove current user from userLists/usersShopping map. Otherwise, add.
          */
 
-        Timber.v("toggleShopping(View view)");
+        // Timber.v("toggleShopping(View view)");
 
         Query query = mCurrentListRef.child(Constants.FIREBASE_PROPERTY_USERS_SHOPPING);
         // TODO: 1/4/2018 the above reference needs to be updated to remove the last child node
 
-        Timber.v("query.getRef(): %s", query.getRef());
+        // Timber.v("query.getRef(): %s", query.getRef());
         /* Check to see whether user is shopping; use a SingleValueEvent listener for memory efficiency */
         query.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Timber.v("dataSnapshot.getValue(): %s", dataSnapshot.getValue());
+                // Timber.v("dataSnapshot.getValue(): %s", dataSnapshot.getValue());
                 HashMap<String, Object> updatedUserData = new HashMap<String, Object>();
                 String propertyToUpdate = "/" + Constants.FIREBASE_PROPERTY_USERS_SHOPPING + "/" + mEncodedEmail;
 
-                Timber.v("propertyToUpdate: %s", propertyToUpdate);
+                // Timber.v("propertyToUpdate: %s", propertyToUpdate);
                 /* If current user is already shopping, remove current user from usersShopping map */
                 if (mShopping) {
-                    Timber.v("mShopping is TRUE");
+                    // Timber.v("mShopping is TRUE");
                     /* user WAS shopping, but now has STOPPED shopping */
 
                     updatedUserData.put(propertyToUpdate, null); // set the User Shopping value to NULL
@@ -644,7 +654,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
                                 Utils.updateTimestampReversed(databaseError, databaseReference);
                                 // TODO: 1/4/2018 pass the mSharedWithUsers so that this update can be made for all instance of the shared list
 
-                                Timber.v("mSharedWith: %s", mSharedWithUsers.size());
+                                // Timber.v("mSharedWith: %s", mSharedWithUsers.size());
 
                                 final HashMap<String, Object> result = new HashMap<>();
 
@@ -653,25 +663,23 @@ public class ActiveListDetailsActivity extends BaseActivity {
 
                                 Iterator<User> it = mSharedWithUsers.values().iterator();
                                 for (int i = 0; i < mSharedWithUsers.size(); i++) {
-                                    Timber.v("i am here 01");
                                     if (it.hasNext()) {
-                                        Timber.v("i am here 01");
                                         User user = it.next();
                                         String email = user.getEmail();
-                                        Timber.v("email: %s", email);
+                                        // Timber.v("email: %s", email);
                                         result.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(email) + "/" + mKey + "/" + Constants.FIREBASE_PROPERTY_USERS_SHOPPING + "/" + mEncodedEmail, null);
-                                        Timber.v("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(email) + "/" + mKey + "/" + Constants.FIREBASE_PROPERTY_USERS_SHOPPING + "/" + mEncodedEmail);
+                                        // Timber.v("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(email) + "/" + mKey + "/" + Constants.FIREBASE_PROPERTY_USERS_SHOPPING + "/" + mEncodedEmail);
                                         result.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(email) + "/" + mKey + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED, timestampNowHash);
                                     }
                                 }
-                                Timber.v("result: %s", result.size());
+                                // Timber.v("result: %s", result.size());
 
                                 mCurrentListRef.getRoot().updateChildren(result);
                             }
                         }
                     });
                 } else {
-                    Timber.v("mShopping is FALSE");
+                    // Timber.v("mShopping is FALSE");
                     /* user WAS NOT shopping, but now has STARTED shopping */
                     /* If current user is not shopping, create map to represent User model add to usersShopping map */
                     HashMap<String, Object> currentUser = (HashMap<String, Object>) new ObjectMapper().convertValue(mCurrentUser, Map.class);
@@ -691,7 +699,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
                                 Utils.updateTimestampReversed(databaseError, databaseReference);
                                 // TODO: 1/4/2018 pass the mSharedWithUsers so that this update can be made for all instance of the shared list
 
-                                Timber.v("mSharedWith: %s", mSharedWithUsers.size());
+                                // Timber.v("mSharedWith: %s", mSharedWithUsers.size());
 
                                 final HashMap<String, Object> result = new HashMap<>();
 
@@ -703,9 +711,9 @@ public class ActiveListDetailsActivity extends BaseActivity {
                                     if (it.hasNext()) {
                                         User user = it.next();
                                         String email = user.getEmail();
-                                        Timber.v("email: %s", email);
+                                        // Timber.v("email: %s", email);
                                         result.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(email) + "/" + mKey + "/" + Constants.FIREBASE_PROPERTY_USERS_SHOPPING + "/" + mEncodedEmail, user);
-                                        Timber.v("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(email) + "/" + mKey + "/" + Constants.FIREBASE_PROPERTY_USERS_SHOPPING + "/" + mEncodedEmail);
+                                        // Timber.v("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(email) + "/" + mKey + "/" + Constants.FIREBASE_PROPERTY_USERS_SHOPPING + "/" + mEncodedEmail);
                                         result.put("/" + Constants.FIREBASE_LOCATION_USER_LISTS + "/" + Utils.encodeEmail(email) + "/" + mKey + "/" + Constants.FIREBASE_PROPERTY_TIMESTAMP_LAST_CHANGED, timestampNowHash);
                                     }
                                 }
