@@ -163,7 +163,7 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder
                             @Override
                             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                                 if (databaseError != null) {
-                                    Timber.v("%s%s", R.string.log_error_updating_data, databaseError.getMessage());
+                                    Timber.v("%s %s", R.string.log_error_updating_data, databaseError.getMessage());
                                 }
                             }
                         });

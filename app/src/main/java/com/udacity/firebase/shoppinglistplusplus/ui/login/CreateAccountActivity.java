@@ -33,10 +33,6 @@ public class CreateAccountActivity extends BaseActivity {
         setContentView(R.layout.activity_create_account);
 
         /*
-         * Create Firebase references
-         */
-
-        /*
          * Link layout elements from XML and setup the progress dialog
          */
         initializeScreen();
@@ -103,8 +99,6 @@ public class CreateAccountActivity extends BaseActivity {
         /*
          * Create new user with specified email and password
          */
-
-
     }
 
     /*

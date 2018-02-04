@@ -142,9 +142,9 @@ public class ShoppingListsFragment extends Fragment {
                 for (int i = 0; i < dataSnapshot.getChildrenCount(); i++) {
                     if (it.hasNext()) {
                         DataSnapshot listSnapshot = it.next();
-                        Timber.v("listSnapshot.getValue(): %s", listSnapshot.getValue());
+                        // Timber.v("listSnapshot.getValue(): %s", listSnapshot.getValue());
                         ShoppingList shoppingList = listSnapshot.getValue(ShoppingList.class);
-                        Timber.v("listSnapshot.getKey(): %s", listSnapshot.getKey());
+                        // Timber.v("listSnapshot.getKey(): %s", listSnapshot.getKey());
                         mListKeys.add(listSnapshot.getKey());
                         mShoppingList.add(shoppingList);
                         mActiveListAdapter.notifyDataSetChanged();

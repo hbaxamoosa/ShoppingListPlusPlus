@@ -24,7 +24,6 @@ import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.AuthCredential;
@@ -176,19 +175,21 @@ public class LoginActivity extends BaseActivity implements
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             // Timber.v("signInWithCredential:success");
-                            FirebaseUser user = mFirebaseAuth.getCurrentUser();
-                            // Timber.v("user.getDisplayName(): %s", user.getDisplayName());
-                            // Timber.v("user.getEmail(): %s", user.getEmail());
+                            FirebaseUser currentUser = mFirebaseAuth.getCurrentUser();
+                            String Uid = currentUser.getUid();
+                            Timber.v("user.getDisplayName(): %s", currentUser.getDisplayName());
+                            Timber.v("user.getEmail(): %s", currentUser.getEmail());
+                            Timber.v("currentUser.getUid(): %s", currentUser.getUid());
 
-                            mUsername = user.getDisplayName();
-                            mEncodedEmail = Utils.encodeEmail(user.getEmail());
+                            mUsername = currentUser.getDisplayName();
+                            mEncodedEmail = Utils.encodeEmail(currentUser.getEmail());
 
                             mSharedPrefEditor = mSharedPref.edit();
                             /* Save provider name and encodedEmail for later use and start MainActivity */
                             mSharedPrefEditor.putString(Constants.KEY_ENCODED_EMAIL, mEncodedEmail).apply();
                             mSharedPrefEditor.putString(Constants.KEY_PROVIDER, null);
 
-                            onSignedInInitialize(mUsername);
+                            onSignedInInitialize(mUsername, Uid);
                             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                             intent.putExtra(Constants.KEY_ENCODED_EMAIL, mEncodedEmail);
                             startActivity(intent);
@@ -207,12 +208,16 @@ public class LoginActivity extends BaseActivity implements
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mFirebaseAuth.getCurrentUser();
+
         if (currentUser != null) {
             // Sign in success, update UI with the signed-in user's information
             // Timber.v("signInWithCredential:success");
             FirebaseUser user = mFirebaseAuth.getCurrentUser();
-            // Timber.v("user.getDisplayName(): %s", user.getDisplayName());
-            // Timber.v("user.getEmail(): %s", user.getEmail());
+            String Uid = currentUser.getUid();
+
+            Timber.v("user.getDisplayName(): %s", user.getDisplayName());
+            Timber.v("user.getEmail(): %s", user.getEmail());
+            Timber.v("currentUser.getUid(): %s", currentUser.getUid());
 
             mUsername = user.getDisplayName();
             mEncodedEmail = Utils.encodeEmail(user.getEmail());
@@ -222,7 +227,7 @@ public class LoginActivity extends BaseActivity implements
             mSharedPrefEditor.putString(Constants.KEY_ENCODED_EMAIL, mEncodedEmail).apply();
             mSharedPrefEditor.putString(Constants.KEY_PROVIDER, null);
 
-            onSignedInInitialize(mUsername);
+            onSignedInInitialize(mUsername, Uid);
             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
             intent.putExtra(Constants.KEY_ENCODED_EMAIL, mEncodedEmail);
             startActivity(intent);
@@ -231,7 +236,7 @@ public class LoginActivity extends BaseActivity implements
         }
     }
 
-    private void onSignedInInitialize(String username) {
+    private void onSignedInInitialize(String username, String uid) {
         mUsername = username;
 
         /*
@@ -248,12 +253,15 @@ public class LoginActivity extends BaseActivity implements
         /* Build the user */
         User user = new User(mUsername, mEncodedEmail, timestampCreated);
 
-        mShoppingListDatabaseReference.child(mEncodedEmail).setValue(user).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Timber.v(e.getLocalizedMessage());
-            }
-        });
+        HashMap<String, Object> userAndUidMapping = new HashMap<String, Object>();
+
+        /* Add the user and UID to the update map */
+        userAndUidMapping.put("/" + Constants.FIREBASE_LOCATION_USERS + "/" + mEncodedEmail, user);
+        userAndUidMapping.put("/" + Constants.FIREBASE_LOCATION_UID_MAPPINGS + "/" + uid, mEncodedEmail);
+
+        // TODO also store the UID and email mapping
+
+        mShoppingListDatabaseReference.getRoot().updateChildren(userAndUidMapping);
     }
 
     private void onSignedOutCleanup() {

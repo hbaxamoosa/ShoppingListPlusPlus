@@ -3,6 +3,7 @@ package com.udacity.firebase.shoppinglistplusplus;
 import android.content.Context;
 
 import com.facebook.stetho.Stetho;
+import com.google.firebase.database.FirebaseDatabase;
 
 import timber.log.Timber;
 
@@ -20,6 +21,11 @@ public class ShoppingListApplication extends android.app.Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        /*
+         * set Firebase database disk persistence to TRUE
+         */
+        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
 
         ShoppingListApplication.context = getApplicationContext();
 
