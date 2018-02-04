@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.facebook.stetho.Stetho;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Logger;
 
 import timber.log.Timber;
 
@@ -29,10 +30,18 @@ public class ShoppingListApplication extends android.app.Application {
 
         ShoppingListApplication.context = getApplicationContext();
 
-        //Including Jake Wharton's Timber logging library
+
         if (BuildConfig.DEBUG) {
+
+            //Including Jake Wharton's Timber logging library
             Timber.plant(new Timber.DebugTree());
             Timber.v("Timber.plant(new Timber.DebugTree());");
+
+            /*
+             * set Firebase database LOGGER level to DEBUG
+            */
+            FirebaseDatabase.getInstance().setLogLevel(Logger.Level.DEBUG);
+
         } else {
             // Timber.plant(new CrashReportingTree());
         }

@@ -132,6 +132,8 @@ public class EditListNameDialogFragment extends EditListDialogFragment {
                         if (databaseError != null) {
                             Timber.v("%s %s", getString(R.string.log_error_updating_data), databaseError.getMessage());
                         } else {
+
+                            // TODO consider moving this into a Utility method for the sake of DRY
                             /*
                              * Set the timestampLastChangeReverse for the list owner
                              */

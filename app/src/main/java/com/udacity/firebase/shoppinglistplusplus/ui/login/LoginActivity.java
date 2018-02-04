@@ -259,8 +259,6 @@ public class LoginActivity extends BaseActivity implements
         userAndUidMapping.put("/" + Constants.FIREBASE_LOCATION_USERS + "/" + mEncodedEmail, user);
         userAndUidMapping.put("/" + Constants.FIREBASE_LOCATION_UID_MAPPINGS + "/" + uid, mEncodedEmail);
 
-        // TODO also store the UID and email mapping
-
         mShoppingListDatabaseReference.getRoot().updateChildren(userAndUidMapping);
     }
 
