@@ -447,7 +447,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
                                 /* Do the update */
                                 mListItemsRef.getRoot().updateChildren(updatedItemBoughtData, new DatabaseReference.CompletionListener() {
                                     @Override
-                                    public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                                    public void onComplete(DatabaseError databaseError, final DatabaseReference databaseReference) {
                                         if (databaseError != null) {
                                             Timber.v("datebaseError: %s", databaseError.toString());
                                         } else {
@@ -483,7 +483,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
                                             for (int i = 0; i < mSharedWithUsers.size(); i++) {
                                                 if (it.hasNext()) {
                                                     User user = it.next();
-                                                    String email = user.getEmail();
+                                                    final String email = user.getEmail();
                                                     databaseReference.child(Constants.FIREBASE_LOCATION_USER_LISTS).child(Utils.encodeEmail(email)).child(mKey).addListenerForSingleValueEvent(new ValueEventListener() {
 
                                                         @Override
@@ -706,7 +706,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
         // Timber.v("query.getRef(): %s", query.getRef());
 
         /* Make the timestamp for last changed */
-        HashMap<String, Object> timestampNowHash = new HashMap<>();
+        final HashMap<String, Object> timestampNowHash = new HashMap<>();
         timestampNowHash.put(Constants.FIREBASE_PROPERTY_TIMESTAMP, ServerValue.TIMESTAMP);
 
         /* Check to see whether user is shopping; use a SingleValueEvent listener for memory efficiency */
@@ -749,7 +749,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
                     /* Do a deep-path update */
                     mCurrentListRef.getRoot().updateChildren(updatedUserData, new DatabaseReference.CompletionListener() {
                         @Override
-                        public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                        public void onComplete(DatabaseError databaseError, final DatabaseReference databaseReference) {
                             if (databaseError != null) {
                                 Timber.v("%s %s", getString(R.string.log_error_updating_data), databaseError.getMessage());
                             } else {
@@ -785,7 +785,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
                                 for (int i = 0; i < mSharedWithUsers.size(); i++) {
                                     if (it.hasNext()) {
                                         User user = it.next();
-                                        String email = user.getEmail();
+                                        final String email = user.getEmail();
                                         databaseReference.child(Constants.FIREBASE_LOCATION_USER_LISTS).child(Utils.encodeEmail(email)).child(mKey).addListenerForSingleValueEvent(new ValueEventListener() {
 
                                             @Override
@@ -847,7 +847,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
                     /* Do a deep-path update */
                     mCurrentListRef.getRoot().updateChildren(updatedUserData, new DatabaseReference.CompletionListener() {
                         @Override
-                        public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                        public void onComplete(DatabaseError databaseError, final DatabaseReference databaseReference) {
                             if (databaseError != null) {
                                 Timber.v("%s %s", getString(R.string.log_error_updating_data), databaseError.getMessage());
                             } else {
@@ -883,7 +883,7 @@ public class ActiveListDetailsActivity extends BaseActivity {
                                 for (int i = 0; i < mSharedWithUsers.size(); i++) {
                                     if (it.hasNext()) {
                                         User user = it.next();
-                                        String email = user.getEmail();
+                                        final String email = user.getEmail();
                                         databaseReference.child(Constants.FIREBASE_LOCATION_USER_LISTS).child(Utils.encodeEmail(email)).child(mKey).addListenerForSingleValueEvent(new ValueEventListener() {
 
                                             @Override

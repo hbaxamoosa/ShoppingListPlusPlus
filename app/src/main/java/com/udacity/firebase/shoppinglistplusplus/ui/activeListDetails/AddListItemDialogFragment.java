@@ -120,7 +120,7 @@ public class AddListItemDialogFragment extends EditListDialogFragment {
             /* Do the update */
             mShoppingListItemsDatabaseReference.updateChildren(updatedItemToAddMap, new DatabaseReference.CompletionListener() {
                 @Override
-                public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                public void onComplete(DatabaseError databaseError, final DatabaseReference databaseReference) {
                     if (databaseError != null) {
                         Timber.v("%s %s", getString(R.string.log_error_updating_data), databaseError.getMessage());
                     } else {
@@ -156,7 +156,7 @@ public class AddListItemDialogFragment extends EditListDialogFragment {
                         for (int i = 0; i < mSharedWith.size(); i++) {
                             if (it.hasNext()) {
                                 User user = it.next();
-                                String email = user.getEmail();
+                                final String email = user.getEmail();
                                 databaseReference.child(Constants.FIREBASE_LOCATION_USER_LISTS).child(Utils.encodeEmail(email)).child(mListKey).addListenerForSingleValueEvent(new ValueEventListener() {
 
                                     @Override

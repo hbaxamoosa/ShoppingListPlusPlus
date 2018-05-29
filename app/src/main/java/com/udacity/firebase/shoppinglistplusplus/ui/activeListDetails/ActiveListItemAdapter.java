@@ -248,7 +248,7 @@ public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAd
 
                             mShoppingListItemsDatabaseReference.updateChildren(result, new DatabaseReference.CompletionListener() {
                                 @Override
-                                public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                                public void onComplete(DatabaseError databaseError, final DatabaseReference databaseReference) {
                                     if (databaseError != null) {
                                         Timber.v("Error: %s", databaseError.getMessage());
                                     } else {
@@ -288,7 +288,7 @@ public class ActiveListItemAdapter extends RecyclerView.Adapter<ActiveListItemAd
                                         for (int i = 0; i < mSharedWithUsers.size(); i++) {
                                             if (it.hasNext()) {
                                                 User user = it.next();
-                                                String email = user.getEmail();
+                                                final String email = user.getEmail();
                                                 databaseReference.child(Constants.FIREBASE_LOCATION_USER_LISTS).child(Utils.encodeEmail(email)).child(mListKey).addListenerForSingleValueEvent(new ValueEventListener() {
 
                                                     @Override
