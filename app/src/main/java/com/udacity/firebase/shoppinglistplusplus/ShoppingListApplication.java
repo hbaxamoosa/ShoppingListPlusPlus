@@ -1,7 +1,5 @@
 package com.udacity.firebase.shoppinglistplusplus;
 
-import android.content.Context;
-
 import com.facebook.stetho.Stetho;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Logger;
@@ -13,11 +11,11 @@ import timber.log.Timber;
  */
 public class ShoppingListApplication extends android.app.Application {
 
-    private static Context context;
+    // private static Context context;
 
-    public static Context getAppContext() {
+    /*public static Context getAppContext() {
         return ShoppingListApplication.context;
-    }
+    }*/
 
     @Override
     public void onCreate() {
@@ -28,7 +26,7 @@ public class ShoppingListApplication extends android.app.Application {
          */
         FirebaseDatabase.getInstance().setPersistenceEnabled(true);
 
-        ShoppingListApplication.context = getApplicationContext();
+        // ShoppingListApplication.context = getApplicationContext();
 
 
         if (BuildConfig.DEBUG) {
