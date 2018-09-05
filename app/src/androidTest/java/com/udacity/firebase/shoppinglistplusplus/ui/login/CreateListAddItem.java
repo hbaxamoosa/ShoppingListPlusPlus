@@ -1,10 +1,15 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.login;
 
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.ViewInteraction;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
+import android.support.test.uiautomator.UiDevice;
+import android.support.test.uiautomator.UiObject;
+import android.support.test.uiautomator.UiObjectNotFoundException;
+import android.support.test.uiautomator.UiSelector;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +20,8 @@ import com.udacity.firebase.shoppinglistplusplus.R;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,8 +51,16 @@ public class CreateListAddItem {
     // see https://developer.android.com/training/testing/espresso/lists#recycler-view-list-items
     // https://developer.android.com/reference/android/support/test/espresso/contrib/RecyclerViewActions#actionOnItem
 
+    UiDevice mDevice;
+    private LoginActivity mActivity = null;
     private static final String LIST_NAME = "Test List";
     private static final String ITEM_ONE = "First Item";
+
+    @Before
+    public void before() {
+        mActivity = mActivityTestRule.getActivity();
+        mDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+    }
 
     @Rule
     public ActivityTestRule<LoginActivity> mActivityTestRule = new ActivityTestRule<>(LoginActivity.class);
@@ -92,6 +107,22 @@ public class CreateListAddItem {
                                 0)));
         ip.perform(scrollTo(), click());
 
+        // Added a sleep statement to match the app's execution delay.
+        // The recommended way to handle such scenarios is to use Espresso idling resources:
+        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        UiObject user = mDevice.findObject(new UiSelector().text("hasnainmeghana baxamoosa"));
+        try {
+            user.clickAndWaitForNewWindow();
+        } catch (UiObjectNotFoundException e) {
+            e.printStackTrace();
+        }
+
         // Click the FAB to add a new list
 
         ViewInteraction floatingActionButton = onView(
@@ -107,7 +138,7 @@ public class CreateListAddItem {
         // The recommended way to handle such scenarios is to use Espresso idling resources:
         // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
         try {
-            Thread.sleep(1000);
+            Thread.sleep(100);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -135,16 +166,6 @@ public class CreateListAddItem {
                                 3)));
         appCompatButton.perform(scrollTo(), click());
 
-
-        /*How to click on an item from the list by position:
-        onView(withId(R.id.recyclerView))
-                .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));*/
-
-        /*How to perform a click on a View from an item:
-        onView(withId(R.id.recyclerView))
-                .perform(RecyclerViewActions.actionOnItem(
-                        hasDescendant(withText(BOOK_TITLE)), click()));*/
-
         // Click the List name for the list that was added
 
         ViewInteraction recyclerView = onView(
@@ -153,18 +174,11 @@ public class CreateListAddItem {
                 hasDescendant(withText(LIST_NAME)),
                 click()));
 
-        /*ViewInteraction recyclerView = onView(
-                allOf(withId(R.id.recyclerView),
-                        childAtPosition(
-                                withId(R.id.rl_fragment_shopping_lists),
-                                0)));
-        recyclerView.perform(actionOnItemAtPosition(5, click()));*/
-
         // Added a sleep statement to match the app's execution delay.
         // The recommended way to handle such scenarios is to use Espresso idling resources:
         // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
         try {
-            Thread.sleep(1000);
+            Thread.sleep(100);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -217,28 +231,14 @@ public class CreateListAddItem {
                         isDisplayed()));
         appCompatImageButton.perform(click());
 
-        // Added a sleep statement to match the app's execution delay.
-        // The recommended way to handle such scenarios is to use Espresso idling resources:
-        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
-        /*try {
-            Thread.sleep(3549762);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }*/
-
         openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
 
-        // Added a sleep statement to match the app's execution delay.
-        // The recommended way to handle such scenarios is to use Espresso idling resources:
-        // https://google.github.io/android-testing-support-library/docs/espresso/idling-resource/index.html
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+    }
+
+    @After
+    public void after() {
 
         // Logout of ShoppingList++
-
         ViewInteraction appCompatTextView = onView(
                 allOf(withId(R.id.title), withText("Logout"),
                         childAtPosition(
@@ -248,6 +248,5 @@ public class CreateListAddItem {
                                 0),
                         isDisplayed()));
         appCompatTextView.perform(click());
-
     }
 }
