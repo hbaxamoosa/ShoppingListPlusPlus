@@ -43,6 +43,8 @@ public class ShoppingListsFragment extends Fragment {
     private DatabaseReference mUserListsDatabaseReference;
     private DatabaseReference orderedList;
     private ValueEventListener orderedListListener;
+    // SharedPrefs
+    private SharedPreferences mSharedPref;
 
     public ShoppingListsFragment() {
         /* Required empty public constructor */
@@ -70,6 +72,9 @@ public class ShoppingListsFragment extends Fragment {
             mEncodedEmail = getArguments().getString(Constants.KEY_ENCODED_EMAIL);
         }
 
+        // get SharedPrefs
+        mSharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        mEncodedEmail = mSharedPref.getString(Constants.KEY_ENCODED_EMAIL, null);
         // Initialize Firebase components
         FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
         mUserListsDatabaseReference = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_USER_LISTS).child(mEncodedEmail);

@@ -230,6 +230,9 @@ public class MainActivity extends BaseActivity implements
                 // Check how many invitations were sent and log.
                 String[] ids = AppInviteInvitation.getInvitationIds(resultCode, data);
                 Timber.d("Invitations sent: %s", ids.length);
+                for (String id : ids) {
+                    Timber.d("onActivityResult: sent invitation " + id);
+                }
             } else {
                 // Use Firebase Measurement to log that invitation was not sent
                 Bundle payload = new Bundle();

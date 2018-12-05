@@ -18,7 +18,8 @@
         android:layout_height="wrap_content"
         android:layout_above="@+id/til_add_friend_email"
         android:layout_below="@+id/app_bar"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        tools:listitem="@layout/single_user_item" />
 
     <android.support.design.widget.TextInputLayout
         android:id="@+id/til_add_friend_email"

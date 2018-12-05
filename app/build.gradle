@@ -49,17 +49,17 @@ dependencies {
     // implementation 'com.github.bumptech.glide:glide:4.7.1'
     // annotationProcessor 'com.github.bumptech.glide:compiler:4.7.1'
     // Firebase Analytics
-    implementation 'com.google.firebase:firebase-core:16.0.4'
+    implementation 'com.google.firebase:firebase-core:16.0.5'
     // FirebaseUI Auth
-    implementation 'com.google.firebase:firebase-auth:16.0.4'
+    implementation 'com.google.firebase:firebase-auth:16.0.5'
     implementation 'com.google.android.gms:play-services-auth:16.0.1'
     implementation 'com.firebaseui:firebase-ui-auth:3.3.1'
     // Firebase Realtime Database
-    implementation 'com.google.firebase:firebase-database:16.0.3'
+    implementation 'com.google.firebase:firebase-database:16.0.5'
     // Firebase Performance Monitoring
-    implementation 'com.google.firebase:firebase-perf:16.1.2'
+    implementation 'com.google.firebase:firebase-perf:16.2.0'
     // Firebase App Invites
-    implementation 'com.google.firebase:firebase-invites:16.0.4'
+    implementation 'com.google.firebase:firebase-invites:16.0.5'
     // Jackson
     implementation 'com.fasterxml.jackson.core:jackson-core:2.9.3'
     implementation 'com.fasterxml.jackson.core:jackson-annotations:2.9.3'
