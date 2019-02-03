@@ -56,10 +56,7 @@ public class MainActivity extends BaseActivity implements
 
     private String mEncodedEmail;
 
-    // SharedPrefs
-    private SharedPreferences mSharedPref;
     private static final int REQUEST_INVITE = 1;
-    private GoogleApiClient mGoogleApiClient;
     private FirebaseAnalytics mFirebaseAnalytics;
 
     @Override
@@ -68,13 +65,14 @@ public class MainActivity extends BaseActivity implements
         setContentView(R.layout.activity_main);
 
         // Initialize the GoogleApiClient for Firebase App Invites
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
+        GoogleApiClient mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API)
                 .build();
 
         // get SharedPrefs
-        mSharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        // SharedPrefs
+        SharedPreferences mSharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         mEncodedEmail = mSharedPref.getString(Constants.KEY_ENCODED_EMAIL, null);
 
         Intent intent = getIntent();
@@ -231,7 +229,7 @@ public class MainActivity extends BaseActivity implements
                 String[] ids = AppInviteInvitation.getInvitationIds(resultCode, data);
                 Timber.d("Invitations sent: %s", ids.length);
                 for (String id : ids) {
-                    Timber.d("onActivityResult: sent invitation " + id);
+                    Timber.d("onActivityResult: sent invitation %s", id);
                 }
             } else {
                 // Use Firebase Measurement to log that invitation was not sent

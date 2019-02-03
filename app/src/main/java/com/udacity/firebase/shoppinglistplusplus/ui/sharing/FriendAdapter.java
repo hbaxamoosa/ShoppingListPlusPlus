@@ -1,6 +1,7 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.sharing;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -49,22 +50,23 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder
         return context;
     }
 
+    @NonNull
     @Override
-    public FriendAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public FriendAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.single_user_item, parent, false);
         return new FriendAdapter.ViewHolder(v);
     }
 
     @Override
-    public void onDetachedFromRecyclerView(RecyclerView recyclerView) {
+    public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
         super.onDetachedFromRecyclerView(recyclerView);
         Timber.v("onDetachedFromRecyclerView(RecyclerView recyclerView)");
 
     }
 
     @Override
-    public void onBindViewHolder(final FriendAdapter.ViewHolder holder, final int position) {
+    public void onBindViewHolder(@NonNull final FriendAdapter.ViewHolder holder, final int position) {
         if (mSharedUsersList.get(position) != null) {
             holder.userName.setText(Utils.decodeEmail(mSharedUsersList.get(position).getEmail()));
             // holder.userName.setText("hasnain");
@@ -102,7 +104,7 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder
             // Timber.v("ViewHolder mFriendRef.getRef(): %s", mFriendRef.getRef());
             ValueEventListener listener = mFriendRef.addValueEventListener(new ValueEventListener() {
                 @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     final User sharedFriendInShoppingList = dataSnapshot.getValue(User.class);
 
                     /*
@@ -193,7 +195,7 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.ViewHolder
                 }
 
                 @Override
-                public void onCancelled(DatabaseError databaseError) {
+                public void onCancelled(@NonNull DatabaseError databaseError) {
                     Timber.v("Error: %s", databaseError);
                 }
             });

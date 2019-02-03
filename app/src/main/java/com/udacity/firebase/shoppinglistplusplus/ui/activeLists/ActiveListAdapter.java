@@ -2,6 +2,7 @@ package com.udacity.firebase.shoppinglistplusplus.ui.activeLists;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,7 +30,7 @@ import timber.log.Timber;
 public class ActiveListAdapter extends RecyclerView.Adapter<ActiveListAdapter.ViewHolder> {
 
     public static List<ShoppingList> shoppingList;
-    static List<String> listKeys;
+    private static List<String> listKeys;
     private Context context;
     private String mEncodedEmail;
 
@@ -45,8 +46,9 @@ public class ActiveListAdapter extends RecyclerView.Adapter<ActiveListAdapter.Vi
         return context;
     }
 
+    @NonNull
     @Override
-    public ActiveListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ActiveListAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         // Create a new view.
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.single_active_list, parent, false);
@@ -55,7 +57,7 @@ public class ActiveListAdapter extends RecyclerView.Adapter<ActiveListAdapter.Vi
     }
 
     @Override
-    public void onBindViewHolder(final ActiveListAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull final ActiveListAdapter.ViewHolder holder, int position) {
 
         /* Set the list name and owner */
         // holder.ownerName.setText(shoppingList.get(position).getOwner());
@@ -98,7 +100,7 @@ public class ActiveListAdapter extends RecyclerView.Adapter<ActiveListAdapter.Vi
 
                 mUserListsDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                         // Timber.v("dataSnapshot.getValue(): %s", dataSnapshot.getValue());
                         ShoppingList shoppingList = dataSnapshot.getValue(ShoppingList.class);
 
@@ -109,7 +111,7 @@ public class ActiveListAdapter extends RecyclerView.Adapter<ActiveListAdapter.Vi
                     }
 
                     @Override
-                    public void onCancelled(DatabaseError databaseError) {
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
                         Timber.v("error: %s", databaseError.toString());
                     }
                 });

@@ -3,6 +3,7 @@ package com.udacity.firebase.shoppinglistplusplus.ui.activeLists;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -43,8 +44,6 @@ public class ShoppingListsFragment extends Fragment {
     private DatabaseReference mUserListsDatabaseReference;
     private DatabaseReference orderedList;
     private ValueEventListener orderedListListener;
-    // SharedPrefs
-    private SharedPreferences mSharedPref;
 
     public ShoppingListsFragment() {
         /* Required empty public constructor */
@@ -73,7 +72,8 @@ public class ShoppingListsFragment extends Fragment {
         }
 
         // get SharedPrefs
-        mSharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        // SharedPrefs
+        SharedPreferences mSharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
         mEncodedEmail = mSharedPref.getString(Constants.KEY_ENCODED_EMAIL, null);
         // Initialize Firebase components
         FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
@@ -81,7 +81,7 @@ public class ShoppingListsFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_shopping_lists, container, false);
 

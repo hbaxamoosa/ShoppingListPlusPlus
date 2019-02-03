@@ -1,6 +1,7 @@
 package com.udacity.firebase.shoppinglistplusplus.ui.sharing;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -35,8 +36,6 @@ public class AddFriendActivity extends BaseActivity {
     private RecyclerView mRecyclerView;
     private List<User> mFriendList;
 
-    // Firebase
-    private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mUsersReference;
 
 
@@ -55,7 +54,8 @@ public class AddFriendActivity extends BaseActivity {
         /*
          * Create Firebase references
          */
-        mFirebaseDatabase = FirebaseDatabase.getInstance();
+        // Firebase
+        FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
         mUsersReference = mFirebaseDatabase.getReference(Constants.FIREBASE_LOCATION_USERS);
 
         mFriendList = new ArrayList<>();
@@ -112,7 +112,7 @@ public class AddFriendActivity extends BaseActivity {
                 /* Get the user's friends list; use a SingleValueEvent listener for memory efficiency */
                 userFriends.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                         // Timber.v("ValueEventListener onDataChange(DataSnapshot dataSnapshot) %s", dataSnapshot.getValue());
                         // Timber.v("dataSnapshot.getValue(): %s", dataSnapshot.getValue());
                         if (mFriendList != null) {
@@ -131,7 +131,7 @@ public class AddFriendActivity extends BaseActivity {
                     }
 
                     @Override
-                    public void onCancelled(DatabaseError databaseError) {
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
                         Timber.v("Error: %s", databaseError);
                     }
                 });
@@ -155,7 +155,7 @@ public class AddFriendActivity extends BaseActivity {
         /* Get the user's friends list; use a SingleValueEvent listener for memory efficiency */
         userFriends.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 // Timber.v("ValueEventListener onDataChange(DataSnapshot dataSnapshot) %s", dataSnapshot.getValue());
                 // Timber.v("dataSnapshot.getValue(): %s", dataSnapshot.getValue());
                 if (mFriendList != null) {
@@ -174,7 +174,7 @@ public class AddFriendActivity extends BaseActivity {
             }
 
             @Override
-            public void onCancelled(DatabaseError databaseError) {
+            public void onCancelled(@NonNull DatabaseError databaseError) {
                 Timber.v("Error: %s", databaseError);
             }
         });

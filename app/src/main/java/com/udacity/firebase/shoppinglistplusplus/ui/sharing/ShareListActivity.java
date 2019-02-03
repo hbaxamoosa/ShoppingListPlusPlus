@@ -2,6 +2,7 @@ package com.udacity.firebase.shoppinglistplusplus.ui.sharing;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -109,7 +110,7 @@ public class ShareListActivity extends BaseActivity {
          */
         mActiveListRefListener = mActiveListRef.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 // Timber.v("ValueEventListener onDataChange(DataSnapshot dataSnapshot) %s", dataSnapshot.getValue());
                 // Timber.v("dataSnapshot.getValue(): %s", dataSnapshot.getValue());
 
@@ -133,7 +134,7 @@ public class ShareListActivity extends BaseActivity {
             }
 
             @Override
-            public void onCancelled(DatabaseError databaseError) {
+            public void onCancelled(@NonNull DatabaseError databaseError) {
                 Timber.v("%s%s", getString(R.string.log_error_the_read_failed), databaseError);
             }
         });
@@ -143,7 +144,7 @@ public class ShareListActivity extends BaseActivity {
          */
         mFriendsListener = mCurrentUserFriendsReference.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 // Timber.v("dataSnapshot.getValue(): %s", dataSnapshot.getValue());
                 mUsersFriends.clear();
                 Iterator<DataSnapshot> it = dataSnapshot.getChildren().iterator();
@@ -170,7 +171,7 @@ public class ShareListActivity extends BaseActivity {
             }
 
             @Override
-            public void onCancelled(DatabaseError databaseError) {
+            public void onCancelled(@NonNull DatabaseError databaseError) {
                 Timber.v("%s%s", getString(R.string.log_error_the_read_failed), databaseError);
             }
         });

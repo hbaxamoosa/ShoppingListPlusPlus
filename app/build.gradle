@@ -49,13 +49,13 @@ dependencies {
     // implementation 'com.github.bumptech.glide:glide:4.7.1'
     // annotationProcessor 'com.github.bumptech.glide:compiler:4.7.1'
     // Firebase Analytics
-    implementation 'com.google.firebase:firebase-core:16.0.6'
+    implementation 'com.google.firebase:firebase-core:16.0.7'
     // FirebaseUI Auth
     implementation 'com.google.firebase:firebase-auth:16.1.0'
     implementation 'com.google.android.gms:play-services-auth:16.0.1'
     implementation 'com.firebaseui:firebase-ui-auth:3.3.1'
     // Firebase Realtime Database
-    implementation 'com.google.firebase:firebase-database:16.0.5'
+    implementation 'com.google.firebase:firebase-database:16.0.6'
     // Firebase Performance Monitoring
     implementation 'com.google.firebase:firebase-perf:16.2.3'
     // Firebase App Invites
