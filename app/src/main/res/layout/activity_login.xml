@@ -31,7 +31,7 @@
             android:contentDescription="@string/image_view_logo_image"
             android:src="@drawable/ic_shopping_list" />
 
-        <android.support.design.widget.TextInputLayout
+        <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/til_email"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -50,9 +50,9 @@
                 android:textColor="@color/black"
                 android:textColorHint="@color/dark_grey"
                 android:textSize="@dimen/login_buttons_text_size" />
-        </android.support.design.widget.TextInputLayout>
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <android.support.design.widget.TextInputLayout
+        <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/til_password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -71,7 +71,7 @@
                 android:textColor="@color/black"
                 android:textColorHint="@color/dark_grey"
                 android:textSize="@dimen/login_buttons_text_size" />
-        </android.support.design.widget.TextInputLayout>
+        </com.google.android.material.textfield.TextInputLayout>
 
         <Button
             android:id="@+id/login_with_password"

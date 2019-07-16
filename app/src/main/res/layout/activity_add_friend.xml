@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     tools:context=".ui.sharing.AddFriendActivity">
 
-    <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+    <androidx.appcompat.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/app_bar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
@@ -12,7 +12,7 @@
         android:layout_centerHorizontal="true"
         android:theme="@style/Toolbar" />
 
-    <android.support.v7.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list_view_friends_autocomplete"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -20,7 +20,7 @@
         android:layout_below="@+id/app_bar"
         android:layout_centerHorizontal="true" />
 
-    <android.support.design.widget.TextInputLayout
+    <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/til_add_friend_email"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -38,6 +38,6 @@
             android:textColor="@color/black"
             android:textColorHint="@color/dark_grey"
             android:visibility="visible"/>
-    </android.support.design.widget.TextInputLayout>
+    </com.google.android.material.textfield.TextInputLayout>
 
 </RelativeLayout>

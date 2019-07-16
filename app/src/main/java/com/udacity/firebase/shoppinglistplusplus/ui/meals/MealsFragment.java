@@ -2,12 +2,13 @@ package com.udacity.firebase.shoppinglistplusplus.ui.meals;
 
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+
+import androidx.fragment.app.Fragment;
 
 import com.udacity.firebase.shoppinglistplusplus.R;
 
@@ -84,7 +85,7 @@ public class MealsFragment extends Fragment {
     }
 
     private void initializeScreen(View rootView) {
-        mListView = (ListView) rootView.findViewById(R.id.list_view_meals_list);
+        mListView = rootView.findViewById(R.id.list_view_meals_list);
         View footer = getActivity().getLayoutInflater().inflate(R.layout.footer_empty, null);
         mListView.addFooterView(footer);
     }

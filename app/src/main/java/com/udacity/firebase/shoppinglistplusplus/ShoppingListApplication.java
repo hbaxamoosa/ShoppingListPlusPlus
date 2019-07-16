@@ -1,6 +1,5 @@
 package com.udacity.firebase.shoppinglistplusplus;
 
-import com.facebook.stetho.Stetho;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Logger;
 
@@ -45,6 +44,6 @@ public class ShoppingListApplication extends android.app.Application {
         }
 
         // Facebook Stetho
-        Stetho.initializeWithDefaults(this);
+        // Stetho.initializeWithDefaults(this);
     }
 }

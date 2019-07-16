@@ -23,7 +23,7 @@
             android:focusable="true"
             android:focusableInTouchMode="true" />
 
-        <android.support.design.widget.TextInputLayout
+        <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/til_username_create"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -41,9 +41,9 @@
                 android:textColor="@color/black"
                 android:textColorHint="@color/dark_grey"
                 android:textSize="@dimen/login_buttons_text_size" />
-        </android.support.design.widget.TextInputLayout>
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <android.support.design.widget.TextInputLayout
+        <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/til_email_create"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -61,7 +61,7 @@
                 android:textColor="@color/black"
                 android:textColorHint="@color/dark_grey"
                 android:textSize="@dimen/login_buttons_text_size" />
-        </android.support.design.widget.TextInputLayout>
+        </com.google.android.material.textfield.TextInputLayout>
 
         <Button
             android:id="@+id/btn_create_account_final"

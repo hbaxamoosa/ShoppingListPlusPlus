@@ -2,10 +2,11 @@ package com.udacity.firebase.shoppinglistplusplus.ui;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.udacity.firebase.shoppinglistplusplus.R;
 
