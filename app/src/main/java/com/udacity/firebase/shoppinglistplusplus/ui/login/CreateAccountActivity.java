@@ -23,7 +23,7 @@ public class CreateAccountActivity extends BaseActivity {
     private static final String LOG_TAG = CreateAccountActivity.class.getSimpleName();
     private ProgressDialog mAuthProgressDialog;
     private EditText mEditTextUsernameCreate, mEditTextEmailCreate;
-    private String mUserName, mUserEmail, mPassword;
+    private String mUserEmail;
     private SecureRandom mRandom = new SecureRandom();
 
 
@@ -79,9 +79,9 @@ public class CreateAccountActivity extends BaseActivity {
      * Create new account using Firebase email/password provider
      */
     public void onCreateAccountPressed(View view) {
-        mUserName = mEditTextUsernameCreate.getText().toString();
+        String mUserName = mEditTextUsernameCreate.getText().toString();
         mUserEmail = mEditTextEmailCreate.getText().toString().toLowerCase();
-        mPassword = new BigInteger(130, mRandom).toString(32);
+        String mPassword = new BigInteger(130, mRandom).toString(32);
 
         /*
          * Check that email and user name are okay
