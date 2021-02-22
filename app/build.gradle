@@ -1,13 +1,15 @@
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.firebase.firebase-perf'
+apply plugin: 'com.google.gms.google-services'
+// Add the Firebase Crashlytics plugin.
+apply plugin: 'com.google.firebase.crashlytics'
 
 android {
     defaultConfig {
         applicationId "com.udacity.firebase.shoppinglistplusplus"
         minSdkVersion 25
-        targetSdkVersion 29
-        compileSdkVersion 29
-        buildToolsVersion '29.0.3'
+        targetSdkVersion 30
+        compileSdkVersion 30
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -29,12 +31,18 @@ android {
             exclude 'META-INF/LICENSE.txt'
             exclude 'META-INF/NOTICE.txt'
         }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
+    compileSdkVersion 30
+    buildToolsVersion '30.0.1'
+}
 
     dependencies {
         implementation fileTree(include: ['*.jar'], dir: 'libs')
-        implementation 'androidx.appcompat:appcompat:1.1.0'
-        implementation 'com.google.android.material:material:1.1.0'
+        implementation 'androidx.appcompat:appcompat:1.2.0'
+        implementation 'com.google.android.material:material:1.3.0'
         implementation 'androidx.legacy:legacy-support-v4:1.0.0'
         implementation 'androidx.cardview:cardview:1.0.0'
         implementation 'androidx.recyclerview:recyclerview:1.1.0'
@@ -43,38 +51,31 @@ android {
         implementation 'com.jakewharton.timber:timber:4.7.1'
         // Facebook Stetho - http://facebook.github.io/stetho/
         implementation 'com.facebook.stetho:stetho:1.5.1'
-        // Displaying images
-        implementation 'com.github.bumptech.glide:glide:4.11.0'
-        annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
         // FirebaseUI Auth
-        implementation 'com.google.firebase:firebase-auth:19.3.1'
-        implementation 'com.google.android.gms:play-services-auth:18.0.0'
-        implementation 'com.firebaseui:firebase-ui-auth:3.3.1'
+        implementation 'com.google.firebase:firebase-auth:20.0.2'
+        implementation 'com.google.android.gms:play-services-auth:19.0.0'
+        implementation 'com.firebaseui:firebase-ui-auth:6.2.0'
         // Firebase Realtime Database
-        implementation 'com.google.firebase:firebase-database:19.3.0'
+        implementation 'com.google.firebase:firebase-database:19.6.0'
         // Firebase Performance Monitoring
-        implementation 'com.google.firebase:firebase-perf:19.0.7'
-        // implementation 'com.github.bumptech.glide:glide:4.7.1'
-        // annotationProcessor 'com.github.bumptech.glide:compiler:4.7.1'
-        // Firebase Analytics
-        implementation 'com.google.firebase:firebase-core:17.4.2'
-        // FirebaseUI Auth
-        implementation 'com.google.firebase:firebase-auth:19.3.1'
-        implementation 'com.google.android.gms:play-services-auth:18.0.0'
-        implementation 'com.firebaseui:firebase-ui-auth:3.3.1'
+        implementation 'com.google.firebase:firebase-perf:19.1.1'
+        // Firebase Crashlytics SDK.
+        implementation 'com.google.firebase:firebase-crashlytics:17.3.1'
+        // Google Analytics SDK.
+        implementation 'com.google.firebase:firebase-analytics:18.0.2'
         // Firebase App Invites
         implementation 'com.google.firebase:firebase-invites:17.0.0'
         // Jackson
-        implementation 'com.fasterxml.jackson.core:jackson-core:2.11.0'
-        implementation 'com.fasterxml.jackson.core:jackson-annotations:2.11.0'
-        implementation 'com.fasterxml.jackson.core:jackson-databind:2.11.0'
-        androidTestImplementation 'junit:junit:4.13'
+        implementation 'com.fasterxml.jackson.core:jackson-core:2.12.1'
+        implementation 'com.fasterxml.jackson.core:jackson-annotations:2.12.1'
+        implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.1'
+        androidTestImplementation 'junit:junit:4.13.2'
 
         // Instrumentation tests
-        androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-        androidTestImplementation 'androidx.test:runner:1.2.0'
-        androidTestImplementation 'androidx.test:rules:1.2.0'
-        androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.1.0', {
+        androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+        androidTestImplementation 'androidx.test:runner:1.3.0'
+        androidTestImplementation 'androidx.test:rules:1.3.0'
+        androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.3.0', {
             exclude group: 'com.android.support', module: 'support-annotations'
             exclude group: 'com.android.support', module: 'appcompat'
             exclude group: 'com.android.support', module: 'support-v4'
@@ -84,5 +85,3 @@ android {
         // Set this dependency to build and run UI Automator tests
         androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.2.0'
     }
-
-apply plugin: 'com.google.gms.google-services'
